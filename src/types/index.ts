@@ -1,0 +1,31 @@
+
+export interface NewsArticle {
+  slug: string;
+  title: string;
+  date: string; // YYYY-MM-DD
+  categories: string[];
+  excerpt: string;
+  content: string; // HTML or Markdown
+  heroImageUrl?: string;
+  youtubeEmbed?: string; // YouTube video ID or full embed code
+}
+
+export interface BoardMember {
+  id: string;
+  name: string;
+  role: string; // Funktion
+  term?: string; // Amtszeit (e.g., "→ 2026")
+  email: string;
+}
+
+export interface Pilot {
+  id: string;
+  name: string; // Vorname or Pseudonym
+  profileSlug?: string; // For future profile page
+}
+
+export interface FaqItem {
+  id: string;
+  question: string;
+  answer: string;
+}
