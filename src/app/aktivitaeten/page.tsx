@@ -22,7 +22,7 @@ export default function AktivitaetenPage() {
           <div className="grid md:grid-cols-2 gap-6 items-center">
             <div>
               <Image 
-                src="/images/general/kart-slalom-action.png" 
+                src="/images/general/kart_in_dry.jpg" 
                 alt="Kart-Slalom Aktion" 
                 width={600} 
                 height={400} 
