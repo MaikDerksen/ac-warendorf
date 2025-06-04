@@ -13,26 +13,27 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
+import { ModeToggle } from './mode-toggle';
 
 const navLinks = [
   { href: '/', label: 'Startseite' },
   {
-    label: 'Unser Verein', // Renamed from 'Kart-Slalom'
+    label: 'Unser Verein', 
     dropdown: [
-      { href: '/vorstand', label: 'Vorstand' }, // Moved
-      { href: '/piloten', label: 'Piloten' }, // Moved
-      { href: '/unser-verein/oldie-cup', label: 'Oldie-Cup' }, // New
+      { href: '/vorstand', label: 'Vorstand' }, 
+      { href: '/piloten', label: 'Piloten' }, 
+      { href: '/unser-verein/oldie-cup', label: 'Oldie-Cup' }, 
     ]
   },
-  { href: '/aktivitaeten', label: 'Kart-Slalom' }, // Renamed from 'Aktivitäten'
+  { href: '/aktivitaeten', label: 'Kart-Slalom' }, 
   { href: '/news', label: 'News' },
-  { href: '/sponsoren', label: 'Sponsoren' }, // New
+  { href: '/sponsoren', label: 'Sponsoren' }, 
   {
-    label: 'Kontakt', // Now a dropdown
+    label: 'Kontakt', 
     dropdown: [
-      { href: '/kontakt', label: 'Kontaktformular' }, // Existing contact page
-      { href: '/kontakt/mitglied-werden', label: 'Mitglied werden' }, // Moved
-      { href: '/kontakt/schutzkonzept', label: 'Schutzkonzept' }, // New
+      { href: '/kontakt', label: 'Kontaktformular' }, 
+      { href: '/kontakt/mitglied-werden', label: 'Mitglied werden' }, 
+      { href: '/kontakt/schutzkonzept', label: 'Schutzkonzept' }, 
     ]
   },
 ];
@@ -44,7 +45,7 @@ export function Navbar() {
     <header className="bg-card shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Logo />
-        <nav className="hidden md:flex items-center space-x-2 lg:space-x-4">
+        <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
           {navLinks.map((link) =>
             link.dropdown ? (
               <DropdownMenu key={link.label}>
@@ -68,9 +69,11 @@ export function Navbar() {
               </Button>
             )
           )}
+          <ModeToggle />
         </nav>
-        <div className="md:hidden">
-          <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+        <div className="md:hidden flex items-center space-x-2">
+          <ModeToggle />
+          <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} aria-label="Menü öffnen/schließen">
             {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             <span className="sr-only">Menü öffnen/schließen</span>
           </Button>
