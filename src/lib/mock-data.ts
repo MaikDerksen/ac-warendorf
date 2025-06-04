@@ -8,7 +8,7 @@ export const mockNewsArticles: NewsArticle[] = [
     categories: ['Kart-Slalom', 'Kart-Slalom 2024'],
     excerpt: 'Die Suche nach einem geeigneten Trainingsplatz gestaltet sich oft schwierig. Erfahren Sie mehr über unsere Bemühungen und aktuellen Stand.',
     content: '<p>Die Suche nach einem geeigneten Trainingsplatz gestaltet sich oft schwierig. Der AC Warendorf ist stets bemüht, optimale Bedingungen für seine Fahrer zu schaffen. Aktuell prüfen wir verschiedene Optionen im Umkreis von Warendorf, um regelmäßige Trainingseinheiten sicherzustellen. Wir halten euch auf dem Laufenden!</p><p>Ein fester Trainingsplatz ist essentiell für die kontinuierliche Weiterentwicklung unserer Fahrer und die Vorbereitung auf Wettbewerbe. Wir danken allen Beteiligten für ihre Unterstützung und Geduld.</p>',
-    heroImageUrl: '/images/news/trainingsplatz-suche.png',
+    heroImageUrl: '/images/news/die-suche-nach-einem-trainingsplatz.png',
     dataAiHint: 'karting track'
   },
   {
@@ -18,7 +18,7 @@ export const mockNewsArticles: NewsArticle[] = [
     categories: ['Kart-Slalom', 'Erfolge'],
     excerpt: 'Unglaubliche Nachrichten! Unser Fahrer Louis hat den Weltmeistertitel im Kart-Slalom errungen. Ein historischer Erfolg für den AC Warendorf.',
     content: '<p><strong>Ein Traum wird wahr!</strong> Louis, eines unserer talentiertesten Mitglieder, hat bei den diesjährigen Weltmeisterschaften im Kart-Slalom triumphiert. Mit einer fehlerfreien Leistung und beeindruckender Geschwindigkeit setzte er sich gegen starke internationale Konkurrenz durch.</p><p>Der gesamte Verein ist unglaublich stolz auf Louis und seine Leistung. Dieser Erfolg ist das Ergebnis jahrelangen harten Trainings, Engagements und der Unterstützung seiner Familie und Trainer. Herzlichen Glückwunsch, Louis!</p>',
-    heroImageUrl: '/images/news/louis-weltmeister.png',
+    heroImageUrl: '/images/news/louis-ist-weltmeister.png',
     dataAiHint: 'karting champion'
   },
   {
@@ -28,7 +28,7 @@ export const mockNewsArticles: NewsArticle[] = [
     categories: ['Veranstaltungen', 'News'],
     excerpt: 'Der AC Warendorf präsentierte sich erfolgreich auf der lokalen Gewerbeschau und brachte den Besuchern den Kartsport näher.',
     content: '<p>Am vergangenen Wochenende war der AC Warendorf mit einem eigenen Stand auf der Warendorfer Gewerbeschau vertreten. Besucher hatten die Möglichkeit, sich über den Kartsport zu informieren, ein echtes Rennkart aus nächster Nähe zu bestaunen und mit unseren Fahrern ins Gespräch zu kommen.</p><p>Besonderes Highlight war die Demonstration von Pylonen-Geschicklichkeitsübungen, die einen Einblick in die Anforderungen des Kartslaloms gaben. Wir bedanken uns bei allen Helfern und den zahlreichen interessierten Besuchern!</p>',
-    heroImageUrl: '/images/news/gewerbeschau.png',
+    heroImageUrl: '/images/news/ac-warendorf-auf-der-gewerbeschau.png',
     dataAiHint: 'karting event'
   },
   {
@@ -57,7 +57,7 @@ export const mockPilots: Pilot[] = [
   { id: 'p3', name: 'Finn', profileSlug: 'finn', imageUrl: '/images/pilots/finn.png' },
   { id: 'p4', name: 'Lena', profileSlug: 'lena', imageUrl: '/images/pilots/lena.png' },
   { id: 'p5', name: 'RacerX', profileSlug: 'racerx', imageUrl: '/images/pilots/racerx.png' },
-  { id: 'p6', name: 'Speedy Gonzales', imageUrl: '/images/pilots/speedy.png'},
+  { id: 'p6', name: 'Speedy Gonzales', imageUrl: '/images/pilots/speedy-gonzales.png'},
 ];
 
 export const mockFaqItems: FaqItem[] = [
