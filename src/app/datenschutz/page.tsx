@@ -1,7 +1,17 @@
+
+'use client';
+
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
 
 export default function DatenschutzPage() {
+  const [currentDate, setCurrentDate] = useState('');
+
+  useEffect(() => {
+    setCurrentDate(new Date().toLocaleDateString('de-DE', { year: 'numeric', month: 'long', day: 'numeric' }));
+  }, []);
+
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <PageHeader title="Datenschutzerklärung" />
@@ -112,7 +122,7 @@ export default function DatenschutzPage() {
       </Card>
       
       <p className="text-sm text-center text-muted-foreground">
-        Stand: {new Date().toLocaleDateString('de-DE', { year: 'numeric', month: 'long', day: 'numeric' })}
+        Stand: {currentDate || 'Lädt...'}
       </p>
     </div>
   );

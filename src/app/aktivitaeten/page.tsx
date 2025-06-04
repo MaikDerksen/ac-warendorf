@@ -1,3 +1,4 @@
+
 import { PageHeader } from '@/components/page-header';
 import { YouTubeEmbed } from '@/components/youtube-embed';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,7 +38,7 @@ export default function AktivitaetenPage() {
                 Unsere jungen Talente nehmen regelmäßig an regionalen und überregionalen Wettbewerben teil und haben dabei schon beachtliche Erfolge erzielt.
               </p>
               <Button asChild variant="link" className="text-primary px-0">
-                <Link href="/kart-slalom/mitglied-werden">Mehr zum Kart-Slalom und Mitgliedschaft erfahren</Link>
+                <Link href="/kontakt/mitglied-werden">Mehr zum Kart-Slalom und Mitgliedschaft erfahren</Link>
               </Button>
             </div>
           </div>

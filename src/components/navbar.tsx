@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -15,17 +16,25 @@ import { cn } from '@/lib/utils';
 
 const navLinks = [
   { href: '/', label: 'Startseite' },
-  { href: '/vorstand', label: 'Vorstand' },
-  { href: '/aktivitaeten', label: 'Aktivitäten' },
-  { 
-    label: 'Kart-Slalom', 
+  {
+    label: 'Unser Verein', // Renamed from 'Kart-Slalom'
     dropdown: [
-      { href: '/kart-slalom/mitglied-werden', label: 'Mitglied werden' },
+      { href: '/vorstand', label: 'Vorstand' }, // Moved
+      { href: '/piloten', label: 'Piloten' }, // Moved
+      { href: '/unser-verein/oldie-cup', label: 'Oldie-Cup' }, // New
     ]
   },
-  { href: '/piloten', label: 'Piloten' },
+  { href: '/aktivitaeten', label: 'Kart-Slalom' }, // Renamed from 'Aktivitäten'
   { href: '/news', label: 'News' },
-  { href: '/kontakt', label: 'Kontakt' },
+  { href: '/sponsoren', label: 'Sponsoren' }, // New
+  {
+    label: 'Kontakt', // Now a dropdown
+    dropdown: [
+      { href: '/kontakt', label: 'Kontaktformular' }, // Existing contact page
+      { href: '/kontakt/mitglied-werden', label: 'Mitglied werden' }, // Moved
+      { href: '/kontakt/schutzkonzept', label: 'Schutzkonzept' }, // New
+    ]
+  },
 ];
 
 export function Navbar() {
