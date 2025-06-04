@@ -22,7 +22,7 @@ export default function AktivitaetenPage() {
           <div className="grid md:grid-cols-2 gap-6 items-center">
             <div>
               <Image 
-                src="https://placehold.co/600x400.png" 
+                src="/images/general/kart-slalom-action.png" 
                 alt="Kart-Slalom Aktion" 
                 width={600} 
                 height={400} 

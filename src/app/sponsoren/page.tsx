@@ -32,17 +32,17 @@ export default function SponsorenPage() {
         <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-6 items-center text-center">
           {/* Replace with actual sponsor data and logos */}
           <div className="flex flex-col items-center p-4 border rounded-lg">
-            <Image src="https://placehold.co/150x80.png" alt="Sponsor Logo 1" width={150} height={80} className="mb-2" data-ai-hint="company logo"/>
+            <Image src="/images/sponsoren/sponsor-placeholder-1.png" alt="Sponsor Logo 1" width={150} height={80} className="mb-2" data-ai-hint="company logo"/>
             <p className="text-sm font-medium text-foreground">Lokales Unternehmen WAF</p>
             <p className="text-xs text-muted-foreground">Hauptsponsor</p>
           </div>
           <div className="flex flex-col items-center p-4 border rounded-lg">
-            <Image src="https://placehold.co/150x80.png" alt="Sponsor Logo 2" width={150} height={80} className="mb-2" data-ai-hint="business logo"/>
+            <Image src="/images/sponsoren/sponsor-placeholder-2.png" alt="Sponsor Logo 2" width={150} height={80} className="mb-2" data-ai-hint="business logo"/>
             <p className="text-sm font-medium text-foreground">Mustermann GmbH</p>
             <p className="text-xs text-muted-foreground">Premium Partner</p>
           </div>
           <div className="flex flex-col items-center p-4 border rounded-lg">
-            <Image src="https://placehold.co/150x80.png" alt="Sponsor Logo 3" width={150} height={80} className="mb-2" data-ai-hint="brand icon"/>
+            <Image src="/images/sponsoren/sponsor-placeholder-3.png" alt="Sponsor Logo 3" width={150} height={80} className="mb-2" data-ai-hint="brand icon"/>
             <p className="text-sm font-medium text-foreground">KFZ-Service Meier</p>
             <p className="text-xs text-muted-foreground">Unterstützer</p>
           </div>

@@ -8,7 +8,7 @@ export const mockNewsArticles: NewsArticle[] = [
     categories: ['Kart-Slalom', 'Kart-Slalom 2024'],
     excerpt: 'Die Suche nach einem geeigneten Trainingsplatz gestaltet sich oft schwierig. Erfahren Sie mehr über unsere Bemühungen und aktuellen Stand.',
     content: '<p>Die Suche nach einem geeigneten Trainingsplatz gestaltet sich oft schwierig. Der AC Warendorf ist stets bemüht, optimale Bedingungen für seine Fahrer zu schaffen. Aktuell prüfen wir verschiedene Optionen im Umkreis von Warendorf, um regelmäßige Trainingseinheiten sicherzustellen. Wir halten euch auf dem Laufenden!</p><p>Ein fester Trainingsplatz ist essentiell für die kontinuierliche Weiterentwicklung unserer Fahrer und die Vorbereitung auf Wettbewerbe. Wir danken allen Beteiligten für ihre Unterstützung und Geduld.</p>',
-    heroImageUrl: 'https://placehold.co/800x450.png',
+    heroImageUrl: '/images/news/trainingsplatz-suche.png',
     dataAiHint: 'karting track'
   },
   {
@@ -18,7 +18,7 @@ export const mockNewsArticles: NewsArticle[] = [
     categories: ['Kart-Slalom', 'Erfolge'],
     excerpt: 'Unglaubliche Nachrichten! Unser Fahrer Louis hat den Weltmeistertitel im Kart-Slalom errungen. Ein historischer Erfolg für den AC Warendorf.',
     content: '<p><strong>Ein Traum wird wahr!</strong> Louis, eines unserer talentiertesten Mitglieder, hat bei den diesjährigen Weltmeisterschaften im Kart-Slalom triumphiert. Mit einer fehlerfreien Leistung und beeindruckender Geschwindigkeit setzte er sich gegen starke internationale Konkurrenz durch.</p><p>Der gesamte Verein ist unglaublich stolz auf Louis und seine Leistung. Dieser Erfolg ist das Ergebnis jahrelangen harten Trainings, Engagements und der Unterstützung seiner Familie und Trainer. Herzlichen Glückwunsch, Louis!</p>',
-    heroImageUrl: 'https://placehold.co/800x450.png',
+    heroImageUrl: '/images/news/louis-weltmeister.png',
     dataAiHint: 'karting champion'
   },
   {
@@ -28,7 +28,7 @@ export const mockNewsArticles: NewsArticle[] = [
     categories: ['Veranstaltungen', 'News'],
     excerpt: 'Der AC Warendorf präsentierte sich erfolgreich auf der lokalen Gewerbeschau und brachte den Besuchern den Kartsport näher.',
     content: '<p>Am vergangenen Wochenende war der AC Warendorf mit einem eigenen Stand auf der Warendorfer Gewerbeschau vertreten. Besucher hatten die Möglichkeit, sich über den Kartsport zu informieren, ein echtes Rennkart aus nächster Nähe zu bestaunen und mit unseren Fahrern ins Gespräch zu kommen.</p><p>Besonderes Highlight war die Demonstration von Pylonen-Geschicklichkeitsübungen, die einen Einblick in die Anforderungen des Kartslaloms gaben. Wir bedanken uns bei allen Helfern und den zahlreichen interessierten Besuchern!</p>',
-    heroImageUrl: 'https://placehold.co/800x450.png',
+    heroImageUrl: '/images/news/gewerbeschau.png',
     dataAiHint: 'karting event'
   },
   {
@@ -38,26 +38,26 @@ export const mockNewsArticles: NewsArticle[] = [
     categories: ['Kart-Slalom 2024', 'Wettbewerbe'],
     excerpt: 'Die Kart-Saison 2024 hat begonnen und die Fahrer des AC Warendorf zeigten bereits starke Leistungen bei den ersten Vorläufen.',
     content: '<p>Mit viel Enthusiasmus und gut vorbereitet starteten unsere Piloten in die neue Kart-Slalom Saison. Bei den ersten Vorläufen des ADAC Westfalen konnten bereits einige Podiumsplätze und viele persönliche Bestzeiten eingefahren werden. Das intensive Wintertraining scheint sich auszuzahlen. Wir blicken gespannt auf die kommenden Rennen!</p>',
-    heroImageUrl: 'https://placehold.co/800x450.png',
+    heroImageUrl: '/images/news/saisonstart-2024.png',
     dataAiHint: 'kart race start'
   }
 ];
 
 export const mockBoardMembers: BoardMember[] = [
-  { id: '1', name: 'Max Mustermann', role: '1. Vorsitzender', term: '→ 2026', email: 'vorstand1[at]automobilclub-warendorf.de' },
-  { id: '2', name: 'Erika Musterfrau', role: 'Schatzmeisterin', term: '→ 2025', email: 'schatzmeister[at]automobilclub-warendorf.de' },
-  { id: '3', name: 'Peter Programmierer', role: 'Webmaster', term: '→ 2026', email: 'webmaster[at]automobilclub-warendorf.de' },
-  { id: '4', name: 'Sabine Sportlich', role: 'Sportleiterin', term: '→ 2025', email: 'sportleiter[at]automobilclub-warendorf.de' },
-  { id: '5', name: 'Klaus Kart', role: 'Jugendleiter', term: '→ 2026', email: 'jugend[at]automobilclub-warendorf.de' },
+  { id: '1', name: 'Max Mustermann', role: '1. Vorsitzender', term: '→ 2026', email: 'vorstand1[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/max-mustermann.png' },
+  { id: '2', name: 'Erika Musterfrau', role: 'Schatzmeisterin', term: '→ 2025', email: 'schatzmeister[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/erika-musterfrau.png' },
+  { id: '3', name: 'Peter Programmierer', role: 'Webmaster', term: '→ 2026', email: 'webmaster[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/peter-programmierer.png' },
+  { id: '4', name: 'Sabine Sportlich', role: 'Sportleiterin', term: '→ 2025', email: 'sportleiter[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/sabine-sportlich.png' },
+  { id: '5', name: 'Klaus Kart', role: 'Jugendleiter', term: '→ 2026', email: 'jugend[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/klaus-kart.png' },
 ];
 
 export const mockPilots: Pilot[] = [
-  { id: 'p1', name: 'Louis', profileSlug: 'louis' },
-  { id: 'p2', name: 'Sophie', profileSlug: 'sophie' },
-  { id: 'p3', name: 'Finn', profileSlug: 'finn' },
-  { id: 'p4', name: 'Lena', profileSlug: 'lena' },
-  { id: 'p5', name: 'RacerX', profileSlug: 'racerx' },
-  { id: 'p6', name: 'Speedy Gonzales'},
+  { id: 'p1', name: 'Louis', profileSlug: 'louis', imageUrl: '/images/pilots/louis.png' },
+  { id: 'p2', name: 'Sophie', profileSlug: 'sophie', imageUrl: '/images/pilots/sophie.png' },
+  { id: 'p3', name: 'Finn', profileSlug: 'finn', imageUrl: '/images/pilots/finn.png' },
+  { id: 'p4', name: 'Lena', profileSlug: 'lena', imageUrl: '/images/pilots/lena.png' },
+  { id: 'p5', name: 'RacerX', profileSlug: 'racerx', imageUrl: '/images/pilots/racerx.png' },
+  { id: 'p6', name: 'Speedy Gonzales', imageUrl: '/images/pilots/speedy.png'},
 ];
 
 export const mockFaqItems: FaqItem[] = [

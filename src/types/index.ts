@@ -7,6 +7,7 @@ export interface NewsArticle {
   excerpt: string;
   content: string; // HTML or Markdown
   heroImageUrl?: string;
+  dataAiHint?: string; // For AI image generation hints
   youtubeEmbed?: string; // YouTube video ID or full embed code
 }
 
@@ -16,12 +17,14 @@ export interface BoardMember {
   role: string; // Funktion
   term?: string; // Amtszeit (e.g., "→ 2026")
   email: string;
+  imageUrl?: string; // Path to image in /public folder
 }
 
 export interface Pilot {
   id: string;
   name: string; // Vorname or Pseudonym
   profileSlug?: string; // For future profile page
+  imageUrl?: string; // Path to image in /public folder
 }
 
 export interface FaqItem {

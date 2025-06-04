@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { User, Users } from 'lucide-react';
+import Image from 'next/image';
 
 export default function PilotenPage() {
   return (
@@ -26,21 +27,23 @@ export default function PilotenPage() {
               {mockPilots.map((pilot) => (
                 <Card 
                   key={pilot.id} 
-                  className="text-center p-4 hover:shadow-md transition-shadow duration-200"
+                  className="text-center p-4 hover:shadow-md transition-shadow duration-200 flex flex-col items-center"
                 >
-                  <div className="flex flex-col items-center">
+                  {pilot.imageUrl ? (
+                    <Image src={pilot.imageUrl} alt={pilot.name} width={80} height={80} className="rounded-full mb-2" data-ai-hint="pilot photo" />
+                  ) : (
                     <User className="h-12 w-12 text-primary mb-2" />
-                    <p className="font-medium text-foreground">{pilot.name}</p>
-                    {pilot.profileSlug ? (
-                      <Button variant="link" size="sm" asChild className="mt-1 text-xs">
-                        {/* Placeholder for future profile link */}
-                        {/* <Link href={`/piloten/${pilot.profileSlug}`}>Profil ansehen</Link> */}
-                        <span className="text-muted-foreground">(Profil demnächst)</span>
-                      </Button>
-                    ) : (
-                      <span className="text-xs text-muted-foreground mt-1">(Kein Profil)</span>
-                    )}
-                  </div>
+                  )}
+                  <p className="font-medium text-foreground">{pilot.name}</p>
+                  {pilot.profileSlug ? (
+                    <Button variant="link" size="sm" asChild className="mt-1 text-xs">
+                      {/* Placeholder for future profile link */}
+                      {/* <Link href={`/piloten/${pilot.profileSlug}`}>Profil ansehen</Link> */}
+                      <span className="text-muted-foreground">(Profil demnächst)</span>
+                    </Button>
+                  ) : (
+                    <span className="text-xs text-muted-foreground mt-1">(Kein Profil)</span>
+                  )}
                 </Card>
               ))}
             </div>
@@ -59,7 +62,7 @@ export default function PilotenPage() {
           Der AC Warendorf bietet dir die ideale Plattform, um in den Motorsport einzusteigen und dich weiterzuentwickeln.
         </p>
         <Button asChild>
-          <Link href="/kart-slalom/mitglied-werden">Erfahre mehr über die Mitgliedschaft</Link>
+          <Link href="/kontakt/mitglied-werden">Erfahre mehr über die Mitgliedschaft</Link>
         </Button>
       </section>
     </div>

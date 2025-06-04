@@ -3,6 +3,7 @@ import { mockBoardMembers } from '@/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Mail, UserCircle, CalendarClock } from 'lucide-react';
+import Image from 'next/image';
 
 export default function VorstandPage() {
   return (
@@ -18,6 +19,7 @@ export default function VorstandPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12">Foto</TableHead>
                   <TableHead className="w-[250px]">Name</TableHead>
                   <TableHead>Funktion</TableHead>
                   <TableHead>Amtszeit</TableHead>
@@ -27,12 +29,18 @@ export default function VorstandPage() {
               <TableBody>
                 {mockBoardMembers.map((member) => (
                   <TableRow key={member.id}>
-                    <TableCell className="font-medium flex items-center">
-                      <UserCircle className="h-5 w-5 mr-2 text-muted-foreground" />
+                    <TableCell>
+                      {member.imageUrl ? (
+                        <Image src={member.imageUrl} alt={member.name} width={40} height={40} className="rounded-full" data-ai-hint="person photo" />
+                      ) : (
+                        <UserCircle className="h-10 w-10 text-muted-foreground" />
+                      )}
+                    </TableCell>
+                    <TableCell className="font-medium">
                       {member.name}
                     </TableCell>
                     <TableCell>{member.role}</TableCell>
-                    <TableCell className="flex items-center">
+                    <TableCell className="flex items-center pt-6"> {/* Adjusted padding for alignment */}
                       {member.term && <CalendarClock className="h-4 w-4 mr-2 text-muted-foreground" />}
                       {member.term || 'N/A'}
                     </TableCell>

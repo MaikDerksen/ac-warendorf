@@ -59,7 +59,11 @@ export default function HomePage() {
             <Card key={person.id} className="shadow-md hover:shadow-lg transition-shadow duration-300">
               <CardHeader>
                 <div className="flex items-center space-x-3 mb-2">
-                  <UserCircle className="h-10 w-10 text-primary" />
+                  {person.imageUrl ? (
+                    <Image src={person.imageUrl} alt={person.name} width={40} height={40} className="rounded-full" data-ai-hint="person photo" />
+                  ) : (
+                    <UserCircle className="h-10 w-10 text-primary" />
+                  )}
                   <CardTitle className="text-xl font-headline">{person.name}</CardTitle>
                 </div>
                 <p className="text-sm text-muted-foreground">{person.role}</p>

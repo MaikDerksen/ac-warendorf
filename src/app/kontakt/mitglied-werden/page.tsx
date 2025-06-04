@@ -1,4 +1,3 @@
-
 import { PageHeader } from '@/components/page-header';
 import { mockFaqItems } from '@/lib/mock-data';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -73,7 +72,7 @@ export default function MitgliedWerdenPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Image 
-                      src="https://placehold.co/400x250.png" 
+                      src="/images/general/kids-karting.png" 
                       alt="Kinder beim Kartfahren" 
                       width={400} 
                       height={250} 
