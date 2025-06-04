@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,7 @@ export default function HomePage() {
   return (
     <div className="space-y-16">
       {/* Hero Section */}
-      <section className="text-center py-12 md:py-20 bg-card rounded-lg shadow-md">
+      <section className="text-center py-12 md:py-20 bg-card rounded-lg shadow-md dark:border dark:border-border">
         <div className="container mx-auto px-4">
           <div className="flex justify-center mb-8">
             <Logo />
@@ -28,7 +29,7 @@ export default function HomePage() {
             Entdecken Sie unsere Leidenschaft für den Motorsport!
           </p>
           <Button size="lg" asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-            <Link href="/kart-slalom/mitglied-werden">Mitglied werden</Link>
+            <Link href="/kontakt/mitglied-werden">Mitglied werden</Link>
           </Button>
         </div>
       </section>
