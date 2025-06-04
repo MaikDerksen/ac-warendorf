@@ -18,22 +18,22 @@ import { ModeToggle } from './mode-toggle';
 const navLinks = [
   { href: '/', label: 'Startseite' },
   {
-    label: 'Unser Verein', 
+    label: 'Unser Verein',
     dropdown: [
-      { href: '/vorstand', label: 'Vorstand' }, 
-      { href: '/piloten', label: 'Piloten' }, 
-      { href: '/unser-verein/oldie-cup', label: 'Oldie-Cup' }, 
+      { href: '/vorstand', label: 'Vorstand' },
+      { href: '/piloten', label: 'Piloten' },
+      { href: '/unser-verein/oldie-cup', label: 'Oldie-Cup' },
     ]
   },
-  { href: '/aktivitaeten', label: 'Kart-Slalom' }, 
+  { href: '/aktivitaeten', label: 'Kart-Slalom' },
   { href: '/news', label: 'News' },
-  { href: '/sponsoren', label: 'Sponsoren' }, 
+  { href: '/sponsoren', label: 'Sponsoren' },
   {
-    label: 'Kontakt', 
+    label: 'Kontakt',
     dropdown: [
-      { href: '/kontakt', label: 'Kontaktformular' }, 
-      { href: '/kontakt/mitglied-werden', label: 'Mitglied werden' }, 
-      { href: '/kontakt/schutzkonzept', label: 'Schutzkonzept' }, 
+      { href: '/kontakt', label: 'Kontaktformular' },
+      { href: '/kontakt/mitglied-werden', label: 'Mitglied werden' },
+      { href: '/kontakt/schutzkonzept', label: 'Schutzkonzept' },
     ]
   },
 ];
@@ -50,7 +50,7 @@ export function Navbar() {
             link.dropdown ? (
               <DropdownMenu key={link.label}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-sm lg:text-base font-medium hover:bg-accent/10">
+                  <Button variant="ghost" className="text-sm lg:text-base font-medium">
                     {link.label}
                     <ChevronDown className="ml-1 h-4 w-4" />
                   </Button>
@@ -64,7 +64,7 @@ export function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button key={link.href} variant="ghost" asChild className="text-sm lg:text-base font-medium hover:bg-accent/10">
+              <Button key={link.href} variant="ghost" asChild className="text-sm lg:text-base font-medium">
                 <Link href={link.href}>{link.label}</Link>
               </Button>
             )
