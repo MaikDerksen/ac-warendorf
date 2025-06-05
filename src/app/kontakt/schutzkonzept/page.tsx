@@ -4,8 +4,8 @@
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useState, useEffect } from 'react';
-import { ShieldAlert, UserCheck, Mail, MessageSquare, Info } from 'lucide-react';
-import Link from 'next/link'; // Added missing import
+import { ShieldAlert, UserCheck, MessageSquare, Info } from 'lucide-react';
+import Link from 'next/link';
 
 export default function SchutzkonzeptPage() {
   const [currentDate, setCurrentDate] = useState('');
@@ -68,11 +68,11 @@ export default function SchutzkonzeptPage() {
            </p>
            <p>
              Sie können Lorraine Schürhörster wie folgt erreichen:
-             <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
-                <li>Über die Vereins-App <strong>Spond</strong> (sofern Sie Mitglied sind und Zugriff haben).</li>
-                <li>Über unser <Link href="/kontakt" className="text-primary hover:underline">allgemeines Kontaktformular</Link>. Bitte geben Sie im Betreff oder in der Nachricht an, dass Ihre Anfrage für Lorraine Schürhörster bestimmt ist.</li>
-             </ul>
            </p>
+           <ul className="list-disc list-inside ml-4 mt-2 space-y-1 text-foreground">
+              <li>Über die Vereins-App <strong>Spond</strong> (sofern Sie Mitglied sind und Zugriff haben).</li>
+              <li>Über unser <Link href="/kontakt" className="text-primary hover:underline">allgemeines Kontaktformular</Link>. Bitte geben Sie im Betreff oder in der Nachricht an, dass Ihre Anfrage für Lorraine Schürhörster bestimmt ist.</li>
+           </ul>
            <p className="text-sm text-muted-foreground pt-2">
              Alternativ können Sie sich auch jederzeit vertrauensvoll an den <Link href="/vorstand" className="text-primary hover:underline">Vorstand des AC Warendorf</Link> wenden.
            </p>
