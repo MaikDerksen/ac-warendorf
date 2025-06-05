@@ -29,7 +29,7 @@ export default function PilotenPage() {
               {mockPilots.map((pilot, index) => (
                 <Card
                   key={pilot.id}
-                  className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col rounded-lg"
+                  className="overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ease-out flex flex-col rounded-lg"
                 >
                   <div className="relative w-full aspect-square">
                     {pilot.imageUrl ? (

@@ -17,7 +17,7 @@ export function NewsCard({ article }: NewsCardProps) {
   });
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ease-out">
       <CardHeader className="p-0">
         {article.heroImageUrl && (
           <Link href={`/news/${article.slug}`} className="block aspect-video relative">

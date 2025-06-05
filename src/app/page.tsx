@@ -16,7 +16,7 @@ export default function HomePage() {
 
   const renderContactPersonCard = (person: BoardMember) => {
     const cardContent = (
-      <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 w-full h-full flex flex-col sm:flex-row items-center p-4">
+      <Card className="shadow-md hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ease-out w-full h-full flex flex-col sm:flex-row items-center p-4">
         <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 mb-4 sm:mb-0">
           {person.imageUrl ? (
             <Image
@@ -40,13 +40,11 @@ export default function HomePage() {
           <h3 className="text-xl font-headline font-semibold text-primary mb-1">{person.name}</h3>
           <p className="text-sm text-muted-foreground mb-2">{person.role}</p>
           {person.slug ? (
-            // If the card is linked, render email as a span to avoid nested <a>
-            <span className="text-sm text-primary hover:underline flex items-center justify-center sm:justify-start">
+            <span className="text-sm text-primary group-hover:underline flex items-center justify-center sm:justify-start">
               <Mail className="h-4 w-4 mr-2" />
               {person.email.replace('[at]', '@')}
             </span>
           ) : (
-            // If the card is not linked, render email as a proper mailto link
             <a
               href={`mailto:${person.email.replace('[at]', '@')}`}
               className="text-sm text-primary hover:underline flex items-center justify-center sm:justify-start"
@@ -61,7 +59,7 @@ export default function HomePage() {
 
     if (person.slug) {
       return (
-        <Link key={person.id} href={`/vorstand/${person.slug}`} className="block h-full">
+        <Link key={person.id} href={`/vorstand/${person.slug}`} className="block h-full group">
           {cardContent}
         </Link>
       );
