@@ -72,7 +72,7 @@ export default function MitgliedWerdenPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Image 
-                      src="/images/general/kids-karting.png" 
+                      src="/images/general/kart_in_dry.jpg" 
                       alt="Kinder beim Kartfahren" 
                       width={400} 
                       height={250} 
