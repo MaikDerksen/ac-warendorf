@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { User, Users } from 'lucide-react';
 import Image from 'next/image';
+import { Separator } from '@/components/ui/separator';
 
 export default function PilotenPage() {
   return (
@@ -26,32 +27,43 @@ export default function PilotenPage() {
           {mockPilots.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {mockPilots.map((pilot) => (
-                <Card 
-                  key={pilot.id} 
-                  className="text-center p-6 hover:shadow-md transition-shadow duration-200 flex flex-col items-center"
+                <Card
+                  key={pilot.id}
+                  className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col rounded-lg"
                 >
-                  {pilot.imageUrl ? (
-                    <Image 
-                      src={pilot.imageUrl} 
-                      alt={pilot.name} 
-                      width={128} 
-                      height={128} 
-                      className="rounded-lg object-cover mb-4" 
-                      data-ai-hint="pilot photo" 
-                    />
-                  ) : (
-                    <User className="h-24 w-24 text-primary mb-4" /> // Increased size for placeholder
-                  )}
-                  <p className="font-semibold text-lg text-foreground mb-1">{pilot.name}</p>
-                  {pilot.profileSlug ? (
-                    <Button variant="link" size="sm" asChild className="mt-1 text-xs">
-                      {/* Placeholder for future profile link */}
-                      {/* <Link href={`/piloten/${pilot.profileSlug}`}>Profil ansehen</Link> */}
-                      <span className="text-muted-foreground">(Profil demnächst)</span>
-                    </Button>
-                  ) : (
-                    <span className="text-xs text-muted-foreground mt-1">(Kein Profil)</span>
-                  )}
+                  {/* Image Container - takes available width, height determined by aspect-square */}
+                  <div className="relative w-full aspect-square">
+                    {pilot.imageUrl ? (
+                      <Image
+                        src={pilot.imageUrl}
+                        alt={pilot.name}
+                        layout="fill"
+                        objectFit="cover"
+                        data-ai-hint="pilot photo"
+                      />
+                    ) : (
+                      // Placeholder for when image is not available
+                      <div className="w-full h-full bg-muted flex items-center justify-center">
+                        <User className="h-32 w-32 text-primary opacity-60" />
+                      </div>
+                    )}
+                  </div>
+
+                  <Separator className="my-0 flex-shrink-0" />
+
+                  {/* Content Box for Name and Link */}
+                  <div className="p-4 text-center">
+                    <p className="font-semibold text-lg text-foreground mb-2">{pilot.name}</p>
+                    {pilot.profileSlug ? (
+                      <Button variant="link" size="sm" asChild className="mt-1 text-xs">
+                        {/* Placeholder for future profile link */}
+                        {/* <Link href={`/piloten/${pilot.profileSlug}`}>Profil ansehen</Link> */}
+                        <span className="text-muted-foreground">(Profil demnächst)</span>
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground mt-1">(Kein Profil)</span>
+                    )}
+                  </div>
                 </Card>
               ))}
             </div>
