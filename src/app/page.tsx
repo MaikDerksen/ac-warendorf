@@ -61,8 +61,8 @@ export default function HomePage() {
         <div className="grid md:grid-cols-2 gap-6">
           {contactPersons.map((person) => {
             const cardContent = (
-              <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 w-full h-full flex items-center p-4">
-                <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
+              <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 w-full h-full flex flex-col sm:flex-row items-center p-4">
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 mb-4 sm:mb-0">
                   {person.imageUrl ? (
                     <Image 
                       src={person.imageUrl} 
@@ -76,6 +76,11 @@ export default function HomePage() {
                     <UserCircle className="w-full h-full text-primary opacity-60 rounded-lg" />
                   )}
                 </div>
+                
+                <div className="hidden sm:flex flex-shrink-0 items-center justify-center px-4">
+                  <div className="h-16 w-px bg-border"></div>
+                </div>
+
                 <div className="flex-grow text-center sm:text-left">
                   <h3 className="text-xl font-headline font-semibold text-primary mb-1">{person.name}</h3>
                   <p className="text-sm text-muted-foreground mb-2">{person.role}</p>
