@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useState, useEffect } from 'react';
 import { ShieldAlert, UserCheck, Mail, MessageSquare, Info } from 'lucide-react';
-import Link from 'next/link';
+import Link from 'next/link'; // Added missing import
 
 export default function SchutzkonzeptPage() {
   const [currentDate, setCurrentDate] = useState('');
