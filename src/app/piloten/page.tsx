@@ -26,7 +26,7 @@ export default function PilotenPage() {
         <CardContent>
           {mockPilots.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {mockPilots.map((pilot) => (
+              {mockPilots.map((pilot, index) => (
                 <Card
                   key={pilot.id}
                   className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col rounded-lg"
@@ -40,6 +40,9 @@ export default function PilotenPage() {
                         layout="fill"
                         objectFit="cover"
                         data-ai-hint="pilot photo"
+                        sizes="(max-width: 639px) 90vw, (max-width: 767px) 45vw, 30vw"
+                        quality={90}
+                        priority={index < 3} // Prioritize first 3 images
                       />
                     ) : (
                       // Placeholder for when image is not available
