@@ -25,6 +25,8 @@ export interface Pilot {
   name: string; // Vorname or Pseudonym
   profileSlug?: string; // For future profile page
   imageUrl?: string; // Path to image in /public folder
+  bio?: string; // For the "About Me" section on their profile
+  achievements?: string[]; // List of achievements
 }
 
 export interface FaqItem {

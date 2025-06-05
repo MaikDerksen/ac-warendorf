@@ -1,3 +1,4 @@
+
 import type { NewsArticle, BoardMember, Pilot, FaqItem } from '@/types';
 
 export const mockNewsArticles: NewsArticle[] = [
@@ -52,8 +53,30 @@ export const mockBoardMembers: BoardMember[] = [
 ];
 
 export const mockPilots: Pilot[] = [
-  { id: 'p1', name: 'Louis', profileSlug: 'louis', imageUrl: '/images/pilots/louis.jpg' },
-  { id: 'p2', name: 'Sophie', profileSlug: 'sophie', imageUrl: '/images/pilots/sophie.png' },
+  { 
+    id: 'p1', 
+    name: 'Louis', 
+    profileSlug: 'louis', 
+    imageUrl: '/images/pilots/louis.jpg',
+    bio: 'Hallo! Ich bin Louis und fahre leidenschaftlich gerne Kart-Slalom für den AC Warendorf. Der Motorsport fasziniert mich schon seit meiner Kindheit. Disziplin, Konzentration und der Nervenkitzel auf der Strecke sind das, was mich antreibt. Mein Ziel ist es, mich stetig zu verbessern und den Verein erfolgreich zu vertreten. Ich bin besonders stolz darauf, 2024 den Weltmeistertitel errungen zu haben!',
+    achievements: [
+      'Weltmeister Kart-Slalom 2024',
+      'Mehrfacher Vereinsmeister AC Warendorf',
+      'Podiumsplätze bei ADAC Westfalen-Läufen',
+      'Teilnahme an der Deutschen Meisterschaft'
+    ]
+  },
+  { 
+    id: 'p2', 
+    name: 'Sophie', 
+    profileSlug: 'sophie', 
+    imageUrl: '/images/pilots/sophie.png',
+    bio: 'Ich bin Sophie und neu im Kart-Slalom Team. Ich lerne schnell und freue mich auf meine erste Rennsaison mit dem AC Warendorf. Mein Vorbild ist Louis, und ich hoffe, eines Tages genauso erfolgreich zu sein.',
+    achievements: [
+      'Beste Newcomerin beim Vereinstraining 2024',
+      'Erfolgreiche Teilnahme am Schnupperkurs'
+    ]
+  },
   { id: 'p3', name: 'Finn', profileSlug: 'finn', imageUrl: '/images/pilots/finn.png' },
   { id: 'p4', name: 'Lena', profileSlug: 'lena', imageUrl: '/images/pilots/lena.png' },
   { id: 'p5', name: 'RacerX', profileSlug: 'racerx', imageUrl: '/images/pilots/racerx.png' },

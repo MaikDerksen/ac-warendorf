@@ -78,32 +78,29 @@ export default async function PilotProfilePage({ params }: PilotProfilePageProps
               <CardTitle className="text-xl font-headline">Über Mich</CardTitle>
             </CardHeader>
             <CardContent className="prose max-w-none text-foreground">
-              {/* Add more specific details to mockPilots if needed */}
-              <p>
-                Hallo! Ich bin {pilot.name} und fahre leidenschaftlich gerne Kart-Slalom für den AC Warendorf.
-                Der Motorsport fasziniert mich schon seit meiner Kindheit.
-              </p>
-              <p>
-                Disziplin, Konzentration und der Nervenkitzel auf der Strecke sind das, was mich antreibt.
-                Mein Ziel ist es, mich stetig zu verbessern und den Verein erfolgreich zu vertreten.
-              </p>
-              {/* Example: <p>{pilot.bio || "Weitere Details folgen in Kürze."}</p> */}
+              {pilot.bio ? (
+                <p>{pilot.bio}</p>
+              ) : (
+                <p>Weitere Details zu {pilot.name} folgen in Kürze.</p>
+              )}
             </CardContent>
           </Card>
 
           <Card className="shadow-lg">
             <CardHeader className="flex flex-row items-center space-x-3">
               <Trophy className="h-6 w-6 text-primary" />
-              <CardTitle className="text-xl font-headline">Meine Erfolge (Beispiele)</CardTitle>
+              <CardTitle className="text-xl font-headline">Meine Erfolge</CardTitle>
             </CardHeader>
             <CardContent className="prose max-w-none text-foreground">
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Weltmeister Kart-Slalom 2024 (laut News)</li>
-                <li>Mehrfacher Vereinsmeister AC Warendorf</li>
-                <li>Podiumsplätze bei ADAC Westfalen-Läufen</li>
-                <li>Teilnahme an der Deutschen Meisterschaft</li>
-                {/* Example: {pilot.achievements?.map(ach => <li key={ach}>{ach}</li>) || "Weitere Details folgen."} */}
-              </ul>
+              {pilot.achievements && pilot.achievements.length > 0 ? (
+                <ul className="list-disc pl-5 space-y-1">
+                  {pilot.achievements.map((achievement, index) => (
+                    <li key={index}>{achievement}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>Informationen zu Erfolgen werden bald ergänzt.</p>
+              )}
             </CardContent>
           </Card>
         </div>
