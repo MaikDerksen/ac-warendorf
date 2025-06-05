@@ -16,15 +16,19 @@ export default function HomePage() {
   return (
     <div className="space-y-16">
       {/* Hero Section */}
-      <section className="text-center py-12 md:py-20 bg-card rounded-lg shadow-md dark:border dark:border-border">
-        <div className="container mx-auto px-4">
+      <section className="relative text-center py-12 md:py-20 rounded-lg shadow-md dark:border dark:border-border overflow-hidden bg-[url('/images/general/kart_in_dry.jpg')] bg-cover bg-center">
+        {/* Overlay for the darkening and blur effect */}
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-lg"></div>
+
+        {/* Content, needs to be above the overlay */}
+        <div className="relative z-10 container mx-auto px-4">
           <div className="flex justify-center mb-8">
-            <Logo />
+            <Logo secondaryTextColor="text-gray-200" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-primary mb-6 font-headline">
             Herzlich willkommen beim Automobilclub Warendorf.
           </h1>
-          <p className="text-lg md:text-xl text-foreground max-w-3xl mx-auto mb-8">
+          <p className="text-lg md:text-xl text-gray-100 max-w-3xl mx-auto mb-8">
             Hier finden Sie alle Informationen rund um die Aktivitäten des AC Warendorf e. V. im ADAC.
             Entdecken Sie unsere Leidenschaft für den Motorsport!
           </p>
