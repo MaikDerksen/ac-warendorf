@@ -31,13 +31,13 @@ export default function SponsorenPage() {
         <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-6 items-center text-center">
           {/* Replace with actual sponsor data and logos */}
           <div className="flex flex-col items-center p-4 border rounded-lg">
-            <Image src="/images/sponsoren/sponsor-logo-1.png" alt="Sparkasse WAF Logo" width={150} height={80} className="mb-2 object-contain" data-ai-hint="company logo"/>
+            <Image src="/images/sponsoren/spk-logo-mobile.png" alt="Sparkasse WAF Logo" width={150} height={80} className="mb-2 object-contain" data-ai-hint="company logo"/>
             <p className="text-sm font-medium text-foreground">Sparkasse WAF</p>
             <p className="text-xs text-muted-foreground">Hauptsponsor</p>
           </div>
           <div className="flex flex-col items-center p-4 border rounded-lg">
-            <Image src="/images/sponsoren/sponsor-logo-2.png" alt="Mustermann GmbH Logo" width={150} height={80} className="mb-2 object-contain" data-ai-hint="business logo"/>
-            <p className="text-sm font-medium text-foreground">Mustermann GmbH</p>
+            <Image src="/images/sponsoren/Schnecking_Sponsoring-1-1200x428.png" alt="Mustermann GmbH Logo" width={150} height={80} className="mb-2 object-contain" data-ai-hint="business logo"/>
+            <p className="text-sm font-medium text-foreground">Schnecking</p>
             <p className="text-xs text-muted-foreground">Premium Partner</p>
           </div>
           <div className="flex flex-col items-center p-4 border rounded-lg">

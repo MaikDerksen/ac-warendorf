@@ -49,7 +49,7 @@ export default function AktivitaetenPage() {
       <section className="py-6">
         <h2 className="text-2xl font-headline font-semibold text-primary mb-4 text-center">Kart-Slalom in Aktion</h2>
         <p className="text-center text-muted-foreground mb-6">Sehen Sie hier ein Beispielvideo, um einen Eindruck vom Kart-Slalom zu bekommen.</p>
-        <YouTubeEmbed embedId="r3wylA4oefc" title="Kart Slalom Beispiel" />
+        <YouTubeEmbed embedId="RCK5CPkfXbY" title="Karttraining AC Warendorf" />
          {/* Hinweis: Die Einbettung von YouTube-Videos unterliegt Datenschutzbestimmungen. Eine produktive Website sollte eine Zustimmungslösung implementieren. */}
       </section>
       

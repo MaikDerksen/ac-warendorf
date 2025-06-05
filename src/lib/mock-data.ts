@@ -23,12 +23,12 @@ export const mockNewsArticles: NewsArticle[] = [
   },
   {
     slug: 'ac-warendorf-auf-der-gewerbeschau',
-    title: 'AC Warendorf bringt Motorsport auf die Gewerbeschau!',
-    date: '2024-09-05',
-    categories: ['Veranstaltungen', 'News'],
+    title: 'Turnierabschluss des AC Warendorf',
+    date: '2024-10-16',
+    categories: ['Kart-Slalom', 'News'],
     excerpt: 'Der AC Warendorf präsentierte sich erfolgreich auf der lokalen Gewerbeschau und brachte den Besuchern den Kartsport näher.',
-    content: '<p>Am vergangenen Wochenende war der AC Warendorf mit einem eigenen Stand auf der Warendorfer Gewerbeschau vertreten. Besucher hatten die Möglichkeit, sich über den Kartsport zu informieren, ein echtes Rennkart aus nächster Nähe zu bestaunen und mit unseren Fahrern ins Gespräch zu kommen.</p><p>Besonderes Highlight war die Demonstration von Pylonen-Geschicklichkeitsübungen, die einen Einblick in die Anforderungen des Kartslaloms gaben. Wir bedanken uns bei allen Helfern und den zahlreichen interessierten Besuchern!</p>',
-    heroImageUrl: '/images/news/ac-warendorf-auf-der-gewerbeschau.png',
+    content: '<p>Am Samstag kamen die Piloten des AC Warendorf in gemütlicher Runde zusammen, um die gelungene Turniersaison 2022 zu feiern. Bei bestem Wetter wurde der Grill auf dem Trainingsgelände bei (noch) Teutemacher angeschmissen und es wurde über die vergangene Saison geplaudert.<br>Besonders von den Erfolgen von Henrik Gaj und Elias Jovanovski beim Bundesendlauf in Friedrichshafen am Wochenende zuvor wurde berichtet. Henrik hat es in Klasse 2 sogar unter die TOP 10 geschafft und kann auf Platz 7 super stolz sein. Elias kam in Klasse 4 auf Platz 23. Nach einem super 1. Wertungslauf, standen im 2. Wertungslauf 2 Pylonen im Weg.<br>Nachdem sich jeder an Bratwurst, Salat und Brötchen gestärkt hatte, konnten auch Eltern und Geschwister mal Motorluft schnuppern und durch die Slaloms düsen. Diese Erfahrung löst meist großen Zuspruch für die Kids aus, denn das Steuern der Karts und sich den Slalom zu merken ist alles andere als ein Kinderspiel! Es war rundum ein schöner Nachmittag für alle Anwesenden.<br>Leider musste sich der Verein auch noch von einem Fahrer verabschieden. Leon Stange wurde als aktiver Pilot verabschiedet da er nun volljährig ist. Er bleibt dem Verein aber als Webmaster erhalten und wird hier und da beratend zur Seite stehen.<br>Nun heißt es noch ein letztes Mal Daumen drücken für Elias Jovanovski bei der Deutschen Meisterschaft am 22.10.2022.<br>Aber nach der Saison ist vor der Saison und so trainieren die Piloten bereits jetzt schon fleißig für 2023 und hoffen auf viele tolle Erfolge!</p>',
+    heroImageUrl: '/images/news/turnierabschluss-warendorf.jpg',
     dataAiHint: 'karting event'
   },
   {
@@ -52,7 +52,7 @@ export const mockBoardMembers: BoardMember[] = [
 ];
 
 export const mockPilots: Pilot[] = [
-  { id: 'p1', name: 'Louis', profileSlug: 'louis', imageUrl: '/images/pilots/louis.png' },
+  { id: 'p1', name: 'Louis', profileSlug: 'louis', imageUrl: '/images/pilots/louis.jpg' },
   { id: 'p2', name: 'Sophie', profileSlug: 'sophie', imageUrl: '/images/pilots/sophie.png' },
   { id: 'p3', name: 'Finn', profileSlug: 'finn', imageUrl: '/images/pilots/finn.png' },
   { id: 'p4', name: 'Lena', profileSlug: 'lena', imageUrl: '/images/pilots/lena.png' },
