@@ -18,6 +18,8 @@ export interface BoardMember {
   term?: string; // Amtszeit (e.g., "→ 2026")
   email: string;
   imageUrl?: string; // Path to image in /public folder
+  slug?: string; // For individual profile page
+  description?: string; // Additional details about the member or their role
 }
 
 export interface Pilot {

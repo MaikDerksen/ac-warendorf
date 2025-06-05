@@ -45,11 +45,56 @@ export const mockNewsArticles: NewsArticle[] = [
 ];
 
 export const mockBoardMembers: BoardMember[] = [
-  { id: '1', name: 'Max Mustermann', role: '1. Vorsitzender', term: '→ 2026', email: 'vorstand1[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/max-mustermann.png' },
-  { id: '2', name: 'Erika Musterfrau', role: 'Schatzmeisterin', term: '→ 2025', email: 'schatzmeister[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/erika-musterfrau.png' },
-  { id: '3', name: 'Maik Derksen', role: 'Programmierer', term: '→ 2026', email: 'webmaster[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/maik-derksen.png' },
-  { id: '4', name: 'Sabine Sportlich', role: 'Sportleiterin', term: '→ 2025', email: 'sportleiter[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/sabine-sportlich.png' },
-  { id: '5', name: 'Klaus Kart', role: 'Jugendleiter', term: '→ 2026', email: 'jugend[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/klaus-kart.png' },
+  { 
+    id: '1', 
+    name: 'Max Mustermann', 
+    role: '1. Vorsitzender', 
+    term: '→ 2026', 
+    email: 'vorstand1[at]automobilclub-warendorf.de', 
+    imageUrl: '/images/vorstand/max-mustermann.png',
+    slug: 'max-mustermann',
+    description: 'Max Mustermann ist seit 2020 der 1. Vorsitzende des AC Warendorf. Er ist verantwortlich für die strategische Ausrichtung des Vereins und repräsentiert den Club nach außen. Seine Leidenschaft gilt dem Jugend-Kartslalom.'
+  },
+  { 
+    id: '2', 
+    name: 'Erika Musterfrau', 
+    role: 'Schatzmeisterin', 
+    term: '→ 2025', 
+    email: 'schatzmeister[at]automobilclub-warendorf.de', 
+    imageUrl: '/images/vorstand/erika-musterfrau.png',
+    slug: 'erika-musterfrau',
+    description: 'Erika Musterfrau verwaltet die Finanzen des Vereins mit großer Sorgfalt. Sie sorgt für eine solide finanzielle Basis und transparente Buchführung.'
+  },
+  { 
+    id: '3', 
+    name: 'Maik Derksen', 
+    role: 'Programmierer', 
+    term: '→ 2026', 
+    email: 'webmaster[at]automobilclub-warendorf.de', 
+    imageUrl: '/images/vorstand/maik-derksen.png',
+    slug: 'maik-derksen',
+    description: 'Maik Derksen ist der technische Kopf hinter der Webseite und digitalen Präsenz des AC Warendorf. Er kümmert sich um die Programmierung und Wartung der Online-Systeme.'
+  },
+  { 
+    id: '4', 
+    name: 'Sabine Sportlich', 
+    role: 'Sportleiterin', 
+    term: '→ 2025', 
+    email: 'sportleiter[at]automobilclub-warendorf.de', 
+    imageUrl: '/images/vorstand/sabine-sportlich.png',
+    slug: 'sabine-sportlich',
+    description: 'Sabine Sportlich organisiert alle sportlichen Aktivitäten des Vereins, insbesondere im Bereich Kart-Slalom. Sie ist Ansprechpartnerin für Training, Wettbewerbe und Reglements.'
+  },
+  { 
+    id: '5', 
+    name: 'Klaus Kart', 
+    role: 'Jugendleiter', 
+    term: '→ 2026', 
+    email: 'jugend[at]automobilclub-warendorf.de', 
+    imageUrl: '/images/vorstand/klaus-kart.png',
+    slug: 'klaus-kart',
+    description: 'Klaus Kart ist der Hauptansprechpartner für unsere jungen Talente. Er betreut die Jugendgruppe, organisiert Trainingslager und fördert den Nachwuchs im Motorsport.'
+  },
 ];
 
 export const mockPilots: Pilot[] = [
@@ -77,10 +122,10 @@ export const mockPilots: Pilot[] = [
       'Erfolgreiche Teilnahme am Schnupperkurs'
     ]
   },
-  { id: 'p3', name: 'Finn', profileSlug: 'finn', imageUrl: '/images/pilots/finn.png' },
-  { id: 'p4', name: 'Lena', profileSlug: 'lena', imageUrl: '/images/pilots/lena.png' },
-  { id: 'p5', name: 'RacerX', profileSlug: 'racerx', imageUrl: '/images/pilots/racerx.png' },
-  { id: 'p6', name: 'Speedy Gonzales', imageUrl: '/images/pilots/speedy-gonzales.png'},
+  { id: 'p3', name: 'Finn', profileSlug: 'finn', imageUrl: '/images/pilots/finn.png', bio: 'Finn ist ein aufstrebendes Talent mit viel Ehrgeiz.', achievements: ['Top 5 Platzierungen bei regionalen Rennen'] },
+  { id: 'p4', name: 'Lena', profileSlug: 'lena', imageUrl: '/images/pilots/lena.png', bio: 'Lena zeigt großes Potenzial und verbessert sich stetig.', achievements: ['Erfolgreiche Teilnahme an der Vereinsmeisterschaft'] },
+  { id: 'p5', name: 'RacerX', profileSlug: 'racerx', imageUrl: '/images/pilots/racerx.png', bio: 'RacerX ist bekannt für seinen aggressiven Fahrstil und seine Entschlossenheit.', achievements: ['Sieger des "Schnellste Runde" Pokals 2023'] },
+  { id: 'p6', name: 'Speedy Gonzales', imageUrl: '/images/pilots/speedy-gonzales.png', bio: 'Speedy lebt für Geschwindigkeit und den Wettkampf.', profileSlug: 'speedy-gonzales', achievements: ['Mehrfacher Tagessieger bei Clubrennen'] },
 ];
 
 export const mockFaqItems: FaqItem[] = [

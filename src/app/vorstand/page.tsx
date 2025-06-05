@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Mail, UserCircle, CalendarClock } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function VorstandPage() {
   return (
@@ -45,7 +46,13 @@ export default function VorstandPage() {
                       )}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {member.name}
+                      {member.slug ? (
+                        <Link href={`/vorstand/${member.slug}`} className="hover:text-primary hover:underline">
+                          {member.name}
+                        </Link>
+                      ) : (
+                        member.name
+                      )}
                     </TableCell>
                     <TableCell>{member.role}</TableCell>
                     <TableCell className="flex items-center pt-6"> {/* Adjusted padding for alignment */}
@@ -76,7 +83,7 @@ export default function VorstandPage() {
           Bei Fragen zu Mitgliedschaft, Veranstaltungen oder anderen Themen rund um den AC Warendorf stehen Ihnen unsere Vorstandsmitglieder gerne zur Verfügung.
         </p>
         <p className="text-foreground">
-          Die Kontaktaufnahme ist am einfachsten per E-Mail über die oben genannten Adressen oder über unser allgemeines <a href="/kontakt" className="text-primary hover:underline">Kontaktformular</a>.
+          Die Kontaktaufnahme ist am einfachsten per E-Mail über die oben genannten Adressen oder über unser allgemeines <Link href="/kontakt" className="text-primary hover:underline">Kontaktformular</Link>.
         </p>
       </section>
     </div>
