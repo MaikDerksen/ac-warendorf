@@ -11,7 +11,7 @@ import { Logo } from '@/components/logo';
 
 export default function HomePage() {
   const latestNews = mockNewsArticles.slice(0, 3);
-  const contactPersons = mockBoardMembers.filter(member => ['1. Vorsitzender', 'Webmaster', 'Sportleiterin', 'Jugendleiter'].includes(member.role));
+  const contactPersons = mockBoardMembers.filter(member => ['1. Vorsitzender', 'Programmierer', 'Sportleiterin', 'Jugendleiter'].includes(member.role));
 
   return (
     <div className="space-y-16">
@@ -58,31 +58,48 @@ export default function HomePage() {
       {/* Ihre Ansprechpartner */}
       <section>
         <PageHeader title="Ihre Ansprechpartner" />
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {contactPersons.map((person) => (
-            <Card key={person.id} className="shadow-md hover:shadow-lg transition-shadow duration-300">
-              <CardHeader>
-                <div className="flex items-center space-x-3 mb-2">
+        <div className="grid md:grid-cols-2 gap-6">
+          {contactPersons.map((person) => {
+            const cardContent = (
+              <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 w-full h-full flex items-center p-4">
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
                   {person.imageUrl ? (
-                    <Image src={person.imageUrl} alt={person.name} width={40} height={40} className="rounded-full" data-ai-hint="person photo" />
+                    <Image 
+                      src={person.imageUrl} 
+                      alt={person.name} 
+                      layout="fill" 
+                      objectFit="cover" 
+                      className="rounded-lg"
+                      data-ai-hint="person photo"
+                    />
                   ) : (
-                    <UserCircle className="h-10 w-10 text-primary" />
+                    <UserCircle className="w-full h-full text-primary opacity-60 rounded-lg" />
                   )}
-                  <CardTitle className="text-xl font-headline">{person.name}</CardTitle>
                 </div>
-                <p className="text-sm text-muted-foreground">{person.role}</p>
-              </CardHeader>
-              <CardContent>
-                <a
-                  href={`mailto:${person.email.replace('[at]', '@')}`}
-                  className="text-sm text-primary hover:underline flex items-center"
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  {person.email.replace('[at]', '@')}
-                </a>
-              </CardContent>
-            </Card>
-          ))}
+                <div className="flex-grow text-center sm:text-left">
+                  <h3 className="text-xl font-headline font-semibold text-primary mb-1">{person.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-2">{person.role}</p>
+                  <a
+                    href={`mailto:${person.email.replace('[at]', '@')}`}
+                    className="text-sm text-primary hover:underline flex items-center justify-center sm:justify-start"
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    {person.email.replace('[at]', '@')}
+                  </a>
+                </div>
+              </Card>
+            );
+
+            return person.slug ? (
+              <Link key={person.id} href={`/vorstand/${person.slug}`} className="block h-full">
+                {cardContent}
+              </Link>
+            ) : (
+              <div key={person.id} className="h-full">
+                {cardContent}
+              </div>
+            );
+          })}
         </div>
         <div className="mt-8 text-center">
           <Button asChild variant="outline">

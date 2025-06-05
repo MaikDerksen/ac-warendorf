@@ -80,7 +80,7 @@ export default function OldieCupPage() {
               </p>
               <div className="relative aspect-video w-full rounded-lg overflow-hidden shadow-md mt-4">
                 <Image
-                  src="https://placehold.co/600x338.png"
+                  src="/images/general/kart_in_rain.jpg"
                   alt="Kart-Slalom für Erwachsene"
                   layout="fill"
                   objectFit="cover"
