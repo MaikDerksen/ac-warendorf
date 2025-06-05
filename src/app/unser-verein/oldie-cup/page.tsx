@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
-import { Users, CalendarDays, Trophy, Helmet, Mail, User, MessageSquare } from 'lucide-react';
+import { Users, CalendarDays, Trophy, HardHat, Mail, User, MessageSquare } from 'lucide-react';
 
 const oldieCupFormSchema = z.object({
   name: z.string().min(2, { message: "Name muss mindestens 2 Zeichen lang sein." }),
@@ -57,7 +57,7 @@ export default function OldieCupPage() {
     { icon: Users, text: "Teilnahme ab 18 Jahren" },
     { icon: CalendarDays, text: "Wöchentliches Training (geplant)" },
     { icon: Trophy, text: "Mehrere Turniere pro Saison (geplant)" },
-    { icon: Helmet, text: "Als eigenes Equipment wird nur ein Integralhelm benötigt" },
+    { icon: HardHat, text: "Als eigenes Equipment wird nur ein Integralhelm benötigt" },
   ];
 
   return (
