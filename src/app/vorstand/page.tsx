@@ -2,10 +2,11 @@
 import { PageHeader } from '@/components/page-header';
 import { mockBoardMembers } from '@/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Mail, UserCircle, CalendarClock } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { UserCircle, Users, Mail } from 'lucide-react';
+import Image from 'next/image';
+import { Separator } from '@/components/ui/separator';
 
 export default function VorstandPage() {
   return (
@@ -13,66 +14,72 @@ export default function VorstandPage() {
       <PageHeader title="Der Vorstand des AC Warendorf e. V." />
       
       <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl font-headline">Unsere Vorstandsmitglieder</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-2xl font-headline flex items-center">
+            <Users className="h-7 w-7 mr-3 text-primary" />
+            Unsere Vorstandsmitglieder
+          </CardTitle>
+          <span className="text-sm text-muted-foreground">
+            {mockBoardMembers.length} Mitglieder
+          </span>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">Foto</TableHead>
-                  <TableHead className="w-[250px]">Name</TableHead>
-                  <TableHead>Funktion</TableHead>
-                  <TableHead>Amtszeit</TableHead>
-                  <TableHead>E-Mail</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockBoardMembers.map((member) => (
-                  <TableRow key={member.id}>
-                    <TableCell>
-                      {member.imageUrl ? (
-                        <Image 
-                          src={member.imageUrl} 
-                          alt={member.name} 
-                          width={40} 
-                          height={40} 
-                          className="rounded-lg object-cover" 
-                          data-ai-hint="person photo" 
-                        />
-                      ) : (
-                        <UserCircle className="h-10 w-10 text-muted-foreground" />
-                      )}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {member.slug ? (
-                        <Link href={`/vorstand/${member.slug}`} className="hover:text-primary hover:underline">
-                          {member.name}
-                        </Link>
-                      ) : (
-                        member.name
-                      )}
-                    </TableCell>
-                    <TableCell>{member.role}</TableCell>
-                    <TableCell className="flex items-center pt-6"> {/* Adjusted padding for alignment */}
-                      {member.term && <CalendarClock className="h-4 w-4 mr-2 text-muted-foreground" />}
-                      {member.term || 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      <a 
-                        href={`mailto:${member.email.replace('[at]', '@')}`}
-                        className="text-primary hover:underline flex items-center"
-                      >
-                        <Mail className="h-4 w-4 mr-2" />
-                        {member.email.replace('[at]', '@')}
-                      </a>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          {mockBoardMembers.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {mockBoardMembers.map((member, index) => (
+                <Card
+                  key={member.id}
+                  className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col rounded-lg"
+                >
+                  <div className="relative w-full aspect-square">
+                    {member.imageUrl ? (
+                      <Image
+                        src={member.imageUrl}
+                        alt={member.name}
+                        layout="fill"
+                        objectFit="cover"
+                        data-ai-hint="person photo"
+                        className="rounded-t-lg" 
+                        sizes="(max-width: 639px) 90vw, (max-width: 767px) 45vw, 30vw"
+                        quality={90}
+                        priority={index < 3} 
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-muted flex items-center justify-center rounded-t-lg">
+                        <UserCircle className="h-32 w-32 text-primary opacity-60" />
+                      </div>
+                    )}
+                  </div>
+
+                  <Separator className="my-0 flex-shrink-0" />
+
+                  <div className="p-4 text-center flex-grow flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-semibold text-lg text-foreground mb-1">
+                        {member.slug ? (
+                           <Link href={`/vorstand/${member.slug}`} className="hover:text-primary hover:underline">
+                            {member.name}
+                          </Link>
+                        ) : (
+                          member.name
+                        )}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-2">{member.role}</p>
+                    </div>
+                    {member.slug && (
+                      <Button variant="link" size="sm" asChild className="mt-auto text-xs text-primary">
+                        <Link href={`/vorstand/${member.slug}`}>Profil ansehen</Link>
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-8">
+              Zurzeit sind keine Vorstandsmitglieder gelistet.
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -83,7 +90,7 @@ export default function VorstandPage() {
           Bei Fragen zu Mitgliedschaft, Veranstaltungen oder anderen Themen rund um den AC Warendorf stehen Ihnen unsere Vorstandsmitglieder gerne zur Verfügung.
         </p>
         <p className="text-foreground">
-          Die Kontaktaufnahme ist am einfachsten per E-Mail über die oben genannten Adressen oder über unser allgemeines <Link href="/kontakt" className="text-primary hover:underline">Kontaktformular</Link>.
+          Die Kontaktaufnahme ist am einfachsten per E-Mail über die einzelnen Profilseiten oder über unser allgemeines <Link href="/kontakt" className="text-primary hover:underline">Kontaktformular</Link>.
         </p>
       </section>
     </div>
