@@ -4,7 +4,8 @@
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useState, useEffect } from 'react';
-import { ShieldAlert, Users, Mail } from 'lucide-react';
+import { ShieldAlert, UserCheck, Mail, MessageSquare, Info } from 'lucide-react';
+import Link from 'next/link';
 
 export default function SchutzkonzeptPage() {
   const [currentDate, setCurrentDate] = useState('');
@@ -15,7 +16,7 @@ export default function SchutzkonzeptPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
-      <PageHeader title="Schutzkonzept" subtitle="Zum Schutz unserer Mitglieder – Gemeinsam für ein sicheres Vereinsleben" />
+      <PageHeader title="Schutzkonzept des AC Warendorf" subtitle="Zum Schutz unserer Mitglieder – Gemeinsam für ein sicheres Vereinsleben, insbesondere für unsere Jugendgruppe." />
 
       <Card className="shadow-lg">
         <CardHeader className="flex flex-row items-start space-x-4">
@@ -56,15 +57,45 @@ export default function SchutzkonzeptPage() {
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-xl font-headline flex items-center"><Users className="mr-2 h-6 w-6 text-primary"/> Ansprechpartner</CardTitle>
+          <CardTitle className="text-xl font-headline flex items-center"><UserCheck className="mr-2 h-6 w-6 text-primary"/> Schutzbeauftragte für die Jugendgruppe</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-foreground">
-           <p>Bei Fragen, Anliegen oder Verdachtsfällen im Kontext des Schutzkonzepts können Sie sich jederzeit vertrauensvoll an folgende Personen wenden:</p>
-           <ul className="list-none space-y-1">
-            <li><strong>Vorstand des AC Warendorf:</strong> <a href="mailto:vorstand1[at]automobilclub-warendorf.de" className="text-primary hover:underline flex items-center"><Mail className="mr-2 h-4 w-4"/>vorstand1[at]automobilclub-warendorf.de</a> (oder über das <Link href="/kontakt" className="text-primary hover:underline">Kontaktformular</Link>)</li>
-            <li><em>Weitere Vertrauenspersonen werden nach Benennung hier aufgeführt.</em></li>
+        <CardContent className="space-y-3 text-foreground">
+           <p>
+             Unsere Schutzbeauftragte für die Jugendgruppe ist <strong>Lorraine Schürhörster</strong>.
+           </p>
+           <p>
+             Sie ist Ihre erste Ansprechpartnerin bei Fragen, Anliegen oder Verdachtsfällen im Kontext des Schutzkonzepts für unsere jungen Mitglieder.
+           </p>
+           <p>
+             Sie können Lorraine Schürhörster wie folgt erreichen:
+             <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                <li>Über die Vereins-App <strong>Spond</strong> (sofern Sie Mitglied sind und Zugriff haben).</li>
+                <li>Über unser <Link href="/kontakt" className="text-primary hover:underline">allgemeines Kontaktformular</Link>. Bitte geben Sie im Betreff oder in der Nachricht an, dass Ihre Anfrage für Lorraine Schürhörster bestimmt ist.</li>
+             </ul>
+           </p>
+           <p className="text-sm text-muted-foreground pt-2">
+             Alternativ können Sie sich auch jederzeit vertrauensvoll an den <Link href="/vorstand" className="text-primary hover:underline">Vorstand des AC Warendorf</Link> wenden.
+           </p>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-lg bg-secondary">
+        <CardHeader>
+          <CardTitle className="text-xl font-headline flex items-center"><Info className="mr-2 h-6 w-6 text-primary"/> So erreichen Sie Lorraine</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-foreground">
+           <p>Wenn Sie Lorraine Schürhörster (z.B. über das Kontaktformular) eine Nachricht zukommen lassen möchten, helfen folgende Angaben für eine schnelle Bearbeitung:</p>
+           <ul className="list-none space-y-2">
+            <li className="flex items-start">
+              <UserCheck className="h-5 w-5 mr-2 mt-1 flex-shrink-0 text-accent"/>
+              <span><strong>Ihr Name und/oder eine Kontaktmöglichkeit:</strong> Damit Lorraine Sie bei Bedarf erreichen kann (z.B. E-Mail-Adresse oder Telefonnummer).</span>
+            </li>
+            <li className="flex items-start">
+              <MessageSquare className="h-5 w-5 mr-2 mt-1 flex-shrink-0 text-accent"/>
+              <span><strong>Ihre Nachricht:</strong> Schildern Sie Ihr Anliegen oder Ihre Beobachtung möglichst klar.</span>
+            </li>
            </ul>
-           <p className="text-sm text-muted-foreground pt-2">Externe Beratungsstellen (z.B. Kinderschutzbund, Weißer Ring) stehen ebenfalls zur Verfügung.</p>
+           <p className="text-sm text-muted-foreground pt-2">Alle Anfragen werden vertraulich behandelt.</p>
         </CardContent>
       </Card>
 
