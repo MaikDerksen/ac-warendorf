@@ -1,3 +1,4 @@
+
 import { PageHeader } from '@/components/page-header';
 import { mockPilots } from '@/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,18 +24,25 @@ export default function PilotenPage() {
         </CardHeader>
         <CardContent>
           {mockPilots.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {mockPilots.map((pilot) => (
                 <Card 
                   key={pilot.id} 
-                  className="text-center p-4 hover:shadow-md transition-shadow duration-200 flex flex-col items-center"
+                  className="text-center p-6 hover:shadow-md transition-shadow duration-200 flex flex-col items-center"
                 >
                   {pilot.imageUrl ? (
-                    <Image src={pilot.imageUrl} alt={pilot.name} width={80} height={80} className="rounded-full mb-2" data-ai-hint="pilot photo" />
+                    <Image 
+                      src={pilot.imageUrl} 
+                      alt={pilot.name} 
+                      width={128} 
+                      height={128} 
+                      className="rounded-lg object-cover mb-4" 
+                      data-ai-hint="pilot photo" 
+                    />
                   ) : (
-                    <User className="h-12 w-12 text-primary mb-2" />
+                    <User className="h-24 w-24 text-primary mb-4" /> // Increased size for placeholder
                   )}
-                  <p className="font-medium text-foreground">{pilot.name}</p>
+                  <p className="font-semibold text-lg text-foreground mb-1">{pilot.name}</p>
                   {pilot.profileSlug ? (
                     <Button variant="link" size="sm" asChild className="mt-1 text-xs">
                       {/* Placeholder for future profile link */}

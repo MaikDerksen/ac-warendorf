@@ -46,7 +46,7 @@ export const mockNewsArticles: NewsArticle[] = [
 export const mockBoardMembers: BoardMember[] = [
   { id: '1', name: 'Max Mustermann', role: '1. Vorsitzender', term: '→ 2026', email: 'vorstand1[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/max-mustermann.png' },
   { id: '2', name: 'Erika Musterfrau', role: 'Schatzmeisterin', term: '→ 2025', email: 'schatzmeister[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/erika-musterfrau.png' },
-  { id: '3', name: 'Peter Programmierer', role: 'Webmaster', term: '→ 2026', email: 'webmaster[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/peter-programmierer.png' },
+  { id: '3', name: 'Maik Derksen', role: 'Programmierer', term: '→ 2026', email: 'webmaster[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/maik-derksen.png' },
   { id: '4', name: 'Sabine Sportlich', role: 'Sportleiterin', term: '→ 2025', email: 'sportleiter[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/sabine-sportlich.png' },
   { id: '5', name: 'Klaus Kart', role: 'Jugendleiter', term: '→ 2026', email: 'jugend[at]automobilclub-warendorf.de', imageUrl: '/images/vorstand/klaus-kart.png' },
 ];

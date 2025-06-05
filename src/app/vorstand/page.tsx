@@ -1,3 +1,4 @@
+
 import { PageHeader } from '@/components/page-header';
 import { mockBoardMembers } from '@/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,7 +32,14 @@ export default function VorstandPage() {
                   <TableRow key={member.id}>
                     <TableCell>
                       {member.imageUrl ? (
-                        <Image src={member.imageUrl} alt={member.name} width={40} height={40} className="rounded-full" data-ai-hint="person photo" />
+                        <Image 
+                          src={member.imageUrl} 
+                          alt={member.name} 
+                          width={40} 
+                          height={40} 
+                          className="rounded-lg object-cover" 
+                          data-ai-hint="person photo" 
+                        />
                       ) : (
                         <UserCircle className="h-10 w-10 text-muted-foreground" />
                       )}
