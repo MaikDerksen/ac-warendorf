@@ -31,7 +31,6 @@ export default function PilotenPage() {
                   key={pilot.id}
                   className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col rounded-lg"
                 >
-                  {/* Image Container - takes available width, height determined by aspect-square */}
                   <div className="relative w-full aspect-square">
                     {pilot.imageUrl ? (
                       <Image
@@ -42,10 +41,9 @@ export default function PilotenPage() {
                         data-ai-hint="pilot photo"
                         sizes="(max-width: 639px) 90vw, (max-width: 767px) 45vw, 30vw"
                         quality={90}
-                        priority={index < 3} // Prioritize first 3 images
+                        priority={index < 3}
                       />
                     ) : (
-                      // Placeholder for when image is not available
                       <div className="w-full h-full bg-muted flex items-center justify-center">
                         <User className="h-32 w-32 text-primary opacity-60" />
                       </div>
@@ -54,14 +52,11 @@ export default function PilotenPage() {
 
                   <Separator className="my-0 flex-shrink-0" />
 
-                  {/* Content Box for Name and Link */}
                   <div className="p-4 text-center">
                     <p className="font-semibold text-lg text-foreground mb-2">{pilot.name}</p>
                     {pilot.profileSlug ? (
-                      <Button variant="link" size="sm" asChild className="mt-1 text-xs">
-                        {/* Placeholder for future profile link */}
-                        {/* <Link href={`/piloten/${pilot.profileSlug}`}>Profil ansehen</Link> */}
-                        <span className="text-muted-foreground">(Profil demnächst)</span>
+                      <Button variant="link" size="sm" asChild className="mt-1 text-xs text-primary">
+                        <Link href={`/piloten/${pilot.profileSlug}`}>Profil ansehen</Link>
                       </Button>
                     ) : (
                       <span className="text-xs text-muted-foreground mt-1">(Kein Profil)</span>
