@@ -29,8 +29,8 @@ const newsFormSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Datum muss im Format YYYY-MM-DD sein." }),
   categories: z.string().optional(), // Pipe-separated
   excerpt: z.string().min(10, { message: "Kurzbeschreibung muss mindestens 10 Zeichen haben." }),
-  content: z.string().min(20, { message: "Inhalt muss mindestens 20 Zeichen haben." }), 
-  heroImageFile: z.any() 
+  content: z.string().min(20, { message: "Inhalt muss mindestens 20 Zeichen haben." }),
+  heroImageFile: z.any()
     .optional()
     .refine(files => !files || files.length === 0 || (files[0] && files[0].size <= 5 * 1024 * 1024), `Maximale Dateigröße ist 5MB.`)
     .refine(files => !files || files.length === 0 || (files[0] && ['image/jpeg', 'image/png', 'image/gif'].includes(files[0].type)), 'Nur JPG, PNG, GIF erlaubt.'),
@@ -49,7 +49,7 @@ export default function AdminNewsPage() {
     defaultValues: {
       slug: "",
       title: "",
-      date: new Date().toISOString().split('T')[0], 
+      date: new Date().toISOString().split('T')[0],
       categories: "",
       excerpt: "",
       content: "<p>Ihr Artikelinhalt hier...</p>",
@@ -61,18 +61,18 @@ export default function AdminNewsPage() {
 
   const handleLegacyUploadClick = () => {
     toast({
-      title: "Funktion in Entwicklung",
-      description: "Die Möglichkeit, CSV-Dateien hochzuladen, wird in Kürze implementiert.",
+      title: "Funktion für Legacy CSV Veraltet",
+      description: "News werden nun direkt in Firestore gespeichert. Der Upload von CSVs für News ist nicht mehr vorgesehen.",
       variant: "default",
     });
   };
 
   async function onSubmit(data: NewsFormValues) {
     const formData = new FormData();
-    
+
     (Object.keys(data) as Array<keyof NewsFormValues>).forEach(key => {
       if (key === 'heroImageFile' && data.heroImageFile && data.heroImageFile.length > 0) {
-        formData.append(key, data.heroImageFile[0]); 
+        formData.append(key, data.heroImageFile[0]);
       } else if (data[key] !== undefined && data[key] !== null && key !== 'heroImageFile') {
          formData.append(key, String(data[key]));
       }
@@ -81,7 +81,7 @@ export default function AdminNewsPage() {
     try {
       const response = await fetch('/api/admin/news', {
         method: 'POST',
-        body: formData, 
+        body: formData,
       });
 
       const result = await response.json();
@@ -96,16 +96,24 @@ export default function AdminNewsPage() {
           <div>
             <p>{result.message}</p>
             {result.firestoreId && <p>Firestore Document ID: {result.firestoreId}</p>}
-            {result.imagePath && <p>Bildpfad (falls hochgeladen): {result.imagePath}</p>}
+            {result.imagePath && result.imagePath.startsWith('https://firebasestorage.googleapis.com') && (
+              <p>Bild in Firebase Storage: <a href={result.imagePath} target="_blank" rel="noopener noreferrer" className="text-primary underline">Link</a></p>
+            )}
             <p className="mt-2 font-semibold">Wichtiger Hinweis:</p>
-            <p>Der Artikel wurde zu Firestore hinzugefügt. Damit er auf der Webseite erscheint, müssen die Anzeigeseiten (News-Archiv, News-Detail) angepasst werden, um Daten aus Firestore zu laden. Dies ist ein nächster Schritt.</p>
-             <p>Das Bild wurde versucht lokal in <code>public/images/news_uploads/</code> zu speichern. Für Produktion wird Firebase Storage empfohlen.</p>
+            <p>Der Artikel wurde zu Firestore hinzugefügt. Die News-Seiten lesen nun direkt aus Firestore.</p>
+            {result.imagePath && result.imagePath.startsWith('https://firebasestorage.googleapis.com')
+              ? <p>Das Bild wurde zu Firebase Storage hochgeladen.</p>
+              : result.imagePath === 'No image uploaded or saved.'
+                ? <p>Es wurde kein Bild hochgeladen.</p>
+                : <p>Bildpfad (Legacy): {result.imagePath}</p>
+            }
           </div>
         ),
-        duration: 12000, 
+        duration: 12000,
       });
       form.reset();
-      
+
+      // Reset file input visually
       const fileInput = document.getElementById('heroImageFile') as HTMLInputElement | null;
       if (fileInput) {
         fileInput.value = '';
@@ -129,27 +137,24 @@ export default function AdminNewsPage() {
             <span className="sr-only">Zurück zum Admin Dashboard</span>
           </Link>
         </Button>
-        <PageHeader title="News Verwalten" subtitle="Artikel erstellen, bearbeiten und löschen." className="mb-0 pb-0 border-none flex-1" />
+        <PageHeader title="News Verwalten" subtitle="Artikel erstellen (speichert in Firestore & Firebase Storage)." className="mb-0 pb-0 border-none flex-1" />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Aktuelle News-Daten (news.csv - Legacy)</CardTitle>
+          <CardTitle>Legacy News-Daten (news.csv)</CardTitle>
           <CardDescription>
-            Hier können Sie die bisherigen News-Daten als CSV herunterladen. Die Webseite liest aktuell noch aus dieser CSV.
-            Das Ziel ist, die Webseite auf Firestore umzustellen.
+            Die Webseite liest News-Artikel nun aus Firestore. Die CSV-Datei ist nur noch als Backup oder für historische Daten relevant.
+            Ein direkter Upload von CSVs für News ist nicht mehr vorgesehen.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Link href="/api/download/news" passHref legacyBehavior>
             <Button variant="outline">
               <Download className="mr-2 h-4 w-4" />
-              news.csv herunterladen
+              news.csv herunterladen (Legacy)
             </Button>
           </Link>
-          <p className="text-xs text-muted-foreground">
-            Download der Legacy CSV-Datei. Neue Artikel werden jetzt in Firestore gespeichert.
-          </p>
           <div className="flex flex-col sm:flex-row gap-2 items-center pt-4 border-t mt-4">
             <Input type="file" accept=".csv" className="flex-grow" disabled />
             <Button onClick={handleLegacyUploadClick} className="w-full sm:w-auto" disabled>
@@ -164,9 +169,9 @@ export default function AdminNewsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><FilePlus className="mr-2 h-5 w-5 text-primary"/>Neuen News-Artikel Erstellen (speichert in Firestore)</CardTitle>
+          <CardTitle className="flex items-center"><FilePlus className="mr-2 h-5 w-5 text-primary"/>Neuen News-Artikel Erstellen</CardTitle>
           <CardDescription>
-            Füllen Sie die Felder aus, um einen neuen Artikel hinzuzufügen. Das Bild wird versucht in <code>public/images/news_uploads/</code> zu speichern. Die Artikeldaten werden in Firestore gespeichert.
+            Füllen Sie die Felder aus, um einen neuen Artikel hinzuzufügen. Das Bild wird zu Firebase Storage hochgeladen und der Artikel in Firestore gespeichert.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -256,7 +261,7 @@ export default function AdminNewsPage() {
               <FormField
                 control={form.control}
                 name="heroImageFile"
-                render={({ field: { onChange, value, ...rest } }) => ( // Correctly destructure here
+                render={({ field: { onChange, value, ...rest } }) => (
                   <FormItem>
                     <FormLabel>Titelbild Hochladen (Optional, max 5MB, JPG/PNG/GIF)</FormLabel>
                     <FormControl>
@@ -265,12 +270,12 @@ export default function AdminNewsPage() {
                         type="file"
                         accept="image/jpeg,image/png,image/gif"
                         onChange={(e) => {
-                          onChange(e.target.files); // Pass the FileList to react-hook-form
+                          onChange(e.target.files);
                         }}
-                        {...rest} // Pass down other props like name, ref, onBlur
+                        {...rest}
                       />
                     </FormControl>
-                    <FormDescription>Wählen Sie eine Bilddatei von Ihrem Computer. Wird versucht in public/images/news_uploads/ zu speichern.</FormDescription>
+                    <FormDescription>Wählen Sie eine Bilddatei von Ihrem Computer. Wird zu Firebase Storage hochgeladen.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -305,7 +310,7 @@ export default function AdminNewsPage() {
               />
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 <FilePlus className="mr-2 h-4 w-4" />
-                {form.formState.isSubmitting ? 'Wird verarbeitet...' : 'News-Artikel in Firestore Speichern'}
+                {form.formState.isSubmitting ? 'Wird verarbeitet...' : 'News-Artikel Speichern'}
               </Button>
             </form>
           </Form>
