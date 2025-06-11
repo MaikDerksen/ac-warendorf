@@ -6,6 +6,7 @@ import fs from 'fs/promises';
 import { db, storage } from '@/lib/firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
+import { verifyAdmin } from '@/lib/adminAuth'; // Import the admin verification helper
 
 export const config = {
   api: {
@@ -17,13 +18,15 @@ interface PilotFormData {
   name: string;
   profileSlug?: string;
   bio?: string;
-  achievements?: string; // Pipe-separated string
+  achievements?: string;
   imageFile?: File;
 }
 
 async function uploadFileToFirebase(file: File): Promise<string> {
   const fileBuffer = await fs.readFile(file.filepath);
-  const storageRef = ref(storage, `pilots/${Date.now()}_${file.originalFilename?.replace(/[^a-zA-Z0-9_.-]/g, '_')}`);
+  const uniqueFilename = `${Date.now()}_${file.originalFilename?.replace(/[^a-zA-Z0-9_.-]/g, '_')}`;
+  const storageRef = ref(storage, `pilots/${uniqueFilename}`);
+  
   const uploadTask = uploadBytesResumable(storageRef, fileBuffer, {
     contentType: file.mimetype || undefined,
   });
@@ -32,21 +35,25 @@ async function uploadFileToFirebase(file: File): Promise<string> {
     uploadTask.on('state_changed',
       (snapshot) => {
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log('Upload is ' + progress + '% done');
+        console.log('Pilot image upload is ' + progress + '% done');
       },
-      (error) => {
+      async (error) => {
         console.error("Firebase Storage upload error (Pilots):", error);
-        fs.unlink(file.filepath).catch(unlinkErr => console.error("Error deleting temp formidable file after failed pilot image upload:", unlinkErr));
+         try {
+          await fs.unlink(file.filepath);
+        } catch (unlinkError) {
+          console.error("Error deleting temp formidable file after failed pilot image upload:", unlinkError);
+        }
         reject(error);
       },
       async () => {
         try {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
           console.log('Pilot image file available at', downloadURL);
-          fs.unlink(file.filepath).catch(unlinkErr => console.error("Error deleting temp formidable file after successful pilot image upload:", unlinkErr));
+          await fs.unlink(file.filepath);
           resolve(downloadURL);
         } catch (error) {
-          console.error("Error getting download URL for pilot image:", error);
+          console.error("Error getting download URL for pilot image or deleting temp file:", error);
           reject(error);
         }
       }
@@ -55,11 +62,24 @@ async function uploadFileToFirebase(file: File): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
+  const adminCheck = await verifyAdmin(req);
+  if (!adminCheck.isAdmin) {
+    return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: adminCheck.status || 401 });
+  }
+  console.log(`Admin user ${adminCheck.uid} is performing this action (pilot creation).`);
+
+  let tempFilePath: string | undefined;
+
   try {
     const form = formidable({
       keepExtensions: true,
       filter: function ({name, originalFilename, mimetype}) {
-        return !!(name === 'imageFile' && mimetype && mimetype.includes("image") && originalFilename);
+        const isImageField = name === 'imageFile';
+        const isActualFile = !!(originalFilename && mimetype && mimetype.includes("image"));
+         if (isImageField && !isActualFile && originalFilename) {
+             console.warn(`File field 'imageFile' (pilot) received with originalFilename '${originalFilename}' but invalid mimetype '${mimetype}'. It will be ignored.`);
+        }
+        return isImageField && isActualFile;
       }
     });
 
@@ -82,15 +102,17 @@ export async function POST(req: NextRequest) {
     let imageFile: File | undefined = undefined;
     if (files.imageFile && Array.isArray(files.imageFile) && files.imageFile.length > 0) {
       imageFile = files.imageFile[0];
+      tempFilePath = imageFile.filepath;
     }
 
     const newPilotData: any = {
       name: name || '',
-      profileSlug: profileSlug || '',
+      profileSlug: profileSlug?.toLowerCase().replace(/\s+/g, '-') || '',
       bio: bio || '',
       achievements: achievements ? achievements.split('|').map(a => a.trim()) : [],
       imageUrl: '', 
       createdAt: serverTimestamp(),
+      createdBy: adminCheck.uid, // Store admin UID
     };
 
     let uploadedImageUrl: string | null = null;
@@ -99,6 +121,7 @@ export async function POST(req: NextRequest) {
       try {
         uploadedImageUrl = await uploadFileToFirebase(imageFile);
         newPilotData.imageUrl = uploadedImageUrl;
+        tempFilePath = undefined;
       } catch (uploadError: any) {
         console.error('Pilot image upload to Firebase Storage failed:', uploadError);
         return NextResponse.json({
@@ -112,15 +135,13 @@ export async function POST(req: NextRequest) {
 
     try {
       const docRef = await addDoc(collection(db, "pilots"), newPilotData);
-      console.log("Pilot added to Firestore with ID: ", docRef.id);
       return NextResponse.json({
         message: `Pilot data processed and added to Firestore with ID: ${docRef.id}. ${uploadedImageUrl ? 'Image uploaded to Firebase Storage.' : 'No image uploaded.'}`,
-        data: newPilotData,
-        imageUrl: newPilotData.imageUrl || 'No image uploaded or saved.',
         firestoreId: docRef.id,
+        imageUrl: newPilotData.imageUrl || 'No image uploaded or saved.',
       }, { status: 200 });
-    } catch (error: any) {
-      console.error('Error adding pilot document to Firestore:', error);
+    } catch (firestoreError: any) {
+      console.error('Error adding pilot document to Firestore:', firestoreError);
       if (uploadedImageUrl) {
         try {
           const imageRef = ref(storage, uploadedImageUrl);
@@ -130,13 +151,18 @@ export async function POST(req: NextRequest) {
           console.error(`Error deleting pilot image from Firebase Storage during rollback: ${deleteError}`);
         }
       }
-      return NextResponse.json({ message: 'Error saving pilot data to Firestore.', error: error.message || String(error) }, { status: 500 });
+      return NextResponse.json({ message: 'Error saving pilot data to Firestore.', error: firestoreError.message || String(firestoreError) }, { status: 500 });
     }
 
   } catch (error: any) {
     console.error('Error processing pilot submission:', error);
-     if (error.files && error.files.imageFile && error.files.imageFile[0] && error.files.imageFile[0].filepath) {
-        fs.unlink(error.files.imageFile[0].filepath).catch(unlinkErr => console.error("Error deleting formidable temp file after general error:", unlinkErr));
+    if (tempFilePath) {
+        try {
+            await fs.unlink(tempFilePath);
+            console.log('Cleaned up formidable temp file for pilot after general error.');
+        } catch (unlinkErr) {
+            console.error("Error deleting formidable temp file for pilot after general error:", unlinkErr);
+        }
     }
     return NextResponse.json({ message: 'Error processing request.', error: error.message || String(error) }, { status: 500 });
   }
