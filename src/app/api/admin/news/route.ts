@@ -3,10 +3,9 @@ import { type NextRequest, NextResponse } from 'next/server';
 import formidable from 'formidable';
 import type { File } from 'formidable';
 import fs from 'fs/promises';
-import { db, storage } from '@/lib/firebaseConfig';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
-import { verifyAdmin } from '@/lib/adminAuth'; // Import the admin verification helper
+import { adminApp } from '@/lib/firebaseAdminConfig'; // Use Admin SDK
+import { verifyAdmin } from '@/lib/adminAuth';
+import type admin from 'firebase-admin';
 
 export const config = {
   api: {
@@ -26,42 +25,50 @@ interface NewsFormData {
   heroImageFile?: File;
 }
 
-async function uploadFileToFirebase(file: File): Promise<string> {
+async function uploadFileToFirebaseAdmin(file: File): Promise<string> {
+  if (!adminApp) {
+    throw new Error('Admin SDK not initialized for file upload.');
+  }
+  const bucket = adminApp.storage().bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET); // Default bucket
   const fileBuffer = await fs.readFile(file.filepath);
-  const uniqueFilename = `${Date.now()}_${file.originalFilename?.replace(/[^a-zA-Z0-9_.-]/g, '_')}`;
-  const storageRef = ref(storage, `news/${uniqueFilename}`);
+  const uniqueFilename = `news/${Date.now()}_${file.originalFilename?.replace(/[^a-zA-Z0-9_.-]/g, '_')}`;
   
-  const uploadTask = uploadBytesResumable(storageRef, fileBuffer, {
-    contentType: file.mimetype || undefined,
+  const blob = bucket.file(uniqueFilename);
+  const blobStream = blob.createWriteStream({
+    metadata: {
+      contentType: file.mimetype || undefined,
+    },
+    public: true, // Make the file publicly readable
   });
 
   return new Promise((resolve, reject) => {
-    uploadTask.on('state_changed',
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log('Upload is ' + progress + '% done');
-      },
-      async (error) => {
-        console.error("Firebase Storage upload error:", error);
-        try {
-          await fs.unlink(file.filepath); // Clean up temp file
-        } catch (unlinkError) {
-          console.error("Error deleting temp formidable file after failed upload:", unlinkError);
-        }
-        reject(error);
-      },
-      async () => {
-        try {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          console.log('File available at', downloadURL);
-          await fs.unlink(file.filepath); // Clean up temp file
-          resolve(downloadURL);
-        } catch (error) {
-          console.error("Error getting download URL or deleting temp file:", error);
-          reject(error);
-        }
+    blobStream.on('error', async (err) => {
+      console.error("Firebase Admin Storage upload error:", err);
+      try {
+        await fs.unlink(file.filepath); // Clean up temp file
+      } catch (unlinkError) {
+        console.error("Error deleting temp formidable file after failed upload:", unlinkError);
       }
-    );
+      reject(err);
+    });
+
+    blobStream.on('finish', async () => {
+      // The file is now publicly readable, construct the URL
+      // Standard URL format: https://storage.googleapis.com/[BUCKET_NAME]/[OBJECT_NAME]
+      // Or, for Firebase Console friendly URLs (if using Firebase Hosting rewrite or direct Firebase Storage URLs):
+      // https://firebasestorage.googleapis.com/v0/b/[BUCKET_NAME]/o/[OBJECT_NAME_ENCODED]?alt=media
+      // For simplicity with public: true, the direct GCS URL is often easiest.
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+      console.log('File uploaded to:', publicUrl);
+      try {
+        await fs.unlink(file.filepath); // Clean up temp file
+      } catch (unlinkError) {
+        console.error("Error deleting temp formidable file after successful upload:", unlinkError);
+      }
+      resolve(publicUrl);
+    });
+
+    blobStream.end(fileBuffer);
   });
 }
 
@@ -70,11 +77,15 @@ export async function POST(req: NextRequest) {
   if (!adminCheck.isAdmin) {
     return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: adminCheck.status || 401 });
   }
+  console.log(`Admin user ${adminCheck.uid} is creating a news article.`);
 
-  // Admin is verified, proceed with the news article creation
-  console.log(`Admin user ${adminCheck.uid} is performing this action.`);
+  let tempFilePath: string | undefined;
 
-  let tempFilePath: string | undefined; // To store the path of the formidable temp file
+  if (!adminApp) {
+    console.error("CRITICAL: Firebase Admin App not initialized in API route.");
+    return NextResponse.json({ message: 'Server configuration error: Admin SDK not available.' }, { status: 500 });
+  }
+  const firestoreDb = adminApp.firestore();
 
   try {
     const form = formidable({
@@ -82,7 +93,7 @@ export async function POST(req: NextRequest) {
       filter: function ({name, originalFilename, mimetype}) {
         const isImageField = name === 'heroImageFile';
         const isActualFile = !!(originalFilename && mimetype && mimetype.includes("image"));
-        if (isImageField && !isActualFile && originalFilename) { // field is heroImageFile but not a valid image
+        if (isImageField && !isActualFile && originalFilename) {
              console.warn(`File field 'heroImageFile' received with originalFilename '${originalFilename}' but invalid mimetype '${mimetype}'. It will be ignored.`);
         }
         return isImageField && isActualFile;
@@ -109,11 +120,10 @@ export async function POST(req: NextRequest) {
       dataAiHint,
     } = typedFields as unknown as Omit<NewsFormData, 'heroImageFile'>;
 
-
     let heroImageFile: File | undefined = undefined;
     if (files.heroImageFile && Array.isArray(files.heroImageFile) && files.heroImageFile.length > 0) {
       heroImageFile = files.heroImageFile[0];
-      tempFilePath = heroImageFile.filepath; // Store temp file path for cleanup
+      tempFilePath = heroImageFile.filepath; 
     }
 
     const newArticleData: any = {
@@ -126,19 +136,19 @@ export async function POST(req: NextRequest) {
       youtubeEmbed: youtubeEmbed || '',
       dataAiHint: dataAiHint || '',
       heroImageUrl: '',
-      createdAt: serverTimestamp(),
-      authorId: adminCheck.uid, // Store the UID of the admin who created the article
+      createdAt: admin.firestore.FieldValue.serverTimestamp(), // Admin SDK server timestamp
+      authorId: adminCheck.uid,
     };
 
     let uploadedImageUrl: string | null = null;
 
     if (heroImageFile && heroImageFile.originalFilename) {
       try {
-        uploadedImageUrl = await uploadFileToFirebase(heroImageFile);
+        uploadedImageUrl = await uploadFileToFirebaseAdmin(heroImageFile);
         newArticleData.heroImageUrl = uploadedImageUrl;
-        tempFilePath = undefined; // File has been handled by uploadFileToFirebase (moved/deleted)
+        tempFilePath = undefined; 
       } catch (uploadError: any) {
-        console.error('Firebase Storage upload failed:', uploadError);
+        console.error('Firebase Admin Storage upload failed:', uploadError);
         return NextResponse.json({
           message: 'Error uploading image to Firebase Storage.',
           error: uploadError.message || String(uploadError)
@@ -149,7 +159,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      const docRef = await addDoc(collection(db, "news"), newArticleData);
+      const docRef = await firestoreDb.collection("news").add(newArticleData);
       return NextResponse.json({
         message: `News article processed and added to Firestore with ID: ${docRef.id}. ${uploadedImageUrl ? 'Image uploaded to Firebase Storage.' : 'No image uploaded.'}`,
         firestoreId: docRef.id,
@@ -159,9 +169,10 @@ export async function POST(req: NextRequest) {
       console.error('Error adding document to Firestore:', firestoreError);
       if (uploadedImageUrl) {
         try {
-          const imageRef = ref(storage, uploadedImageUrl);
-          await deleteObject(imageRef);
-          console.log(`Rolled back: Deleted image ${uploadedImageUrl} from Firebase Storage due to Firestore error.`);
+          // To delete from GCS, you need the object path (e.g., 'news/image.jpg')
+          const objectPath = new URL(uploadedImageUrl).pathname.substring(1).split('/').slice(1).join('/'); // news/image.jpg
+          await adminApp.storage().bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET).file(objectPath).delete();
+          console.log(`Rolled back: Deleted image ${objectPath} from Firebase Storage due to Firestore error.`);
         } catch (deleteError) {
           console.error(`Error deleting image from Firebase Storage during rollback: ${deleteError}`);
         }
@@ -171,7 +182,7 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error('Error processing news article submission:', error);
-    if (tempFilePath) { // If an error occurred before file was handled by uploadFileToFirebase
+    if (tempFilePath) { 
         try {
             await fs.unlink(tempFilePath);
             console.log('Cleaned up formidable temp file after general error.');

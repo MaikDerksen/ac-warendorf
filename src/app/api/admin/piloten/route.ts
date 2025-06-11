@@ -3,10 +3,9 @@ import { type NextRequest, NextResponse } from 'next/server';
 import formidable from 'formidable';
 import type { File } from 'formidable';
 import fs from 'fs/promises';
-import { db, storage } from '@/lib/firebaseConfig';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
-import { verifyAdmin } from '@/lib/adminAuth'; // Import the admin verification helper
+import { adminApp } from '@/lib/firebaseAdminConfig'; // Use Admin SDK
+import { verifyAdmin } from '@/lib/adminAuth';
+import type admin from 'firebase-admin';
 
 export const config = {
   api: {
@@ -22,42 +21,48 @@ interface PilotFormData {
   imageFile?: File;
 }
 
-async function uploadFileToFirebase(file: File): Promise<string> {
+async function uploadPilotImageToFirebaseAdmin(file: File): Promise<string> {
+  if (!adminApp) {
+    throw new Error('Admin SDK not initialized for file upload.');
+  }
+  const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+  if (!bucketName) {
+    throw new Error('Storage bucket name not configured in environment variables.');
+  }
+  const bucket = adminApp.storage().bucket(bucketName);
   const fileBuffer = await fs.readFile(file.filepath);
-  const uniqueFilename = `${Date.now()}_${file.originalFilename?.replace(/[^a-zA-Z0-9_.-]/g, '_')}`;
-  const storageRef = ref(storage, `pilots/${uniqueFilename}`);
+  const uniqueFilename = `pilots/${Date.now()}_${file.originalFilename?.replace(/[^a-zA-Z0-9_.-]/g, '_')}`;
   
-  const uploadTask = uploadBytesResumable(storageRef, fileBuffer, {
-    contentType: file.mimetype || undefined,
+  const blob = bucket.file(uniqueFilename);
+  const blobStream = blob.createWriteStream({
+    metadata: {
+      contentType: file.mimetype || undefined,
+    },
+    public: true, // Make the file publicly readable
   });
 
   return new Promise((resolve, reject) => {
-    uploadTask.on('state_changed',
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log('Pilot image upload is ' + progress + '% done');
-      },
-      async (error) => {
-        console.error("Firebase Storage upload error (Pilots):", error);
-         try {
-          await fs.unlink(file.filepath);
-        } catch (unlinkError) {
-          console.error("Error deleting temp formidable file after failed pilot image upload:", unlinkError);
-        }
-        reject(error);
-      },
-      async () => {
-        try {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          console.log('Pilot image file available at', downloadURL);
-          await fs.unlink(file.filepath);
-          resolve(downloadURL);
-        } catch (error) {
-          console.error("Error getting download URL for pilot image or deleting temp file:", error);
-          reject(error);
-        }
+    blobStream.on('error', async (err) => {
+      console.error("Firebase Admin Storage upload error (Pilots):", err);
+       try {
+        await fs.unlink(file.filepath);
+      } catch (unlinkError) {
+        console.error("Error deleting temp formidable file after failed pilot image upload:", unlinkError);
       }
-    );
+      reject(err);
+    });
+
+    blobStream.on('finish', async () => {
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+      console.log('Pilot image file available at', publicUrl);
+      try {
+        await fs.unlink(file.filepath);
+      } catch (unlinkError) {
+         console.error("Error deleting temp formidable file after successful pilot image upload:", unlinkError);
+      }
+      resolve(publicUrl);
+    });
+    blobStream.end(fileBuffer);
   });
 }
 
@@ -66,9 +71,15 @@ export async function POST(req: NextRequest) {
   if (!adminCheck.isAdmin) {
     return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: adminCheck.status || 401 });
   }
-  console.log(`Admin user ${adminCheck.uid} is performing this action (pilot creation).`);
+  console.log(`Admin user ${adminCheck.uid} is creating a pilot profile.`);
 
   let tempFilePath: string | undefined;
+
+  if (!adminApp) {
+    console.error("CRITICAL: Firebase Admin App not initialized in API route for pilots.");
+    return NextResponse.json({ message: 'Server configuration error: Admin SDK not available.' }, { status: 500 });
+  }
+  const firestoreDb = adminApp.firestore();
 
   try {
     const form = formidable({
@@ -111,15 +122,15 @@ export async function POST(req: NextRequest) {
       bio: bio || '',
       achievements: achievements ? achievements.split('|').map(a => a.trim()) : [],
       imageUrl: '', 
-      createdAt: serverTimestamp(),
-      createdBy: adminCheck.uid, // Store admin UID
+      createdAt: admin.firestore.FieldValue.serverTimestamp(), // Admin SDK server timestamp
+      createdBy: adminCheck.uid,
     };
 
     let uploadedImageUrl: string | null = null;
 
     if (imageFile && imageFile.originalFilename) {
       try {
-        uploadedImageUrl = await uploadFileToFirebase(imageFile);
+        uploadedImageUrl = await uploadPilotImageToFirebaseAdmin(imageFile);
         newPilotData.imageUrl = uploadedImageUrl;
         tempFilePath = undefined;
       } catch (uploadError: any) {
@@ -134,7 +145,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      const docRef = await addDoc(collection(db, "pilots"), newPilotData);
+      const docRef = await firestoreDb.collection("pilots").add(newPilotData);
       return NextResponse.json({
         message: `Pilot data processed and added to Firestore with ID: ${docRef.id}. ${uploadedImageUrl ? 'Image uploaded to Firebase Storage.' : 'No image uploaded.'}`,
         firestoreId: docRef.id,
@@ -144,9 +155,9 @@ export async function POST(req: NextRequest) {
       console.error('Error adding pilot document to Firestore:', firestoreError);
       if (uploadedImageUrl) {
         try {
-          const imageRef = ref(storage, uploadedImageUrl);
-          await deleteObject(imageRef);
-          console.log(`Rolled back: Deleted pilot image ${uploadedImageUrl} from Firebase Storage due to Firestore error.`);
+          const objectPath = new URL(uploadedImageUrl).pathname.substring(1).split('/').slice(1).join('/');
+          await adminApp.storage().bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET).file(objectPath).delete();
+          console.log(`Rolled back: Deleted pilot image ${objectPath} from Firebase Storage due to Firestore error.`);
         } catch (deleteError) {
           console.error(`Error deleting pilot image from Firebase Storage during rollback: ${deleteError}`);
         }
@@ -167,3 +178,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Error processing request.', error: error.message || String(error) }, { status: 500 });
   }
 }
+
