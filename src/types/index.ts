@@ -22,6 +22,8 @@ export interface BoardMember {
   imageUrl?: string;
   slug?: string;
   description?: string;
+  order?: number; // For custom sorting
+  createdAt?: any;
 }
 
 export interface Pilot {
@@ -31,12 +33,15 @@ export interface Pilot {
   imageUrl?: string;
   bio?: string;
   achievements?: string[];
+  createdAt?: any;
 }
 
 export interface FaqItem {
   id: string;
   question: string;
   answer: string;
+  category?: string;
+  displayOrder?: number;
 }
 
 export interface Sponsor {
@@ -46,4 +51,7 @@ export interface Sponsor {
   logoUrl: string;
   websiteUrl?: string;
   dataAiHint?: string;
+  displayOrder?: number;
+  isActive?: boolean;
+  createdAt?: any;
 }

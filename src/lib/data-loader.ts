@@ -3,17 +3,19 @@ import fs from 'fs';
 import path from 'path';
 import Papa from 'papaparse';
 import type { NewsArticle, BoardMember, Pilot, FaqItem, Sponsor } from '@/types';
-import { db } from '@/lib/firebaseConfig'; // Ensure db is correctly imported
-import { collection, getDocs, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebaseConfig'; 
+import { collection, getDocs, query, where, orderBy, limit, Timestamp, doc, getDoc } from 'firebase/firestore';
 
 const dataDirectory = path.join(process.cwd(), 'src/data');
 
 // Helper function to sanitize strings by removing leading/trailing quotes
 function sanitizeString(str: string | undefined | null): string {
   if (typeof str === 'string') {
-    return str.replace(/^"|"$/g, '').replace(/^'|'$/g, ''); // Remove leading/trailing " or '
+    // First remove outer quotes, then trim whitespace
+    let processedStr = str.replace(/^["']|["']$/g, '').trim();
+    return processedStr;
   }
-  return str || ''; // Return empty string if undefined, null, or not a string
+  return str || ''; 
 }
 
 
@@ -24,9 +26,17 @@ function parseCSV<T>(filePath: string): Promise<T[]> {
       header: true,
       skipEmptyLines: true,
       dynamicTyping: false, 
+      transformHeader: header => sanitizeString(header).trim(),
+      transform: (value, header) => {
+         // Check if the header is one that should not be trimmed or have quotes removed, e.g., 'content'
+        if (header === 'content' || header === 'answer' || header === 'bio' || header === 'description') {
+          return value; // Return raw value for HTML content
+        }
+        return sanitizeString(value);
+      },
       complete: (results) => {
         if (results.errors.length > 0) {
-          console.error("CSV Parsing Errors:", results.errors);
+          console.error("CSV Parsing Errors for file:", filePath, results.errors);
           reject(new Error(`Error parsing CSV file: ${filePath}`));
           return;
         }
@@ -53,14 +63,14 @@ export async function getAllNewsArticles(): Promise<NewsArticle[]> {
         id: doc.id,
         slug: sanitizeString(data.slug),
         title: sanitizeString(data.title),
-        date: sanitizeString(data.date), // Assuming YYYY-MM-DD string
-        categories: Array.isArray(data.categories) ? data.categories.map(sanitizeString) : [],
+        date: sanitizeString(data.date), 
+        categories: Array.isArray(data.categories) ? data.categories.map(c => sanitizeString(c as string)) : [],
         excerpt: sanitizeString(data.excerpt),
-        content: sanitizeString(data.content), // Content might be HTML, usually doesn't have surrounding quotes
-        heroImageUrl: sanitizeString(data.heroImageUrl),
-        dataAiHint: sanitizeString(data.dataAiHint),
-        youtubeEmbed: sanitizeString(data.youtubeEmbed),
-        createdAt: data.createdAt, // Keep as Firestore Timestamp or convert as needed
+        content: data.content, // HTML content, should not be sanitized aggressively
+        heroImageUrl: data.heroImageUrl ? sanitizeString(data.heroImageUrl) : undefined,
+        dataAiHint: data.dataAiHint ? sanitizeString(data.dataAiHint) : undefined,
+        youtubeEmbed: data.youtubeEmbed ? sanitizeString(data.youtubeEmbed) : undefined,
+        createdAt: data.createdAt, 
       } as NewsArticle);
     });
     return articles;
@@ -71,53 +81,31 @@ export async function getAllNewsArticles(): Promise<NewsArticle[]> {
 }
 
 export async function getNewsArticleBySlug(slug: string): Promise<NewsArticle | undefined> {
-  const sanitizedSlug = sanitizeString(slug); // Sanitize input slug as well
+  const sanitizedSlug = sanitizeString(slug);
   try {
     const newsCollectionRef = collection(db, "news");
-    // Querying by sanitized slug might be needed if slugs in DB are also quoted
-    // For now, assuming slugs in DB are clean, or will be cleaned upon retrieval.
     const q = query(newsCollectionRef, where("slug", "==", sanitizedSlug), limit(1));
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
-      // Try querying with potentially quoted slug if the first attempt fails (defensive)
-      const qFallback = query(newsCollectionRef, where("slug", "==", `"${sanitizedSlug}"`), limit(1));
-      const querySnapshotFallback = await getDocs(qFallback);
-      if(querySnapshotFallback.empty) {
-        console.log(`No news article found with slug: ${sanitizedSlug} (or quoted version)`);
-        return undefined;
-      }
-      const doc = querySnapshotFallback.docs[0];
-      const data = doc.data();
-      return {
-        id: doc.id,
-        slug: sanitizeString(data.slug),
-        title: sanitizeString(data.title),
-        date: sanitizeString(data.date),
-        categories: Array.isArray(data.categories) ? data.categories.map(sanitizeString) : [],
-        excerpt: sanitizeString(data.excerpt),
-        content: sanitizeString(data.content),
-        heroImageUrl: sanitizeString(data.heroImageUrl),
-        dataAiHint: sanitizeString(data.dataAiHint),
-        youtubeEmbed: sanitizeString(data.youtubeEmbed),
-        createdAt: data.createdAt,
-      } as NewsArticle;
+      console.log(`No news article found with slug: ${sanitizedSlug}`);
+      return undefined;
     }
 
-    const doc = querySnapshot.docs[0];
-    const data = doc.data();
+    const docSnap = querySnapshot.docs[0];
+    const data = docSnap.data();
     
     return {
-      id: doc.id,
+      id: docSnap.id,
       slug: sanitizeString(data.slug),
       title: sanitizeString(data.title),
       date: sanitizeString(data.date),
-      categories: Array.isArray(data.categories) ? data.categories.map(sanitizeString) : [],
+      categories: Array.isArray(data.categories) ? data.categories.map(c => sanitizeString(c as string)) : [],
       excerpt: sanitizeString(data.excerpt),
-      content: sanitizeString(data.content),
-      heroImageUrl: sanitizeString(data.heroImageUrl),
-      dataAiHint: sanitizeString(data.dataAiHint),
-      youtubeEmbed: sanitizeString(data.youtubeEmbed),
+      content: data.content,
+      heroImageUrl: data.heroImageUrl ? sanitizeString(data.heroImageUrl) : undefined,
+      dataAiHint: data.dataAiHint ? sanitizeString(data.dataAiHint) : undefined,
+      youtubeEmbed: data.youtubeEmbed ? sanitizeString(data.youtubeEmbed) : undefined,
       createdAt: data.createdAt,
     } as NewsArticle;
   } catch (error) {
@@ -127,73 +115,112 @@ export async function getNewsArticleBySlug(slug: string): Promise<NewsArticle | 
 }
 
 // --- Board Members (still from CSV for now) ---
-// Consider similar sanitization if/when moving these to Firestore
 export async function getAllBoardMembers(): Promise<BoardMember[]> {
   const filePath = path.join(dataDirectory, 'vorstand/board-members.csv');
   const members = await parseCSV<any>(filePath);
    return members.map(member => ({
-    ...member,
-    // Sanitize string fields from CSV if necessary
+    id: sanitizeString(member.id),
     name: sanitizeString(member.name),
     role: sanitizeString(member.role),
     term: sanitizeString(member.term),
     email: sanitizeString(member.email),
     imageUrl: sanitizeString(member.imageUrl),
     slug: sanitizeString(member.slug),
-    description: sanitizeString(member.description),
+    description: member.description, // Keep HTML/rich text
+    order: member.order ? parseInt(sanitizeString(member.order), 10) : undefined,
+    createdAt: undefined, // Not in CSV
   }));
 }
 
 export async function getBoardMemberBySlug(slug: string): Promise<BoardMember | undefined> {
   const members = await getAllBoardMembers();
-  // Slug comparison should be case-insensitive and against sanitized slugs
-  return members.find(member => sanitizeString(member.slug)?.toLowerCase() === sanitizeString(slug)?.toLowerCase());
+  return members.find(member => member.slug?.toLowerCase() === sanitizeString(slug)?.toLowerCase());
 }
 
-// --- Pilots (still from CSV for now) ---
-// Consider similar sanitization if/when moving these to Firestore
+// --- Pilots (from Firestore) ---
 export async function getAllPilots(): Promise<Pilot[]> {
-  const filePath = path.join(dataDirectory, 'pilots/pilots.csv');
-  const pilotsData = await parseCSV<any>(filePath);
-  return pilotsData.map(pilot => ({
-    id: sanitizeString(pilot.id),
-    name: sanitizeString(pilot.name),
-    profileSlug: sanitizeString(pilot.profileSlug),
-    imageUrl: sanitizeString(pilot.imageUrl),
-    bio: sanitizeString(pilot.bio),
-    achievements: pilot.achievements ? (sanitizeString(pilot.achievements) as string).split('|').map(s => s.trim()) : [],
-  }));
+  try {
+    const pilotsCollectionRef = collection(db, "pilots");
+    const q = query(pilotsCollectionRef, orderBy("name", "asc")); // Example: order by name
+    const querySnapshot = await getDocs(q);
+    
+    const pilots: Pilot[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      pilots.push({
+        id: doc.id,
+        name: sanitizeString(data.name),
+        profileSlug: data.profileSlug ? sanitizeString(data.profileSlug) : undefined,
+        imageUrl: data.imageUrl ? sanitizeString(data.imageUrl) : undefined,
+        bio: data.bio, // Keep HTML/rich text if any
+        achievements: Array.isArray(data.achievements) ? data.achievements.map(a => sanitizeString(a as string)) : [],
+        createdAt: data.createdAt,
+      } as Pilot);
+    });
+    return pilots;
+  } catch (error) {
+    console.error("Error fetching pilots from Firestore:", error);
+    return [];
+  }
 }
 
 export async function getPilotBySlug(slug: string): Promise<Pilot | undefined> {
-  const pilots = await getAllPilots();
-  return pilots.find(pilot => sanitizeString(pilot.profileSlug)?.toLowerCase() === sanitizeString(slug)?.toLowerCase());
+  const sanitizedSlug = sanitizeString(slug);
+  try {
+    const pilotsCollectionRef = collection(db, "pilots");
+    const q = query(pilotsCollectionRef, where("profileSlug", "==", sanitizedSlug), limit(1));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      console.log(`No pilot found with slug: ${sanitizedSlug}`);
+      return undefined;
+    }
+
+    const docSnap = querySnapshot.docs[0];
+    const data = docSnap.data();
+    
+    return {
+      id: docSnap.id,
+      name: sanitizeString(data.name),
+      profileSlug: data.profileSlug ? sanitizeString(data.profileSlug) : undefined,
+      imageUrl: data.imageUrl ? sanitizeString(data.imageUrl) : undefined,
+      bio: data.bio,
+      achievements: Array.isArray(data.achievements) ? data.achievements.map(a => sanitizeString(a as string)) : [],
+      createdAt: data.createdAt,
+    } as Pilot;
+  } catch (error) {
+    console.error(`Error fetching pilot by slug ${sanitizedSlug} from Firestore:`, error);
+    return undefined;
+  }
 }
 
+
 // --- FAQ Items (still from CSV for now) ---
-// Consider similar sanitization if/when moving these to Firestore
 export async function getAllFaqItems(): Promise<FaqItem[]> {
   const filePath = path.join(dataDirectory, 'faq/faq.csv');
-  const items = await parseCSV<FaqItem>(filePath);
+  const items = await parseCSV<any>(filePath);
   return items.map(item => ({
-    ...item,
+    id: sanitizeString(item.id),
     question: sanitizeString(item.question),
-    answer: sanitizeString(item.answer), // Answer might contain HTML, usually not quoted
+    answer: item.answer, // Keep HTML/rich text
+    category: sanitizeString(item.category),
+    displayOrder: item.displayOrder ? parseInt(sanitizeString(item.displayOrder), 10) : undefined,
   }));
 }
 
 // --- Sponsors (still from CSV for now) ---
-// Consider similar sanitization if/when moving these to Firestore
 export async function getAllSponsors(): Promise<Sponsor[]> {
   const filePath = path.join(dataDirectory, 'sponsoren/sponsors.csv');
-  const sponsors = await parseCSV<Sponsor>(filePath);
+  const sponsors = await parseCSV<any>(filePath);
   return sponsors.map(sponsor => ({
-    ...sponsor,
+    id: sanitizeString(sponsor.id),
     name: sanitizeString(sponsor.name),
     level: sanitizeString(sponsor.level),
     logoUrl: sanitizeString(sponsor.logoUrl),
     websiteUrl: sanitizeString(sponsor.websiteUrl),
     dataAiHint: sanitizeString(sponsor.dataAiHint),
+    displayOrder: sponsor.displayOrder ? parseInt(sanitizeString(sponsor.displayOrder), 10) : undefined,
+    isActive: sponsor.isActive ? sanitizeString(sponsor.isActive).toLowerCase() === 'true' : undefined,
+    createdAt: undefined, // Not in CSV
   }));
 }
-

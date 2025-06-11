@@ -1,5 +1,5 @@
 
-import { getPilotBySlug, getAllPilots } from '@/lib/data-loader';
+import { getPilotBySlug, getAllPilots } from '@/lib/data-loader'; // getAllPilots now from Firestore
 import type { Pilot } from '@/types';
 import { PageHeader } from '@/components/page-header';
 import Image from 'next/image';
@@ -16,7 +16,7 @@ interface PilotProfilePageProps {
 }
 
 export async function generateStaticParams() {
-  const pilots = await getAllPilots();
+  const pilots = await getAllPilots(); // Fetches from Firestore
   return pilots
     .filter(pilot => pilot.profileSlug)
     .map((pilot) => ({
@@ -25,7 +25,7 @@ export async function generateStaticParams() {
 }
 
 export default async function PilotProfilePage({ params }: PilotProfilePageProps) {
-  const pilot = await getPilotBySlug(params.slug);
+  const pilot = await getPilotBySlug(params.slug); // Fetches from Firestore
 
   if (!pilot) {
     notFound();
@@ -44,8 +44,8 @@ export default async function PilotProfilePage({ params }: PilotProfilePageProps
                   <Image
                     src={pilot.imageUrl}
                     alt={pilot.name}
-                    layout="fill"
-                    objectFit="cover"
+                    fill // Next 13+ style
+                    style={{ objectFit: 'cover' }}
                     priority
                     sizes="(max-width: 767px) 90vw, 30vw"
                     data-ai-hint="pilot photo"
@@ -59,8 +59,6 @@ export default async function PilotProfilePage({ params }: PilotProfilePageProps
             </CardHeader>
             <CardContent className="p-4 text-center">
               <h2 className="text-2xl font-headline text-primary">{pilot.name}</h2>
-              {/* Placeholder for age/class if available */}
-              {/* <p className="text-sm text-muted-foreground">Klasse K2</p> */}
             </CardContent>
           </Card>
            <Button asChild variant="outline" className="w-full">

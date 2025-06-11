@@ -1,6 +1,6 @@
 
 import { PageHeader } from '@/components/page-header';
-import { getAllPilots } from '@/lib/data-loader';
+import { getAllPilots } from '@/lib/data-loader'; // Now fetches from Firestore
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 
 export default async function PilotenPage() {
-  const allPilots = await getAllPilots();
+  const allPilots = await getAllPilots(); // Fetches from Firestore
 
   return (
     <div className="space-y-8">
@@ -30,7 +30,7 @@ export default async function PilotenPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {allPilots.map((pilot, index) => (
                 <Card
-                  key={pilot.id}
+                  key={pilot.id} // Use Firestore ID
                   className="overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ease-out flex flex-col rounded-lg"
                 >
                   <div className="relative w-full aspect-square">
@@ -38,8 +38,8 @@ export default async function PilotenPage() {
                       <Image
                         src={pilot.imageUrl}
                         alt={pilot.name}
-                        layout="fill"
-                        objectFit="cover"
+                        fill // Next 13+ style
+                        style={{ objectFit: 'cover' }}
                         data-ai-hint="pilot photo"
                         sizes="(max-width: 639px) 90vw, (max-width: 767px) 45vw, 30vw"
                         quality={90}
@@ -69,7 +69,7 @@ export default async function PilotenPage() {
             </div>
           ) : (
             <p className="text-muted-foreground text-center py-8">
-              Zurzeit sind keine aktiven Pilot*innen gelistet.
+              Momentan sind keine Pilot*innen in Firestore vorhanden oder es gab ein Problem beim Laden.
             </p>
           )}
         </CardContent>

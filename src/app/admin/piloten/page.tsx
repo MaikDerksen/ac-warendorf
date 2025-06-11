@@ -25,8 +25,11 @@ import {
 
 const pilotFormSchema = z.object({
   name: z.string().min(2, { message: "Name muss mindestens 2 Zeichen lang sein." }),
-  profileSlug: z.string().optional(),
-  imageFile: z.any().optional(), // For file upload
+  profileSlug: z.string().optional().transform(val => val ? val.toLowerCase().replace(/\s+/g, '-') : undefined),
+  imageFile: z.any()
+    .optional()
+    .refine(files => !files || files.length === 0 || (files[0] && files[0].size <= 5 * 1024 * 1024), `Maximale Dateigröße ist 5MB.`)
+    .refine(files => !files || files.length === 0 || (files[0] && ['image/jpeg', 'image/png', 'image/gif'].includes(files[0].type)), 'Nur JPG, PNG, GIF erlaubt.'),
   bio: z.string().optional(),
   achievements: z.string().optional(), // Pipe-separated
 });
@@ -47,25 +50,72 @@ export default function AdminPilotenPage() {
     },
   });
 
-  const handleUploadClick = () => {
+  const handleLegacyUploadClick = () => {
     toast({
-      title: "Funktion in Entwicklung",
-      description: "Die Möglichkeit, CSV-Dateien hochzuladen, wird in Kürze implementiert.",
+      title: "Funktion für Legacy CSV Veraltet",
+      description: "Pilotendaten werden nun direkt in Firestore gespeichert. Der Upload von CSVs ist nicht mehr vorgesehen.",
       variant: "default",
     });
   };
 
-  function onSubmit(data: PilotFormValues) {
-    console.log(data);
-    if (data.imageFile && data.imageFile.length > 0) {
-      console.log("Selected file:", data.imageFile[0].name);
-    }
-    toast({
-      title: "Funktion in Entwicklung",
-      description: "Das Hinzufügen von Piloten über dieses Formular (inkl. Datei-Upload) wird in Kürze implementiert. Bitte bearbeiten Sie vorerst die CSV-Datei.",
+  async function onSubmit(data: PilotFormValues) {
+    const formData = new FormData();
+    (Object.keys(data) as Array<keyof PilotFormValues>).forEach(key => {
+      if (key === 'imageFile' && data.imageFile && data.imageFile.length > 0) {
+        formData.append(key, data.imageFile[0]);
+      } else if (data[key] !== undefined && data[key] !== null && key !== 'imageFile') {
+         formData.append(key, String(data[key]));
+      }
     });
-    // form.reset(); // Optionally reset form
+
+    try {
+      const response = await fetch('/api/admin/piloten', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Fehler beim Senden der Daten an den Server.');
+      }
+
+      toast({
+        title: "Pilot Verarbeitet!",
+        description: (
+          <div>
+            <p>{result.message}</p>
+            {result.firestoreId && <p>Firestore Document ID: {result.firestoreId}</p>}
+            {result.imageUrl && result.imageUrl.startsWith('https://firebasestorage.googleapis.com') && (
+              <p>Bild in Firebase Storage: <a href={result.imageUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline">Link</a></p>
+            )}
+             <p className="mt-2 font-semibold">Wichtiger Hinweis:</p>
+            <p>Der Pilot wurde zu Firestore hinzugefügt. Die Pilotenseiten lesen nun direkt aus Firestore.</p>
+            {result.imageUrl && result.imageUrl.startsWith('https://firebasestorage.googleapis.com')
+              ? <p>Das Bild wurde zu Firebase Storage hochgeladen.</p>
+              : result.imageUrl === 'No image uploaded or saved.'
+                ? <p>Es wurde kein Bild hochgeladen.</p>
+                : <p>Bildpfad (Legacy): {result.imageUrl}</p>
+            }
+          </div>
+        ),
+        duration: 12000,
+      });
+      form.reset();
+      const fileInput = document.getElementById('imageFilePilot') as HTMLInputElement | null;
+      if (fileInput) {
+        fileInput.value = '';
+      }
+    } catch (error: any) {
+      console.error("Fehler beim Senden des Piloten-Formulars:", error);
+      toast({
+        title: "Fehler",
+        description: error.message || "Ein Fehler ist beim Verarbeiten des Piloten aufgetreten.",
+        variant: "destructive",
+      });
+    }
   }
+
 
   return (
     <div className="space-y-6">
@@ -76,37 +126,34 @@ export default function AdminPilotenPage() {
             <span className="sr-only">Zurück zum Admin Dashboard</span>
           </Link>
         </Button>
-        <PageHeader title="Piloten Verwalten" subtitle="Fahrerprofile und Erfolge aktualisieren." className="mb-0 pb-0 border-none flex-1" />
+        <PageHeader title="Piloten Verwalten" subtitle="Fahrerprofile und Erfolge aktualisieren (speichert in Firestore & Firebase Storage)." className="mb-0 pb-0 border-none flex-1" />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Aktuelle Pilotendaten (pilots.csv)</CardTitle>
+          <CardTitle>Legacy Pilotendaten (pilots.csv)</CardTitle>
           <CardDescription>
-            Hier können Sie die aktuellen Pilotendaten herunterladen oder eine neue Version hochladen.
-            Die Daten werden aus der Datei <code>src/data/pilots/pilots.csv</code> geladen.
+            Die Webseite liest Pilotendaten nun aus Firestore. Die CSV-Datei ist nur noch als Backup oder für historische Daten relevant.
+            Ein direkter Upload von CSVs ist nicht mehr vorgesehen.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Link href="/api/download/piloten" passHref legacyBehavior>
             <Button variant="outline">
               <Download className="mr-2 h-4 w-4" />
-              pilots.csv herunterladen
+              pilots.csv herunterladen (Legacy)
             </Button>
           </Link>
           <p className="text-xs text-muted-foreground">
             Laden Sie die aktuelle CSV-Datei herunter, um sie extern zu bearbeiten.
           </p>
           <div className="flex flex-col sm:flex-row gap-2 items-center pt-4 border-t mt-4">
-            <Input type="file" accept=".csv" className="flex-grow" />
-            <Button onClick={handleUploadClick} className="w-full sm:w-auto">
+            <Input type="file" accept=".csv" className="flex-grow" disabled />
+            <Button onClick={handleLegacyUploadClick} className="w-full sm:w-auto" disabled>
               <UploadCloud className="mr-2 h-4 w-4" />
-              CSV Hochladen
+              CSV Hochladen (Veraltet)
             </Button>
           </div>
-           <p className="text-xs text-muted-foreground pt-1">
-            <strong>Hinweis Upload:</strong> Diese Funktion ist noch in Entwicklung. Das Hochladen einer Datei hier hat aktuell keine Auswirkungen.
-          </p>
         </CardContent>
       </Card>
 
@@ -116,7 +163,7 @@ export default function AdminPilotenPage() {
         <CardHeader>
           <CardTitle className="flex items-center"><UserPlus className="mr-2 h-5 w-5 text-primary"/>Neuen Piloten Erstellen</CardTitle>
           <CardDescription>
-            Füllen Sie die Felder aus, um einen neuen Piloten hinzuzufügen. Die Daten werden aktuell noch nicht gespeichert (Funktion in Entwicklung).
+            Füllen Sie die Felder aus, um einen neuen Piloten hinzuzufügen. Das Bild wird zu Firebase Storage hochgeladen und der Pilot in Firestore gespeichert.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -144,7 +191,7 @@ export default function AdminPilotenPage() {
                     <FormControl>
                       <Input placeholder="max-mustermann" {...field} />
                     </FormControl>
-                    <FormDescription>Wird für die URL des Profils verwendet. Wenn leer, wird kein Profil erstellt.</FormDescription>
+                    <FormDescription>Wird für die URL des Profils verwendet. Wenn leer, wird kein Profil erstellt. Nur Kleinbuchstaben, Zahlen und Bindestriche.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -152,15 +199,18 @@ export default function AdminPilotenPage() {
               <FormField
                 control={form.control}
                 name="imageFile"
-                render={({ field }) => (
+                render={({ field: { onChange, value, ...rest } }) => (
                   <FormItem>
-                    <FormLabel>Bild Hochladen (Optional)</FormLabel>
+                    <FormLabel>Bild Hochladen (Optional, max 5MB, JPG/PNG/GIF)</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="file" 
+                      <Input
+                        id="imageFilePilot"
+                        type="file"
                         accept="image/jpeg,image/png,image/gif"
-                        onChange={(e) => field.onChange(e.target.files)}
-                        ref={field.ref}
+                        onChange={(e) => {
+                          onChange(e.target.files);
+                        }}
+                        {...rest}
                       />
                     </FormControl>
                     <FormDescription>Wählen Sie eine Bilddatei des Piloten von Ihrem Computer.</FormDescription>
@@ -195,9 +245,9 @@ export default function AdminPilotenPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit">
+              <Button type="submit" disabled={form.formState.isSubmitting}>
                 <UserPlus className="mr-2 h-4 w-4" />
-                Piloten Hinzufügen (Platzhalter)
+                 {form.formState.isSubmitting ? 'Wird verarbeitet...' : 'Piloten Speichern'}
               </Button>
             </form>
           </Form>
