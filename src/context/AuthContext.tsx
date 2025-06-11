@@ -51,9 +51,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await signInWithPopup(auth, provider);
       // Auth state change will be handled by onAuthStateChanged
-    } catch (error) {
-      console.error("Error during Google sign-in:", error);
-      // Handle specific errors (e.g., popup_closed_by_user) if needed
+    } catch (error: any) {
+      if (error.code === 'auth/popup-closed-by-user') {
+        console.info('Google Sign-In popup was closed by the user. To sign in, please complete the process in the popup window.');
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        console.info('Google Sign-In popup request was cancelled. This can happen if multiple popups were opened or due to other reasons. Please try again.');
+      } else {
+        console.error("Error during Google sign-in:", error);
+        // Handle other specific errors if needed
+      }
     }
   };
 
