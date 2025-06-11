@@ -5,13 +5,52 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Download, UploadCloud } from 'lucide-react';
+import { ArrowLeft, Download, UploadCloud, UserCog } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+const boardMemberFormSchema = z.object({
+  id: z.string().min(1, { message: "ID wird benötigt (z.B. eindeutiger Kurzname)." }),
+  name: z.string().min(2, { message: "Name muss mindestens 2 Zeichen lang sein." }),
+  role: z.string().min(3, { message: "Rolle muss angegeben werden." }),
+  term: z.string().optional(),
+  email: z.string().email({ message: "Bitte eine gültige E-Mail-Adresse eingeben." }),
+  imageUrl: z.string().url({ message: "Bitte eine gültige URL für das Bild eingeben." }).optional().or(z.literal('')),
+  slug: z.string().optional(),
+  description: z.string().optional(),
+});
+
+type BoardMemberFormValues = z.infer<typeof boardMemberFormSchema>;
 
 export default function AdminVorstandPage() {
   const { toast } = useToast();
+
+  const form = useForm<BoardMemberFormValues>({
+    resolver: zodResolver(boardMemberFormSchema),
+    defaultValues: {
+      id: "",
+      name: "",
+      role: "",
+      term: "",
+      email: "",
+      imageUrl: "",
+      slug: "",
+      description: "",
+    },
+  });
 
   const handleUploadClick = () => {
     toast({
@@ -20,6 +59,14 @@ export default function AdminVorstandPage() {
       variant: "default",
     });
   };
+
+  function onSubmit(data: BoardMemberFormValues) {
+    console.log(data);
+    toast({
+      title: "Funktion in Entwicklung",
+      description: "Das Hinzufügen von Vorstandsmitgliedern über dieses Formular wird in Kürze implementiert. Bitte bearbeiten Sie vorerst die CSV-Datei.",
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -37,7 +84,7 @@ export default function AdminVorstandPage() {
         <CardHeader>
           <CardTitle>Aktuelle Vorstandsdaten (board-members.csv)</CardTitle>
           <CardDescription>
-            Hier können Sie die aktuellen Vorstandsdaten herunterladen oder eine neue Version hochladen (Upload-Funktion in Entwicklung).
+            Hier können Sie die aktuellen Vorstandsdaten herunterladen oder eine neue Version hochladen.
             Die Daten werden aus der Datei <code>src/data/vorstand/board-members.csv</code> geladen.
           </CardDescription>
         </CardHeader>
@@ -51,6 +98,16 @@ export default function AdminVorstandPage() {
           <p className="text-xs text-muted-foreground">
             Laden Sie die aktuelle CSV-Datei herunter, um sie extern zu bearbeiten.
           </p>
+          <div className="flex flex-col sm:flex-row gap-2 items-center pt-4 border-t mt-4">
+            <Input type="file" accept=".csv" className="flex-grow" />
+            <Button onClick={handleUploadClick} className="w-full sm:w-auto">
+              <UploadCloud className="mr-2 h-4 w-4" />
+              CSV Hochladen
+            </Button>
+          </div>
+           <p className="text-xs text-muted-foreground pt-1">
+            <strong>Hinweis Upload:</strong> Diese Funktion ist noch in Entwicklung. Das Hochladen einer Datei hier hat aktuell keine Auswirkungen.
+          </p>
         </CardContent>
       </Card>
 
@@ -58,25 +115,130 @@ export default function AdminVorstandPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Vorstandsdaten Hochladen</CardTitle>
+          <CardTitle className="flex items-center"><UserCog className="mr-2 h-5 w-5 text-primary"/>Neues Vorstandsmitglied Erstellen</CardTitle>
           <CardDescription>
-            Laden Sie eine neue <code>board-members.csv</code> Datei hoch, um die Vorstandsmitglieder zu aktualisieren.
-            <strong>Hinweis:</strong> Diese Funktion ist noch in Entwicklung. Das Hochladen einer Datei hier hat aktuell keine Auswirkungen.
+            Füllen Sie die Felder aus, um ein neues Mitglied hinzuzufügen. Die Daten werden aktuell noch nicht gespeichert.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-2 items-center">
-            <Input type="file" accept=".csv" className="flex-grow" />
-            <Button onClick={handleUploadClick} className="w-full sm:w-auto">
-              <UploadCloud className="mr-2 h-4 w-4" />
-              CSV Hochladen
-            </Button>
-          </div>
-           <p className="text-xs text-muted-foreground">
-            Stellen Sie sicher, dass die hochgeladene CSV-Datei die korrekten Spaltenüberschriften und Datenformate enthält.
-          </p>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ID* (Eindeutiger Wert)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="z.B. max_mustermann_vorstand" {...field} />
+                    </FormControl>
+                    <FormDescription>Eine eindeutige ID für dieses Mitglied.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name*</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Max Mustermann" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Rolle / Funktion*</FormLabel>
+                    <FormControl>
+                      <Input placeholder="1. Vorsitzender" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>E-Mail*</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="max.mustermann[at]example.com" {...field} />
+                    </FormControl>
+                    <FormDescription>Bitte [at] anstelle von @ verwenden, es wird automatisch ersetzt.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="term"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Amtszeit (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="z.B. 2023-2025" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Bild URL (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com/bild.jpg oder /images/vorstand/person.jpg" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="slug"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Profil Slug (Optional, z.B. max-mustermann)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="max-mustermann" {...field} />
+                    </FormControl>
+                     <FormDescription>Wird für die URL des Profils verwendet. Wenn leer, wird kein Profil erstellt.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Beschreibung (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Zusätzliche Informationen über das Mitglied..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit">
+                <UserCog className="mr-2 h-4 w-4" />
+                Vorstandsmitglied Hinzufügen (Platzhalter)
+              </Button>
+            </form>
+          </Form>
         </CardContent>
       </Card>
+
       <div className="mt-8 text-center">
         <Button variant="outline" asChild>
           <Link href="/admin">Zurück zum Dashboard</Link>
