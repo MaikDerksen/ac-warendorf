@@ -22,6 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useAuth } from '@/context/AuthContext'; // Import useAuth
 
 const pilotFormSchema = z.object({
   name: z.string().min(2, { message: "Name muss mindestens 2 Zeichen lang sein." }),
@@ -38,6 +39,7 @@ type PilotFormValues = z.infer<typeof pilotFormSchema>;
 
 export default function AdminPilotenPage() {
   const { toast } = useToast();
+  const { user, loading: authLoading, isAdmin } = useAuth(); // Get user and isAdmin status
 
   const form = useForm<PilotFormValues>({
     resolver: zodResolver(pilotFormSchema),
@@ -59,6 +61,36 @@ export default function AdminPilotenPage() {
   };
 
   async function onSubmit(data: PilotFormValues) {
+    if (!user) {
+      toast({
+        title: "Nicht Angemeldet",
+        description: "Bitte melden Sie sich an, um einen Piloten zu erstellen.",
+        variant: "destructive",
+      });
+      return;
+    }
+     if (!isAdmin) {
+      toast({
+        title: "Keine Berechtigung",
+        description: "Sie haben keine Berechtigung, Piloten zu erstellen.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    let idToken;
+    try {
+      idToken = await user.getIdToken();
+    } catch (error) {
+      console.error("Error getting ID token:", error);
+      toast({
+        title: "Authentifizierungsfehler",
+        description: "ID Token konnte nicht abgerufen werden. Bitte versuchen Sie es erneut.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const formData = new FormData();
     (Object.keys(data) as Array<keyof PilotFormValues>).forEach(key => {
       if (key === 'imageFile' && data.imageFile && data.imageFile.length > 0) {
@@ -71,6 +103,9 @@ export default function AdminPilotenPage() {
     try {
       const response = await fetch('/api/admin/piloten', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${idToken}`,
+        },
         body: formData,
       });
 
@@ -116,6 +151,7 @@ export default function AdminPilotenPage() {
     }
   }
 
+  const isSubmitDisabled = authLoading || !user || !isAdmin || form.formState.isSubmitting;
 
   return (
     <div className="space-y-6">
@@ -164,93 +200,102 @@ export default function AdminPilotenPage() {
           <CardTitle className="flex items-center"><UserPlus className="mr-2 h-5 w-5 text-primary"/>Neuen Piloten Erstellen</CardTitle>
           <CardDescription>
             Füllen Sie die Felder aus, um einen neuen Piloten hinzuzufügen. Das Bild wird zu Firebase Storage hochgeladen und der Pilot in Firestore gespeichert.
+             Sie müssen als Admin angemeldet sein, um diese Funktion zu nutzen.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name des Piloten*</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Max Mustermann" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="profileSlug"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Profil Slug (Optional, z.B. max-mustermann)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="max-mustermann" {...field} />
-                    </FormControl>
-                    <FormDescription>Wird für die URL des Profils verwendet. Wenn leer, wird kein Profil erstellt. Nur Kleinbuchstaben, Zahlen und Bindestriche.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="imageFile"
-                render={({ field: { onChange, value, ...rest } }) => (
-                  <FormItem>
-                    <FormLabel>Bild Hochladen (Optional, max 5MB, JPG/PNG/GIF)</FormLabel>
-                    <FormControl>
-                      <Input
-                        id="imageFilePilot"
-                        type="file"
-                        accept="image/jpeg,image/png,image/gif"
-                        onChange={(e) => {
-                          onChange(e.target.files);
-                        }}
-                        {...rest}
-                      />
-                    </FormControl>
-                    <FormDescription>Wählen Sie eine Bilddatei des Piloten von Ihrem Computer.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="bio"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Bio (Optional)</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Kurze Beschreibung des Piloten..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="achievements"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Erfolge (Optional, getrennt durch | Zeichen)</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Erster Platz Meisterschaft X|Zweiter Platz Rennen Y" {...field} />
-                    </FormControl>
-                    <FormDescription>Jeden Erfolg mit einem | trennen.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                <UserPlus className="mr-2 h-4 w-4" />
-                 {form.formState.isSubmitting ? 'Wird verarbeitet...' : 'Piloten Speichern'}
-              </Button>
-            </form>
-          </Form>
+           {!user && !authLoading && (
+            <p className="text-destructive">Bitte melden Sie sich an, um Piloten zu erstellen.</p>
+          )}
+          {user && !isAdmin && !authLoading && (
+            <p className="text-destructive">Sie haben keine Admin-Berechtigung, um Piloten zu erstellen.</p>
+          )}
+          {(user && isAdmin || authLoading) && (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name des Piloten*</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Max Mustermann" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="profileSlug"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Profil Slug (Optional, z.B. max-mustermann)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="max-mustermann" {...field} />
+                      </FormControl>
+                      <FormDescription>Wird für die URL des Profils verwendet. Wenn leer, wird kein Profil erstellt. Nur Kleinbuchstaben, Zahlen und Bindestriche.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="imageFile"
+                  render={({ field: { onChange, value, ...rest } }) => (
+                    <FormItem>
+                      <FormLabel>Bild Hochladen (Optional, max 5MB, JPG/PNG/GIF)</FormLabel>
+                      <FormControl>
+                        <Input
+                          id="imageFilePilot"
+                          type="file"
+                          accept="image/jpeg,image/png,image/gif"
+                          onChange={(e) => {
+                            onChange(e.target.files);
+                          }}
+                          {...rest}
+                        />
+                      </FormControl>
+                      <FormDescription>Wählen Sie eine Bilddatei des Piloten von Ihrem Computer.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="bio"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Bio (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Kurze Beschreibung des Piloten..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="achievements"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Erfolge (Optional, getrennt durch | Zeichen)</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Erster Platz Meisterschaft X|Zweiter Platz Rennen Y" {...field} />
+                      </FormControl>
+                      <FormDescription>Jeden Erfolg mit einem | trennen.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" disabled={isSubmitDisabled}>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  {form.formState.isSubmitting ? 'Wird verarbeitet...' : 'Piloten Speichern'}
+                </Button>
+              </form>
+            </Form>
+          )}
         </CardContent>
       </Card>
 

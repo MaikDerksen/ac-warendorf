@@ -22,6 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useAuth } from '@/context/AuthContext'; // Import useAuth
 
 const newsFormSchema = z.object({
   slug: z.string().min(3, { message: "Slug muss mindestens 3 Zeichen haben (z.B. mein-artikel)." }).regex(/^[a-z0-9-]+$/, { message: "Nur Kleinbuchstaben, Zahlen und Bindestriche."}),
@@ -43,6 +44,7 @@ type NewsFormValues = z.infer<typeof newsFormSchema>;
 
 export default function AdminNewsPage() {
   const { toast } = useToast();
+  const { user, loading: authLoading, isAdmin } = useAuth(); // Get user and isAdmin status
 
   const form = useForm<NewsFormValues>({
     resolver: zodResolver(newsFormSchema),
@@ -68,8 +70,37 @@ export default function AdminNewsPage() {
   };
 
   async function onSubmit(data: NewsFormValues) {
-    const formData = new FormData();
+    if (!user) {
+      toast({
+        title: "Nicht Angemeldet",
+        description: "Bitte melden Sie sich an, um einen Artikel zu erstellen.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!isAdmin) {
+      toast({
+        title: "Keine Berechtigung",
+        description: "Sie haben keine Berechtigung, Artikel zu erstellen.",
+        variant: "destructive",
+      });
+      return;
+    }
 
+    let idToken;
+    try {
+      idToken = await user.getIdToken();
+    } catch (error) {
+      console.error("Error getting ID token:", error);
+      toast({
+        title: "Authentifizierungsfehler",
+        description: "ID Token konnte nicht abgerufen werden. Bitte versuchen Sie es erneut.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const formData = new FormData();
     (Object.keys(data) as Array<keyof NewsFormValues>).forEach(key => {
       if (key === 'heroImageFile' && data.heroImageFile && data.heroImageFile.length > 0) {
         formData.append(key, data.heroImageFile[0]);
@@ -81,6 +112,9 @@ export default function AdminNewsPage() {
     try {
       const response = await fetch('/api/admin/news', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${idToken}`,
+        },
         body: formData,
       });
 
@@ -112,8 +146,6 @@ export default function AdminNewsPage() {
         duration: 12000,
       });
       form.reset();
-
-      // Reset file input visually
       const fileInput = document.getElementById('heroImageFile') as HTMLInputElement | null;
       if (fileInput) {
         fileInput.value = '';
@@ -127,6 +159,8 @@ export default function AdminNewsPage() {
       });
     }
   }
+
+  const isSubmitDisabled = authLoading || !user || !isAdmin || form.formState.isSubmitting;
 
   return (
     <div className="space-y-6">
@@ -172,148 +206,157 @@ export default function AdminNewsPage() {
           <CardTitle className="flex items-center"><FilePlus className="mr-2 h-5 w-5 text-primary"/>Neuen News-Artikel Erstellen</CardTitle>
           <CardDescription>
             Füllen Sie die Felder aus, um einen neuen Artikel hinzuzufügen. Das Bild wird zu Firebase Storage hochgeladen und der Artikel in Firestore gespeichert.
+            Sie müssen als Admin angemeldet sein, um diese Funktion zu nutzen.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Titel*</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Spannender Artikeltitel" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-               <FormField
-                control={form.control}
-                name="slug"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Slug* (für URL)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="spannender-artikeltitel" {...field} />
-                    </FormControl>
-                    <FormDescription>Kurzer, URL-freundlicher Name. Nur Kleinbuchstaben, Zahlen und Bindestriche.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Datum* (YYYY-MM-DD)</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="categories"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kategorien (Optional, getrennt durch | )</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Kart-Slalom|Vereinsleben" {...field} />
-                    </FormControl>
-                     <FormDescription>Mehrere Kategorien mit "|" trennen, z.B. Kart-Slalom|Vereinsleben.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="excerpt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kurzbeschreibung / Auszug*</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Eine kurze Zusammenfassung des Artikels..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Inhalt* (HTML erlaubt)</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="<p>Der vollständige Artikelinhalt...</p>" {...field} rows={10}/>
-                    </FormControl>
-                    <FormDescription>Sie können hier HTML-Tags für Formatierungen verwenden.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="heroImageFile"
-                render={({ field: { onChange, value, ...rest } }) => (
-                  <FormItem>
-                    <FormLabel>Titelbild Hochladen (Optional, max 5MB, JPG/PNG/GIF)</FormLabel>
-                    <FormControl>
-                      <Input
-                        id="heroImageFile"
-                        type="file"
-                        accept="image/jpeg,image/png,image/gif"
-                        onChange={(e) => {
-                          onChange(e.target.files);
-                        }}
-                        {...rest}
-                      />
-                    </FormControl>
-                    <FormDescription>Wählen Sie eine Bilddatei von Ihrem Computer. Wird zu Firebase Storage hochgeladen.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-               <FormField
-                control={form.control}
-                name="dataAiHint"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Bild KI-Hinweis (Optional, für Titelbild)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="z.B. kart race" {...field} />
-                    </FormControl>
-                     <FormDescription>1-2 Stichworte für KI-Bildgenerierung, falls kein Bild angegeben.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="youtubeEmbed"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>YouTube Video ID (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="z.B. dQw4w9WgXcQ" {...field} />
-                    </FormControl>
-                    <FormDescription>Nur die ID des Videos, nicht die volle URL.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                <FilePlus className="mr-2 h-4 w-4" />
-                {form.formState.isSubmitting ? 'Wird verarbeitet...' : 'News-Artikel Speichern'}
-              </Button>
-            </form>
-          </Form>
+          {!user && !authLoading && (
+            <p className="text-destructive">Bitte melden Sie sich an, um Artikel zu erstellen.</p>
+          )}
+          {user && !isAdmin && !authLoading && (
+            <p className="text-destructive">Sie haben keine Admin-Berechtigung, um Artikel zu erstellen.</p>
+          )}
+          {(user && isAdmin || authLoading) && (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Titel*</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Spannender Artikeltitel" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="slug"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Slug* (für URL)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="spannender-artikeltitel" {...field} />
+                      </FormControl>
+                      <FormDescription>Kurzer, URL-freundlicher Name. Nur Kleinbuchstaben, Zahlen und Bindestriche.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Datum* (YYYY-MM-DD)</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="categories"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Kategorien (Optional, getrennt durch | )</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Kart-Slalom|Vereinsleben" {...field} />
+                      </FormControl>
+                      <FormDescription>Mehrere Kategorien mit "|" trennen, z.B. Kart-Slalom|Vereinsleben.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="excerpt"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Kurzbeschreibung / Auszug*</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Eine kurze Zusammenfassung des Artikels..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Inhalt* (HTML erlaubt)</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="<p>Der vollständige Artikelinhalt...</p>" {...field} rows={10}/>
+                      </FormControl>
+                      <FormDescription>Sie können hier HTML-Tags für Formatierungen verwenden.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="heroImageFile"
+                  render={({ field: { onChange, value, ...rest } }) => (
+                    <FormItem>
+                      <FormLabel>Titelbild Hochladen (Optional, max 5MB, JPG/PNG/GIF)</FormLabel>
+                      <FormControl>
+                        <Input
+                          id="heroImageFile"
+                          type="file"
+                          accept="image/jpeg,image/png,image/gif"
+                          onChange={(e) => {
+                            onChange(e.target.files);
+                          }}
+                          {...rest}
+                        />
+                      </FormControl>
+                      <FormDescription>Wählen Sie eine Bilddatei von Ihrem Computer. Wird zu Firebase Storage hochgeladen.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="dataAiHint"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Bild KI-Hinweis (Optional, für Titelbild)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="z.B. kart race" {...field} />
+                      </FormControl>
+                      <FormDescription>1-2 Stichworte für KI-Bildgenerierung, falls kein Bild angegeben.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="youtubeEmbed"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>YouTube Video ID (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="z.B. dQw4w9WgXcQ" {...field} />
+                      </FormControl>
+                      <FormDescription>Nur die ID des Videos, nicht die volle URL.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" disabled={isSubmitDisabled}>
+                  <FilePlus className="mr-2 h-4 w-4" />
+                  {form.formState.isSubmitting ? 'Wird verarbeitet...' : 'News-Artikel Speichern'}
+                </Button>
+              </form>
+            </Form>
+          )}
         </CardContent>
       </Card>
 
