@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'storage.googleapis.com',
         port: '',
-        pathname: '/**',
+        pathname: '/**', // This allows any path on the storage.googleapis.com hostname
       },
     ],
   },
