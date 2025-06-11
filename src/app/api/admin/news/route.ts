@@ -4,6 +4,8 @@ import formidable from 'formidable';
 import type { File } from 'formidable';
 import fs from 'fs/promises';
 import path from 'path';
+import { db } from '@/lib/firebaseConfig'; // Import Firestore instance
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 // Disable Next.js body parsing to allow formidable to handle it
 export const config = {
@@ -21,11 +23,9 @@ interface NewsFormData {
   content: string;
   youtubeEmbed?: string;
   dataAiHint?: string;
-  heroImageFile?: File; // formidable.File is typically just 'File' from formidable
+  heroImageFile?: File; 
 }
 
-// Ensure the upload directory exists (you might want to do this on server start or build)
-// For this example, we'll attempt it here, but it's better done elsewhere.
 const UPLOAD_DIR = path.join(process.cwd(), 'public', 'images', 'news_uploads');
 
 async function ensureUploadDirExists() {
@@ -34,25 +34,22 @@ async function ensureUploadDirExists() {
     console.log(`Upload directory ensured: ${UPLOAD_DIR}`);
   } catch (error) {
     console.error(`Error creating upload directory ${UPLOAD_DIR}:`, error);
-    // Depending on the error, you might want to throw it or handle it
   }
 }
 
 
 export async function POST(req: NextRequest) {
-  await ensureUploadDirExists(); // Attempt to create upload dir if it doesn't exist
+  await ensureUploadDirExists(); 
 
   try {
     const form = formidable({
-      uploadDir: UPLOAD_DIR, // Specify our upload directory
-      keepExtensions: true, // Keep original file extensions
-      filename: (name, ext, part, form) => { // Custom filename logic
-        // originalFilename might be undefined for some parts, ensure it's for file parts
+      uploadDir: UPLOAD_DIR, 
+      keepExtensions: true, 
+      filename: (name, ext, part, form) => { 
         const originalFilename = part.originalFilename || `file-${Date.now()}`;
         return `hero_${Date.now()}_${originalFilename.replace(/[^a-zA-Z0-9_.-]/g, '_')}`;
       },
       filter: function ({name, originalFilename, mimetype}) {
-        // keep only images
         return !!(mimetype && mimetype.includes("image") && originalFilename);
       }
     });
@@ -84,19 +81,19 @@ export async function POST(req: NextRequest) {
     }
 
     const newArticleData: any = {
-      slug,
-      title,
-      date,
-      categories: categories || '',
-      excerpt,
-      content,
+      slug: slug || '', // Ensure slug is not undefined
+      title: title || '',
+      date: date || new Date().toISOString().split('T')[0],
+      categories: categories ? categories.split('|').map(c => c.trim()) : [],
+      excerpt: excerpt || '',
+      content: content || '',
       youtubeEmbed: youtubeEmbed || '',
       dataAiHint: dataAiHint || '',
-      heroImageUrl: '', // Placeholder for image URL
+      heroImageUrl: '',
+      createdAt: serverTimestamp(), // Add a server timestamp
     };
 
     if (heroImageFile && heroImageFile.newFilename) {
-      // 'newFilename' is set by formidable when a file is successfully saved to 'uploadDir'
       const savedImageName = heroImageFile.newFilename;
       const imageUrl = `/images/news_uploads/${savedImageName}`;
       newArticleData.heroImageUrl = imageUrl;
@@ -104,29 +101,36 @@ export async function POST(req: NextRequest) {
       console.log(`File successfully saved to: ${path.join(UPLOAD_DIR, savedImageName)}`);
       console.log(`Image will be accessible at URL: ${imageUrl}`);
     } else if (heroImageFile) {
-      // This case might happen if formidable didn't save the file as expected
-      // or if the file was filtered out.
-      console.log('Hero image file was present in the form data but not saved by formidable. Original name:', heroImageFile.originalFilename);
-      // You might want to delete the temporary file if formidable didn't move it.
-      // formidable usually cleans up its temp files if not moved.
+      console.log('Hero image file was present in the form data but not saved. Original name:', heroImageFile.originalFilename);
       if (heroImageFile.filepath && heroImageFile.filepath !== path.join(UPLOAD_DIR, heroImageFile.newFilename || '')) {
          try { await fs.unlink(heroImageFile.filepath); console.log("Cleaned up temp file:", heroImageFile.filepath)} catch (e) {console.error("Error cleaning temp file:", e)}
       }
     }
 
-
-    console.log('--- NEWS ARTICLE DATA TO BE PERSISTED ---');
-    console.log(JSON.stringify(newArticleData, null, 2));
-    console.log('------------------------------------------');
-    console.warn('IMPORTANT: CSV/Database update is NOT implemented in this version.');
-    console.warn('The new article data above needs to be manually added to news.csv or a database for it to appear on the site.');
-    console.warn('For the image to appear, ensure it was saved correctly in public/images/news_uploads/ and the site might need a restart/redeploy if caching is involved.');
-
-    return NextResponse.json({
-      message: 'News article data received. Image (if provided) processed. Data persistence is SIMULATED (check server logs).',
-      data: newArticleData,
-      imagePath: newArticleData.heroImageUrl || 'No image uploaded or saved.'
-    }, { status: 200 });
+    // Save to Firestore
+    try {
+      const docRef = await addDoc(collection(db, "news"), newArticleData);
+      console.log("News article added to Firestore with ID: ", docRef.id);
+      return NextResponse.json({
+        message: `News article data processed. Image (if provided) saved locally. Data added to Firestore with ID: ${docRef.id}.`,
+        data: newArticleData,
+        imagePath: newArticleData.heroImageUrl || 'No image uploaded or saved.',
+        firestoreId: docRef.id,
+      }, { status: 200 });
+    } catch (error: any) {
+      console.error('Error adding document to Firestore:', error);
+      // Attempt to delete the locally saved file if Firestore save fails
+      if (newArticleData.heroImageUrl) {
+        const imagePathToDelete = path.join(process.cwd(), 'public', newArticleData.heroImageUrl);
+        try {
+          await fs.unlink(imagePathToDelete);
+          console.log(`Rolled back: Deleted local image ${newArticleData.heroImageUrl} due to Firestore error.`);
+        } catch (unlinkError) {
+          console.error(`Error deleting local image during rollback: ${unlinkError}`);
+        }
+      }
+      return NextResponse.json({ message: 'Error saving data to Firestore.', error: error.message || String(error) }, { status: 500 });
+    }
 
   } catch (error: any) {
     console.error('Error processing news article submission:', error);
