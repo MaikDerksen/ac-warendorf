@@ -1,3 +1,4 @@
+
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,7 @@ export default function AdminDashboardPage() {
         <CardContent>
           <p className="text-muted-foreground">
             Hier können Sie die Inhalte der Webseite verwalten. Wählen Sie einen Bereich zur Bearbeitung aus.
-            Diese Seite ist ein Platzhalter. Die Funktionalität wird in zukünftigen Schritten implementiert.
+            Die Bearbeitungsfunktionen in diesem Panel sind in Entwicklung. Aktuell werden die Daten über CSV-Dateien im Projekt verwaltet.
           </p>
         </CardContent>
       </Card>
@@ -38,9 +39,8 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-xs text-muted-foreground mb-4">{section.description}</p>
-              <Button variant="outline" className="w-full" asChild disabled>
-                {/* <Link href={section.href}>Verwalten</Link> */}
-                <span>Verwalten (Demnächst)</span>
+              <Button variant="outline" className="w-full" asChild>
+                <Link href={section.href}>Verwalten</Link>
               </Button>
             </CardContent>
           </Card>
