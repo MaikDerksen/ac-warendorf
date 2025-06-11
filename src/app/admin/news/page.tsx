@@ -30,7 +30,10 @@ const newsFormSchema = z.object({
   categories: z.string().optional(), // Pipe-separated
   excerpt: z.string().min(10, { message: "Kurzbeschreibung muss mindestens 10 Zeichen haben." }),
   content: z.string().min(20, { message: "Inhalt muss mindestens 20 Zeichen haben." }), // HTML content
-  heroImageFile: z.instanceof(FileList).optional().refine(files => !files || files.length === 0 || files[0].size <= 5 * 1024 * 1024, `Maximale Dateigröße ist 5MB.`).refine(files => !files || files.length === 0 || ['image/jpeg', 'image/png', 'image/gif'].includes(files[0].type), 'Nur JPG, PNG, GIF erlaubt.'),
+  heroImageFile: z.any() // Changed from z.instanceof(FileList) to z.any() to avoid SSR error
+    .optional()
+    .refine(files => !files || files.length === 0 || (files[0] && files[0].size <= 5 * 1024 * 1024), `Maximale Dateigröße ist 5MB.`)
+    .refine(files => !files || files.length === 0 || (files[0] && ['image/jpeg', 'image/png', 'image/gif'].includes(files[0].type)), 'Nur JPG, PNG, GIF erlaubt.'),
   youtubeEmbed: z.string().optional(),
   dataAiHint: z.string().max(50, {message: "Maximal 50 Zeichen."}).optional(),
 });
@@ -96,7 +99,7 @@ export default function AdminNewsPage() {
       if (fileInput) {
         fileInput.value = '';
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Fehler beim Senden des Formulars:", error);
       toast({
         title: "Fehler",
@@ -244,7 +247,7 @@ export default function AdminNewsPage() {
               <FormField
                 control={form.control}
                 name="heroImageFile"
-                render={({ field: { onChange, value, ...rest } }) => (
+                render={({ field: { onChange, value, ...rest } }) => ( // Ensure value is not spread to input
                   <FormItem>
                     <FormLabel>Titelbild Hochladen (Optional, max 5MB, JPG/PNG/GIF)</FormLabel>
                     <FormControl>
@@ -255,7 +258,7 @@ export default function AdminNewsPage() {
                         onChange={(e) => {
                           onChange(e.target.files);
                         }}
-                        {...rest}
+                        {...rest} // Spread the rest of the field props here
                       />
                     </FormControl>
                     <FormDescription>Wählen Sie eine Bilddatei von Ihrem Computer.</FormDescription>
