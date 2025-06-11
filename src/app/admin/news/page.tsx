@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
@@ -69,41 +69,50 @@ export default function AdminNewsPage() {
 
   async function onSubmit(data: NewsFormValues) {
     const formData = new FormData();
+    // Append all fields to FormData
     (Object.keys(data) as Array<keyof NewsFormValues>).forEach(key => {
       if (key === 'heroImageFile' && data.heroImageFile && data.heroImageFile.length > 0) {
-        formData.append(key, data.heroImageFile[0]);
-      } else if (data[key] !== undefined && data[key] !== null) {
-        formData.append(key, data[key] as string); // FormData values are string or Blob/File
+        formData.append(key, data.heroImageFile[0]); // Append the file itself
+      } else if (data[key] !== undefined && data[key] !== null && key !== 'heroImageFile') {
+        formData.append(key, data[key] as string);
       }
     });
 
     try {
       const response = await fetch('/api/admin/news', {
         method: 'POST',
-        body: formData,
+        body: formData, // Send FormData
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || 'Fehler beim Senden der Daten.');
+        throw new Error(result.message || 'Fehler beim Senden der Daten an den Server.');
       }
 
       toast({
-        title: "News Artikel (Simuliert) Hinzugefügt!",
-        description: "Der Artikel wurde erfolgreich (simuliert) verarbeitet. Details in der Server-Konsole. Die Live-Aktualisierung der CSV-Datei ist nicht Teil dieser Demo.",
+        title: "News Artikel Verarbeitet!",
+        description: (
+          <div>
+            <p>{result.message}</p>
+            {result.imagePath && <p>Bildpfad (falls hochgeladen): {result.imagePath}</p>}
+            <p className="mt-2 font-semibold">Wichtiger Hinweis:</p>
+            <p>Damit der neue Artikel auf der Webseite erscheint, müssen die Daten manuell in die <code>news.csv</code> Datei eingetragen werden. Änderungen an der CSV-Datei erfordern einen Neustart/Rebuild der Anwendung, um live sichtbar zu werden.</p>
+          </div>
+        ),
+        duration: 9000, // Longer duration for important message
       });
       form.reset();
-       // Manually reset file input as form.reset() might not clear it
+      // Manually reset file input as form.reset() might not clear it effectively
       const fileInput = document.getElementById('heroImageFile') as HTMLInputElement | null;
       if (fileInput) {
         fileInput.value = '';
       }
     } catch (error: any) {
-      console.error("Fehler beim Senden des Formulars:", error);
+      console.error("Fehler beim Senden des News-Formulars:", error);
       toast({
         title: "Fehler",
-        description: error.message || "Ein Fehler ist aufgetreten.",
+        description: error.message || "Ein Fehler ist beim Verarbeiten des Artikels aufgetreten.",
         variant: "destructive",
       });
     }
@@ -158,7 +167,7 @@ export default function AdminNewsPage() {
         <CardHeader>
           <CardTitle className="flex items-center"><FilePlus className="mr-2 h-5 w-5 text-primary"/>Neuen News-Artikel Erstellen</CardTitle>
           <CardDescription>
-            Füllen Sie die Felder aus, um einen neuen Artikel hinzuzufügen. Das Speichern ist simuliert.
+            Füllen Sie die Felder aus, um einen neuen Artikel hinzuzufügen. Das Bild wird (im lokalen Development) versucht in <code>public/images/news_uploads/</code> zu speichern. Die CSV-Datei wird NICHT live aktualisiert.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -247,7 +256,7 @@ export default function AdminNewsPage() {
               <FormField
                 control={form.control}
                 name="heroImageFile"
-                render={({ field: { onChange, value, ...rest } }) => ( // Ensure value is not spread to input
+                render={({ field: { onChange, value, ...rest } }) => (
                   <FormItem>
                     <FormLabel>Titelbild Hochladen (Optional, max 5MB, JPG/PNG/GIF)</FormLabel>
                     <FormControl>
@@ -258,10 +267,10 @@ export default function AdminNewsPage() {
                         onChange={(e) => {
                           onChange(e.target.files);
                         }}
-                        {...rest} // Spread the rest of the field props here
+                        {...rest}
                       />
                     </FormControl>
-                    <FormDescription>Wählen Sie eine Bilddatei von Ihrem Computer.</FormDescription>
+                    <FormDescription>Wählen Sie eine Bilddatei von Ihrem Computer. Wird versucht in public/images/news_uploads/ zu speichern.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -296,7 +305,7 @@ export default function AdminNewsPage() {
               />
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 <FilePlus className="mr-2 h-4 w-4" />
-                {form.formState.isSubmitting ? 'Wird verarbeitet...' : 'News-Artikel Hinzufügen (Simuliert)'}
+                {form.formState.isSubmitting ? 'Wird verarbeitet...' : 'News-Artikel Hinzufügen'}
               </Button>
             </form>
           </Form>
