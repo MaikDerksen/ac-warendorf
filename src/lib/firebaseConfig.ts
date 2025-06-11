@@ -3,16 +3,17 @@
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getAuth } from "firebase/auth"; // Import getAuth
 
 // Your web app's Firebase configuration
 // IMPORTANT: Ensure this is your actual Firebase project configuration!
 const firebaseConfig: FirebaseOptions = {
-  apiKey: "AIzaSyCryN6VkAF6K7AL3ssJwakrEqm_K4VBK3Q", // Replace with your actual apiKey
-  authDomain: "ac-warendorf-digital.firebaseapp.com", // Replace with your actual authDomain
-  projectId: "ac-warendorf-digital", // Replace with your actual projectId
-  storageBucket: "ac-warendorf-digital.appspot.com", // Replace with your actual storageBucket
-  messagingSenderId: "856092521846", // Replace with your actual messagingSenderId
-  appId: "1:856092521846:web:07db762d74ae7aa15df657" // Replace with your actual appId
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY, 
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN, 
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID, 
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase
@@ -20,5 +21,6 @@ const firebaseConfig: FirebaseOptions = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 const storage = getStorage(app);
+const auth = getAuth(app); // Initialize and export auth
 
-export { app, db, storage };
+export { app, db, storage, auth }; // Export auth
