@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card'; // Removed CardHeader, CardTitle as not directly used for contact cards
+import { Card, CardContent } from '@/components/ui/card';
 import { NewsCard } from '@/components/news-card';
 import { PageHeader } from '@/components/page-header';
 import { getAllNewsArticles, getAllBoardMembers } from '@/lib/data-loader';
@@ -11,10 +11,10 @@ import { Mail, UserCircle } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
 export default async function HomePage() {
-  const allNews = await getAllNewsArticles();
+  const allNews = await getAllNewsArticles(); // Now fetches from Firestore
   const latestNews = allNews.slice(0, 3);
   
-  const allBoardMembers = await getAllBoardMembers();
+  const allBoardMembers = await getAllBoardMembers(); // Still from CSV
   const contactPersonRoles = ['1. Vorsitzender', 'Programmierer', 'Sportleiterin', 'Jugendleiter'];
   const contactPersons = allBoardMembers.filter(member => contactPersonRoles.includes(member.role));
 
@@ -26,8 +26,8 @@ export default async function HomePage() {
             <Image
               src={person.imageUrl}
               alt={person.name}
-              layout="fill"
-              objectFit="cover"
+              fill // Next 13+
+              style={{ objectFit: 'cover' }}
               className="rounded-lg"
               data-ai-hint="person photo"
             />
@@ -44,13 +44,11 @@ export default async function HomePage() {
           <h3 className="text-xl font-headline font-semibold text-primary mb-1">{person.name}</h3>
           <p className="text-sm text-muted-foreground mb-2">{person.role}</p>
           {person.slug ? (
-            // If the entire card is a link (due to person.slug), display email as text.
             <div className="text-sm text-primary flex items-center justify-center sm:justify-start">
               <Mail className="h-4 w-4 mr-2" />
               {person.email.replace('[at]', '@')}
             </div>
           ) : (
-            // If the card is not a link, the email can be a mailto: link.
             <a
               href={`mailto:${person.email.replace('[at]', '@')}`}
               className="text-sm text-primary hover:underline flex items-center justify-center sm:justify-start"
@@ -102,15 +100,28 @@ export default async function HomePage() {
       {/* Neueste Nachrichten */}
       <section>
         <PageHeader title="Neueste Nachrichten" />
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {latestNews.map((article) => (
-            <NewsCard key={article.slug} article={article} />
-          ))}
-        </div>
+        {latestNews.length > 0 ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {latestNews.map((article) => (
+              <NewsCard key={article.id} article={article} />
+            ))}
+          </div>
+        ) : (
+           <p className="text-center text-muted-foreground py-6">
+             Zurzeit sind keine aktuellen Nachrichten vorhanden.
+           </p>
+        )}
         {allNews.length > 3 && (
            <div className="mt-8 text-center">
             <Button asChild variant="outline">
               <Link href="/news">Alle Nachrichten anzeigen</Link>
+            </Button>
+          </div>
+        )}
+         {allNews.length === 0 && latestNews.length === 0 && (
+           <div className="mt-8 text-center">
+            <Button asChild variant="outline">
+              <Link href="/news">Zum Nachrichtenarchiv</Link>
             </Button>
           </div>
         )}

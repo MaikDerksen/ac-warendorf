@@ -1,14 +1,16 @@
 
 export interface NewsArticle {
+  id: string; // Added for Firestore document ID
   slug: string;
   title: string;
   date: string; // YYYY-MM-DD
-  categories: string[]; // Will be pipe-separated in CSV
+  categories: string[];
   excerpt: string;
   content: string; // HTML content
   heroImageUrl?: string;
   dataAiHint?: string;
   youtubeEmbed?: string;
+  createdAt?: any; // Firestore Timestamp, optional for now
 }
 
 export interface BoardMember {
@@ -28,7 +30,7 @@ export interface Pilot {
   profileSlug?: string;
   imageUrl?: string;
   bio?: string;
-  achievements?: string[]; // Will be pipe-separated in CSV
+  achievements?: string[];
 }
 
 export interface FaqItem {

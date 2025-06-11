@@ -7,15 +7,13 @@ import { getFirestore } from "firebase/firestore";
 // Your web app's Firebase configuration
 // IMPORTANT: Replace with your actual Firebase project configuration!
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY", // Replace with your actual API key
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com", // Replace with your actual auth domain
-  projectId: "YOUR_PROJECT_ID", // Replace with your actual project ID
-  storageBucket: "YOUR_PROJECT_ID.appspot.com", // Replace with your actual storage bucket
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // Replace with your actual messaging sender ID
-  appId: "YOUR_APP_ID", // Replace with your actual app ID
-  // measurementId: "G-YOUR_MEASUREMENT_ID" // Optional: For Google Analytics
+  apiKey: "AIzaSyCryN6VkAF6K7AL3ssJwakrEqm_K4VBK3Q",
+  authDomain: "ac-warendorf-digital.firebaseapp.com",
+  projectId: "ac-warendorf-digital",
+  storageBucket: "ac-warendorf-digital.firebasestorage.app",
+  messagingSenderId: "856092521846",
+  appId: "1:856092521846:web:07db762d74ae7aa15df657"
 };
-
 // Initialize Firebase
 // To avoid reinitializing the app on hot reloads, check if it's already initialized.
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();

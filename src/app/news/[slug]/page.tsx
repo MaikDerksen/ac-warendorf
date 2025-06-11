@@ -4,7 +4,7 @@ import type { NewsArticle } from '@/types';
 import { PageHeader } from '@/components/page-header';
 import Image from 'next/image';
 import { YouTubeEmbed } from '@/components/youtube-embed';
-import { CalendarDays, Tag } from 'lucide-react'; // Removed Share2 as it's commented out
+import { CalendarDays, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -18,14 +18,14 @@ interface NewsDetailPageProps {
 }
 
 export async function generateStaticParams() {
-  const articles = await getAllNewsArticles();
+  const articles = await getAllNewsArticles(); // Now fetches from Firestore
   return articles.map((article) => ({
     slug: article.slug,
   }));
 }
 
 export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
-  const article = await getNewsArticleBySlug(params.slug);
+  const article = await getNewsArticleBySlug(params.slug); // Now fetches from Firestore
 
   if (!article) {
     notFound();
@@ -59,8 +59,8 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
           <Image
             src={article.heroImageUrl}
             alt={article.title}
-            layout="fill"
-            objectFit="cover"
+            fill // Changed from layout="fill" objectFit="cover" for Next 13+
+            style={{ objectFit: 'cover' }} // Alternative for objectFit
             priority
             data-ai-hint={article.dataAiHint || "news detail image"}
           />
@@ -89,21 +89,6 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
         </section>
       )}
       
-      {/* Optional Social Sharing Buttons - Placeholder */}
-      {/* 
-      <section className="mt-8 pt-6 border-t">
-        <h3 className="text-lg font-semibold mb-3 font-headline">Artikel teilen</h3>
-        <div className="flex space-x-3">
-          <Button variant="outline" size="icon" aria-label="Auf Facebook teilen">
-            <Share2 className="h-5 w-5" /> Facebook (TODO)
-          </Button>
-          <Button variant="outline" size="icon" aria-label="Auf Twitter teilen">
-            <Share2 className="h-5 w-5" /> Twitter (TODO)
-          </Button>
-        </div>
-      </section>
-      */}
-
       <div className="mt-12 text-center">
         <Button asChild variant="outline">
           <Link href="/news">Zurück zum News-Archiv</Link>
