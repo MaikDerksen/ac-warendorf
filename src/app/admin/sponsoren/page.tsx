@@ -26,7 +26,7 @@ const sponsorFormSchema = z.object({
   id: z.string().min(1, { message: "ID wird benötigt (z.B. eindeutiger Kurzname)." }),
   name: z.string().min(2, { message: "Name muss mindestens 2 Zeichen lang sein." }),
   level: z.string().min(3, { message: "Sponsoring-Level muss angegeben werden." }),
-  logoUrl: z.string().url({ message: "Bitte geben Sie eine gültige URL für das Logo ein." }),
+  logoFile: z.any(), // For file upload, assuming required
   websiteUrl: z.string().url({ message: "Bitte eine gültige URL eingeben oder leer lassen." }).optional().or(z.literal('')),
   dataAiHint: z.string().optional(),
 });
@@ -42,7 +42,7 @@ export default function AdminSponsorenPage() {
       id: "",
       name: "",
       level: "Partner",
-      logoUrl: "",
+      logoFile: undefined,
       websiteUrl: "",
       dataAiHint: "",
     },
@@ -58,9 +58,12 @@ export default function AdminSponsorenPage() {
 
   function onSubmit(data: SponsorFormValues) {
     console.log(data);
+     if (data.logoFile && data.logoFile.length > 0) {
+      console.log("Selected file:", data.logoFile[0].name);
+    }
     toast({
       title: "Funktion in Entwicklung",
-      description: "Das Hinzufügen von Sponsoren über dieses Formular wird in Kürze implementiert. Bitte bearbeiten Sie vorerst die CSV-Datei.",
+      description: "Das Hinzufügen von Sponsoren über dieses Formular (inkl. Datei-Upload) wird in Kürze implementiert. Bitte bearbeiten Sie vorerst die CSV-Datei.",
     });
   }
 
@@ -161,14 +164,19 @@ export default function AdminSponsorenPage() {
               />
               <FormField
                 control={form.control}
-                name="logoUrl"
+                name="logoFile"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Logo URL*</FormLabel>
+                    <FormLabel>Logo Hochladen*</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://example.com/logo.png oder /images/sponsoren/logo.png" {...field} />
+                      <Input 
+                        type="file" 
+                        accept="image/jpeg,image/png,image/gif,image/svg+xml"
+                        onChange={(e) => field.onChange(e.target.files)}
+                        ref={field.ref}
+                      />
                     </FormControl>
-                     <FormDescription>Muss eine vollständige URL oder ein Pfad beginnend mit /images/... sein.</FormDescription>
+                     <FormDescription>Wählen Sie eine Logodatei von Ihrem Computer.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

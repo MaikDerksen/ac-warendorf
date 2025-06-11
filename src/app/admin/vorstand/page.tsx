@@ -29,7 +29,7 @@ const boardMemberFormSchema = z.object({
   role: z.string().min(3, { message: "Rolle muss angegeben werden." }),
   term: z.string().optional(),
   email: z.string().email({ message: "Bitte eine gültige E-Mail-Adresse eingeben." }),
-  imageUrl: z.string().url({ message: "Bitte eine gültige URL für das Bild eingeben." }).optional().or(z.literal('')),
+  imageFile: z.any().optional(), // For file upload
   slug: z.string().optional(),
   description: z.string().optional(),
 });
@@ -47,7 +47,7 @@ export default function AdminVorstandPage() {
       role: "",
       term: "",
       email: "",
-      imageUrl: "",
+      imageFile: undefined,
       slug: "",
       description: "",
     },
@@ -63,9 +63,12 @@ export default function AdminVorstandPage() {
 
   function onSubmit(data: BoardMemberFormValues) {
     console.log(data);
+    if (data.imageFile && data.imageFile.length > 0) {
+      console.log("Selected file:", data.imageFile[0].name);
+    }
     toast({
       title: "Funktion in Entwicklung",
-      description: "Das Hinzufügen von Vorstandsmitgliedern über dieses Formular wird in Kürze implementiert. Bitte bearbeiten Sie vorerst die CSV-Datei.",
+      description: "Das Hinzufügen von Vorstandsmitgliedern über dieses Formular (inkl. Datei-Upload) wird in Kürze implementiert. Bitte bearbeiten Sie vorerst die CSV-Datei.",
     });
   }
 
@@ -193,13 +196,19 @@ export default function AdminVorstandPage() {
               />
               <FormField
                 control={form.control}
-                name="imageUrl"
+                name="imageFile"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bild URL (Optional)</FormLabel>
+                    <FormLabel>Bild Hochladen (Optional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://example.com/bild.jpg oder /images/vorstand/person.jpg" {...field} />
+                       <Input 
+                        type="file" 
+                        accept="image/jpeg,image/png,image/gif"
+                        onChange={(e) => field.onChange(e.target.files)}
+                        ref={field.ref}
+                       />
                     </FormControl>
+                    <FormDescription>Wählen Sie eine Bilddatei des Mitglieds von Ihrem Computer.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

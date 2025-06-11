@@ -30,7 +30,7 @@ const newsFormSchema = z.object({
   categories: z.string().optional(), // Pipe-separated
   excerpt: z.string().min(10, { message: "Kurzbeschreibung muss mindestens 10 Zeichen haben." }),
   content: z.string().min(20, { message: "Inhalt muss mindestens 20 Zeichen haben." }), // HTML content
-  heroImageUrl: z.string().url({ message: "Bitte eine gültige URL eingeben oder leer lassen." }).optional().or(z.literal('')),
+  heroImageFile: z.any().optional(), // For file upload
   youtubeEmbed: z.string().optional(),
   dataAiHint: z.string().optional(),
 });
@@ -50,7 +50,7 @@ export default function AdminNewsPage() {
       categories: "",
       excerpt: "",
       content: "<p>Ihr Artikelinhalt hier...</p>",
-      heroImageUrl: "",
+      heroImageFile: undefined,
       youtubeEmbed: "",
       dataAiHint: "",
     },
@@ -66,9 +66,12 @@ export default function AdminNewsPage() {
 
   function onSubmit(data: NewsFormValues) {
     console.log(data);
+    if (data.heroImageFile && data.heroImageFile.length > 0) {
+      console.log("Selected file:", data.heroImageFile[0].name);
+    }
     toast({
       title: "Funktion in Entwicklung",
-      description: "Das Hinzufügen von News-Artikeln über dieses Formular wird in Kürze implementiert. Bitte bearbeiten Sie vorerst die CSV-Datei.",
+      description: "Das Hinzufügen von News-Artikeln über dieses Formular (inkl. Datei-Upload) wird in Kürze implementiert. Bitte bearbeiten Sie vorerst die CSV-Datei.",
     });
   }
 
@@ -209,13 +212,20 @@ export default function AdminNewsPage() {
               />
               <FormField
                 control={form.control}
-                name="heroImageUrl"
+                name="heroImageFile"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Titelbild URL (Optional)</FormLabel>
+                    <FormLabel>Titelbild Hochladen (Optional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://example.com/bild.jpg oder /images/news/artikel.jpg" {...field} />
+                      {/* Use a new ref for file input if needed, or manage value clearing */}
+                      <Input 
+                        type="file" 
+                        accept="image/jpeg,image/png,image/gif" 
+                        onChange={(e) => field.onChange(e.target.files)}
+                        ref={field.ref} // react-hook-form handles the ref
+                      />
                     </FormControl>
+                    <FormDescription>Wählen Sie eine Bilddatei von Ihrem Computer.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

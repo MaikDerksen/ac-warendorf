@@ -26,7 +26,7 @@ import {
 const pilotFormSchema = z.object({
   name: z.string().min(2, { message: "Name muss mindestens 2 Zeichen lang sein." }),
   profileSlug: z.string().optional(),
-  imageUrl: z.string().url({ message: "Bitte geben Sie eine gültige URL für das Bild ein." }).optional().or(z.literal('')),
+  imageFile: z.any().optional(), // For file upload
   bio: z.string().optional(),
   achievements: z.string().optional(), // Pipe-separated
 });
@@ -41,7 +41,7 @@ export default function AdminPilotenPage() {
     defaultValues: {
       name: "",
       profileSlug: "",
-      imageUrl: "",
+      imageFile: undefined,
       bio: "",
       achievements: "",
     },
@@ -57,9 +57,12 @@ export default function AdminPilotenPage() {
 
   function onSubmit(data: PilotFormValues) {
     console.log(data);
+    if (data.imageFile && data.imageFile.length > 0) {
+      console.log("Selected file:", data.imageFile[0].name);
+    }
     toast({
       title: "Funktion in Entwicklung",
-      description: "Das Hinzufügen von Piloten über dieses Formular wird in Kürze implementiert. Bitte bearbeiten Sie vorerst die CSV-Datei.",
+      description: "Das Hinzufügen von Piloten über dieses Formular (inkl. Datei-Upload) wird in Kürze implementiert. Bitte bearbeiten Sie vorerst die CSV-Datei.",
     });
     // form.reset(); // Optionally reset form
   }
@@ -148,14 +151,19 @@ export default function AdminPilotenPage() {
               />
               <FormField
                 control={form.control}
-                name="imageUrl"
+                name="imageFile"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bild URL (Optional)</FormLabel>
+                    <FormLabel>Bild Hochladen (Optional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://example.com/bild.jpg oder /images/pilots/bild.jpg" {...field} />
+                      <Input 
+                        type="file" 
+                        accept="image/jpeg,image/png,image/gif"
+                        onChange={(e) => field.onChange(e.target.files)}
+                        ref={field.ref}
+                      />
                     </FormControl>
-                    <FormDescription>URL zum Bild des Piloten. Muss eine vollständige URL oder ein Pfad beginnend mit /images/... sein.</FormDescription>
+                    <FormDescription>Wählen Sie eine Bilddatei des Piloten von Ihrem Computer.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
