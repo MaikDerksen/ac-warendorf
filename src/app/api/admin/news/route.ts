@@ -2,11 +2,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { adminApp } from '@/lib/firebaseAdminConfig';
 import { verifyAdmin } from '@/lib/adminAuth';
-import type admin from 'firebase-admin';
+import admin from 'firebase-admin'; // Changed from 'import type'
 
 export const config = {
   api: {
-    bodyParser: false, // No longer strictly necessary with req.formData(), but doesn't hurt
+    bodyParser: false,
   },
 };
 
@@ -19,7 +19,7 @@ interface NewsFormData {
   content: string;
   youtubeEmbed?: string;
   dataAiHint?: string;
-  heroImageFile?: File; // Web API File type
+  heroImageFile?: File;
 }
 
 async function uploadFileToFirebaseAdmin(file: File): Promise<string> {
