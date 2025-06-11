@@ -1,9 +1,10 @@
-import { mockNewsArticles } from '@/lib/mock-data';
+
+import { getNewsArticleBySlug, getAllNewsArticles } from '@/lib/data-loader';
 import type { NewsArticle } from '@/types';
 import { PageHeader } from '@/components/page-header';
 import Image from 'next/image';
 import { YouTubeEmbed } from '@/components/youtube-embed';
-import { CalendarDays, Tag, Share2 } from 'lucide-react';
+import { CalendarDays, Tag } from 'lucide-react'; // Removed Share2 as it's commented out
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -16,19 +17,15 @@ interface NewsDetailPageProps {
   };
 }
 
-// Helper function to simulate fetching data
-async function getArticle(slug: string): Promise<NewsArticle | undefined> {
-  return mockNewsArticles.find((article) => article.slug === slug);
-}
-
 export async function generateStaticParams() {
-  return mockNewsArticles.map((article) => ({
+  const articles = await getAllNewsArticles();
+  return articles.map((article) => ({
     slug: article.slug,
   }));
 }
 
 export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
-  const article = await getArticle(params.slug);
+  const article = await getNewsArticleBySlug(params.slug);
 
   if (!article) {
     notFound();

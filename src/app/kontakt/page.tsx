@@ -1,11 +1,13 @@
+
 import { PageHeader } from '@/components/page-header';
 import { ContactForm } from '@/components/contact-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, Phone, MapPin } from 'lucide-react';
-import { mockBoardMembers } from '@/lib/mock-data';
+import { getAllBoardMembers } from '@/lib/data-loader';
 
-export default function KontaktPage() {
-  const chairman = mockBoardMembers.find(m => m.role === "1. Vorsitzender");
+export default async function KontaktPage() {
+  const boardMembers = await getAllBoardMembers();
+  const chairman = boardMembers.find(m => m.role === "1. Vorsitzender");
 
   return (
     <div className="space-y-12">

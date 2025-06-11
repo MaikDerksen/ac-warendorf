@@ -1,27 +1,29 @@
+
 import { PageHeader } from '@/components/page-header';
 import { NewsCard } from '@/components/news-card';
-import { mockNewsArticles } from '@/lib/mock-data';
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Search } from 'lucide-react';
+import { getAllNewsArticles } from '@/lib/data-loader';
+// import { Input } from "@/components/ui/input"
+// import { Button } from "@/components/ui/button"
+// import { Search } from 'lucide-react';
 
 // This is a client component to allow for future filtering/searching
 // For now, it just displays all mock articles
 // 'use client';
 // import { useState } from 'react';
 
-export default function NewsArchivPage() {
+export default async function NewsArchivPage() {
+  const allArticles = await getAllNewsArticles();
   // const [searchTerm, setSearchTerm] = useState('');
   // const [selectedCategory, setSelectedCategory] = useState('');
 
-  // const filteredArticles = mockNewsArticles.filter(article => {
+  // const filteredArticles = allArticles.filter(article => {
   //   const matchesSearchTerm = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
   //                             article.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
   //   const matchesCategory = selectedCategory ? article.categories.includes(selectedCategory) : true;
   //   return matchesSearchTerm && matchesCategory;
   // });
   
-  // const allCategories = Array.from(new Set(mockNewsArticles.flatMap(article => article.categories)));
+  // const allCategories = Array.from(new Set(allArticles.flatMap(article => article.categories)));
 
   return (
     <div className="space-y-8">
@@ -61,9 +63,9 @@ export default function NewsArchivPage() {
       </div>
       */}
 
-      {mockNewsArticles.length > 0 ? (
+      {allArticles.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockNewsArticles.map((article) => (
+          {allArticles.map((article) => (
             <NewsCard key={article.slug} article={article} />
           ))}
         </div>

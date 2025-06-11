@@ -4,8 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { getAllSponsors } from '@/lib/data-loader';
+import type { Sponsor } from '@/types';
 
-export default function SponsorenPage() {
+export default async function SponsorenPage() {
+  const sponsors = await getAllSponsors();
+
   return (
     <div className="space-y-8">
       <PageHeader title="Unsere Sponsoren" subtitle="Wir danken unseren Unterstützern!" />
@@ -28,23 +32,32 @@ export default function SponsorenPage() {
         <CardHeader>
           <CardTitle className="text-xl font-headline text-primary">Unsere Partner</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-6 items-center text-center">
-          {/* Replace with actual sponsor data and logos */}
-          <div className="flex flex-col items-center p-4 border rounded-lg">
-            <Image src="/images/sponsoren/spk-logo-mobile.png" alt="Sparkasse WAF Logo" width={150} height={80} className="mb-2 object-contain" data-ai-hint="company logo"/>
-            <p className="text-sm font-medium text-foreground">Sparkasse WAF</p>
-            <p className="text-xs text-muted-foreground">Hauptsponsor</p>
-          </div>
-          <div className="flex flex-col items-center p-4 border rounded-lg">
-            <Image src="/images/sponsoren/Schnecking_Sponsoring-1-1200x428.png" alt="Mustermann GmbH Logo" width={150} height={80} className="mb-2 object-contain" data-ai-hint="business logo"/>
-            <p className="text-sm font-medium text-foreground">Schnecking</p>
-            <p className="text-xs text-muted-foreground">Premium Partner</p>
-          </div>
-          <div className="flex flex-col items-center p-4 border rounded-lg">
-            <Image src="/images/sponsoren/sponsor-logo-3.png" alt="KFZ-Service Meier Logo" width={150} height={80} className="mb-2 object-contain" data-ai-hint="brand icon"/>
-            <p className="text-sm font-medium text-foreground">KFZ-Service Meier</p>
-            <p className="text-xs text-muted-foreground">Unterstützer</p>
-          </div>
+        <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-stretch text-center">
+          {sponsors.length > 0 ? sponsors.map((sponsor: Sponsor) => (
+            <div key={sponsor.id} className="flex flex-col items-center justify-between p-4 border rounded-lg shadow-md hover:shadow-lg transition-shadow">
+              <div className="relative w-full h-20 mb-3">
+                <Image 
+                  src={sponsor.logoUrl} 
+                  alt={`${sponsor.name} Logo`} 
+                  layout="fill" 
+                  objectFit="contain" 
+                  className="mb-2" 
+                  data-ai-hint={sponsor.dataAiHint || "company logo"}
+                />
+              </div>
+              <div className="mt-auto">
+                <p className="text-sm font-medium text-foreground">{sponsor.name}</p>
+                <p className="text-xs text-muted-foreground mb-2">{sponsor.level}</p>
+                {sponsor.websiteUrl && (
+                  <Button variant="link" size="sm" asChild className="text-xs p-0 h-auto">
+                    <a href={sponsor.websiteUrl} target="_blank" rel="noopener noreferrer">Webseite besuchen</a>
+                  </Button>
+                )}
+              </div>
+            </div>
+          )) : (
+            <p className="col-span-full text-muted-foreground">Aktuell sind keine Sponsoren gelistet.</p>
+          )}
         </CardContent>
       </Card>
       

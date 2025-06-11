@@ -1,5 +1,6 @@
+
 import { PageHeader } from '@/components/page-header';
-import { mockFaqItems } from '@/lib/mock-data';
+import { getAllFaqItems } from '@/lib/data-loader';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,8 @@ const iconMap: { [key: string]: React.ElementType } = {
 };
 
 
-export default function MitgliedWerdenPage() {
+export default async function MitgliedWerdenPage() {
+  const faqItems = await getAllFaqItems();
   return (
     <div className="space-y-12">
       <PageHeader title="Mitglied werden im Kart-Slalom Team" subtitle="Alle wichtigen Informationen für den Einstieg" />
@@ -30,7 +32,7 @@ export default function MitgliedWerdenPage() {
             </CardHeader>
             <CardContent>
               <Accordion type="single" collapsible className="w-full">
-                {mockFaqItems.map((item) => {
+                {faqItems.map((item) => {
                   const IconComponent = iconMap[item.id] || HelpCircle;
                   return (
                     <AccordionItem value={item.id} key={item.id}>

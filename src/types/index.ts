@@ -3,36 +3,45 @@ export interface NewsArticle {
   slug: string;
   title: string;
   date: string; // YYYY-MM-DD
-  categories: string[];
+  categories: string[]; // Will be pipe-separated in CSV
   excerpt: string;
-  content: string; // HTML or Markdown
+  content: string; // HTML content
   heroImageUrl?: string;
-  dataAiHint?: string; // For AI image generation hints
-  youtubeEmbed?: string; // YouTube video ID or full embed code
+  dataAiHint?: string;
+  youtubeEmbed?: string;
 }
 
 export interface BoardMember {
   id: string;
   name: string;
-  role: string; // Funktion
-  term?: string; // Amtszeit (e.g., "→ 2026")
+  role: string;
+  term?: string;
   email: string;
-  imageUrl?: string; // Path to image in /public folder
-  slug?: string; // For individual profile page
-  description?: string; // Additional details about the member or their role
+  imageUrl?: string;
+  slug?: string;
+  description?: string;
 }
 
 export interface Pilot {
   id: string;
-  name: string; // Vorname or Pseudonym
-  profileSlug?: string; // For future profile page
-  imageUrl?: string; // Path to image in /public folder
-  bio?: string; // For the "About Me" section on their profile
-  achievements?: string[]; // List of achievements
+  name: string;
+  profileSlug?: string;
+  imageUrl?: string;
+  bio?: string;
+  achievements?: string[]; // Will be pipe-separated in CSV
 }
 
 export interface FaqItem {
   id: string;
   question: string;
   answer: string;
+}
+
+export interface Sponsor {
+  id: string;
+  name: string;
+  level: string; // e.g., Hauptsponsor, Premium Partner
+  logoUrl: string;
+  websiteUrl?: string;
+  dataAiHint?: string;
 }

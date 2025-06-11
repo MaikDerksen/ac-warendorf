@@ -1,10 +1,12 @@
+
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { mockBoardMembers } from '@/lib/mock-data';
+import { getAllBoardMembers } from '@/lib/data-loader';
 
-export default function ImpressumPage() {
-  const webmaster = mockBoardMembers.find(member => member.role.toLowerCase() === 'webmaster');
-  const chairman = mockBoardMembers.find(member => member.role.toLowerCase() === '1. vorsitzender');
+export default async function ImpressumPage() {
+  const boardMembers = await getAllBoardMembers();
+  const webmaster = boardMembers.find(member => member.role.toLowerCase() === 'programmierer'); // Assuming 'Programmierer' is webmaster
+  const chairman = boardMembers.find(member => member.role.toLowerCase() === '1. vorsitzender');
   
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -23,7 +25,7 @@ export default function ImpressumPage() {
 
           <div>
             <h3 className="font-semibold">Vertreten durch:</h3>
-            <p>{chairman ? chairman.name : 'Max Mustermann'} ({chairman ? chairman.role : '1. Vorsitzender'})</p>
+            <p>{chairman ? chairman.name : 'Vorname Nachname'} ({chairman ? chairman.role : '1. Vorsitzender'})</p>
           </div>
 
           <div>
@@ -52,7 +54,7 @@ export default function ImpressumPage() {
         </CardHeader>
         <CardContent className="space-y-4 text-foreground">
           <p>
-            {chairman ? chairman.name : 'Max Mustermann'}<br />
+            {chairman ? chairman.name : 'Vorname Nachname'}<br />
             Musterstraße 1<br />
             48231 Warendorf
           </p>

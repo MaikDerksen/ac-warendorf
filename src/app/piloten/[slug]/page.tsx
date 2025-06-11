@@ -1,5 +1,5 @@
 
-import { mockPilots } from '@/lib/mock-data';
+import { getPilotBySlug, getAllPilots } from '@/lib/data-loader';
 import type { Pilot } from '@/types';
 import { PageHeader } from '@/components/page-header';
 import Image from 'next/image';
@@ -15,12 +15,9 @@ interface PilotProfilePageProps {
   };
 }
 
-async function getPilot(slug: string): Promise<Pilot | undefined> {
-  return mockPilots.find((pilot) => pilot.profileSlug === slug);
-}
-
 export async function generateStaticParams() {
-  return mockPilots
+  const pilots = await getAllPilots();
+  return pilots
     .filter(pilot => pilot.profileSlug)
     .map((pilot) => ({
       slug: pilot.profileSlug!,
@@ -28,7 +25,7 @@ export async function generateStaticParams() {
 }
 
 export default async function PilotProfilePage({ params }: PilotProfilePageProps) {
-  const pilot = await getPilot(params.slug);
+  const pilot = await getPilotBySlug(params.slug);
 
   if (!pilot) {
     notFound();

@@ -2,17 +2,21 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card'; // Removed CardHeader, CardTitle as not directly used for contact cards
 import { NewsCard } from '@/components/news-card';
 import { PageHeader } from '@/components/page-header';
-import { mockNewsArticles, mockBoardMembers } from '@/lib/mock-data';
+import { getAllNewsArticles, getAllBoardMembers } from '@/lib/data-loader';
 import type { BoardMember } from '@/types';
 import { Mail, UserCircle } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
-export default function HomePage() {
-  const latestNews = mockNewsArticles.slice(0, 3);
-  const contactPersons = mockBoardMembers.filter(member => ['1. Vorsitzender', 'Programmierer', 'Sportleiterin', 'Jugendleiter'].includes(member.role));
+export default async function HomePage() {
+  const allNews = await getAllNewsArticles();
+  const latestNews = allNews.slice(0, 3);
+  
+  const allBoardMembers = await getAllBoardMembers();
+  const contactPersonRoles = ['1. Vorsitzender', 'Programmierer', 'Sportleiterin', 'Jugendleiter'];
+  const contactPersons = allBoardMembers.filter(member => contactPersonRoles.includes(member.role));
 
   const renderContactPersonCard = (person: BoardMember) => {
     const cardContent = (
@@ -40,10 +44,10 @@ export default function HomePage() {
           <h3 className="text-xl font-headline font-semibold text-primary mb-1">{person.name}</h3>
           <p className="text-sm text-muted-foreground mb-2">{person.role}</p>
           {person.slug ? (
-            <span className="text-sm text-primary group-hover:underline flex items-center justify-center sm:justify-start">
+             <Link href={`/vorstand/${person.slug}`} className="text-sm text-primary group-hover:underline flex items-center justify-center sm:justify-start">
               <Mail className="h-4 w-4 mr-2" />
               {person.email.replace('[at]', '@')}
-            </span>
+            </Link>
           ) : (
             <a
               href={`mailto:${person.email.replace('[at]', '@')}`}
@@ -75,10 +79,7 @@ export default function HomePage() {
     <div className="space-y-16">
       {/* Hero Section */}
       <section className="relative text-center py-12 md:py-20 rounded-lg shadow-md dark:border dark:border-border overflow-hidden bg-[url('/images/general/kart_in_dry.jpg')] bg-cover bg-center">
-        {/* Overlay for the darkening and blur effect */}
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-lg"></div>
-
-        {/* Content, needs to be above the overlay */}
         <div className="relative z-10 container mx-auto px-4">
           <div className="flex justify-center mb-8">
             <Logo secondaryTextColor="text-gray-200" />
@@ -104,7 +105,7 @@ export default function HomePage() {
             <NewsCard key={article.slug} article={article} />
           ))}
         </div>
-        {mockNewsArticles.length > 3 && (
+        {allNews.length > 3 && (
            <div className="mt-8 text-center">
             <Button asChild variant="outline">
               <Link href="/news">Alle Nachrichten anzeigen</Link>

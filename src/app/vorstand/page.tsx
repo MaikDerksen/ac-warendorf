@@ -1,14 +1,16 @@
 
 import { PageHeader } from '@/components/page-header';
-import { mockBoardMembers } from '@/lib/mock-data';
+import { getAllBoardMembers } from '@/lib/data-loader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { UserCircle, Users, Mail } from 'lucide-react';
+import { UserCircle, Users } from 'lucide-react'; // Removed Mail as it's not directly used here
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 
-export default function VorstandPage() {
+export default async function VorstandPage() {
+  const allBoardMembers = await getAllBoardMembers();
+
   return (
     <div className="space-y-8">
       <PageHeader title="Der Vorstand des AC Warendorf e. V." />
@@ -20,13 +22,13 @@ export default function VorstandPage() {
             Unsere Vorstandsmitglieder
           </CardTitle>
           <span className="text-sm text-muted-foreground">
-            {mockBoardMembers.length} Mitglieder
+            {allBoardMembers.length} Mitglieder
           </span>
         </CardHeader>
         <CardContent>
-          {mockBoardMembers.length > 0 ? (
+          {allBoardMembers.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {mockBoardMembers.map((member, index) => (
+              {allBoardMembers.map((member, index) => (
                 <Card
                   key={member.id}
                   className="overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ease-out flex flex-col rounded-lg"

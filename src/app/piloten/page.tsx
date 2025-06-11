@@ -1,6 +1,6 @@
 
 import { PageHeader } from '@/components/page-header';
-import { mockPilots } from '@/lib/mock-data';
+import { getAllPilots } from '@/lib/data-loader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,9 @@ import { User, Users } from 'lucide-react';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 
-export default function PilotenPage() {
+export default async function PilotenPage() {
+  const allPilots = await getAllPilots();
+
   return (
     <div className="space-y-8">
       <PageHeader title="Unsere Pilot*innen" subtitle="Die aktiven Fahrerinnen und Fahrer des AC Warendorf" />
@@ -20,13 +22,13 @@ export default function PilotenPage() {
             Aktive Talente
           </CardTitle>
           <span className="text-sm text-muted-foreground">
-            {mockPilots.length} Pilot*innen
+            {allPilots.length} Pilot*innen
           </span>
         </CardHeader>
         <CardContent>
-          {mockPilots.length > 0 ? (
+          {allPilots.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {mockPilots.map((pilot, index) => (
+              {allPilots.map((pilot, index) => (
                 <Card
                   key={pilot.id}
                   className="overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ease-out flex flex-col rounded-lg"

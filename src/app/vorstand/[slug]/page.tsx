@@ -1,5 +1,5 @@
 
-import { mockBoardMembers } from '@/lib/mock-data';
+import { getBoardMemberBySlug, getAllBoardMembers } from '@/lib/data-loader';
 import type { BoardMember } from '@/types';
 import { PageHeader } from '@/components/page-header';
 import Image from 'next/image';
@@ -15,12 +15,9 @@ interface BoardMemberProfilePageProps {
   };
 }
 
-async function getBoardMember(slug: string): Promise<BoardMember | undefined> {
-  return mockBoardMembers.find((member) => member.slug === slug);
-}
-
 export async function generateStaticParams() {
-  return mockBoardMembers
+  const members = await getAllBoardMembers();
+  return members
     .filter(member => member.slug)
     .map((member) => ({
       slug: member.slug!,
@@ -28,7 +25,7 @@ export async function generateStaticParams() {
 }
 
 export default async function BoardMemberProfilePage({ params }: BoardMemberProfilePageProps) {
-  const member = await getBoardMember(params.slug);
+  const member = await getBoardMemberBySlug(params.slug);
 
   if (!member) {
     notFound();
@@ -51,7 +48,7 @@ export default async function BoardMemberProfilePage({ params }: BoardMemberProf
                     objectFit="cover"
                     priority
                     sizes="(max-width: 767px) 90vw, 30vw"
-                    className="rounded-lg"
+                    className="rounded-lg" // Ensure consistency if images are not square
                     data-ai-hint="board member photo"
                   />
                 ) : (
