@@ -44,11 +44,13 @@ export default async function HomePage() {
           <h3 className="text-xl font-headline font-semibold text-primary mb-1">{person.name}</h3>
           <p className="text-sm text-muted-foreground mb-2">{person.role}</p>
           {person.slug ? (
-             <Link href={`/vorstand/${person.slug}`} className="text-sm text-primary group-hover:underline flex items-center justify-center sm:justify-start">
+            // If the entire card is a link (due to person.slug), display email as text.
+            <div className="text-sm text-primary flex items-center justify-center sm:justify-start">
               <Mail className="h-4 w-4 mr-2" />
               {person.email.replace('[at]', '@')}
-            </Link>
+            </div>
           ) : (
+            // If the card is not a link, the email can be a mailto: link.
             <a
               href={`mailto:${person.email.replace('[at]', '@')}`}
               className="text-sm text-primary hover:underline flex items-center justify-center sm:justify-start"
