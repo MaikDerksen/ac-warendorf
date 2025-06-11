@@ -12,11 +12,7 @@ function parseCSV<T>(filePath: string): Promise<T[]> {
     Papa.parse<T>(fileContent, {
       header: true,
       skipEmptyLines: true,
-      dynamicTyping: (field: string | number), : boolean | string => {
-        // Add fields here that you want to be dynamically typed (e.g. booleans)
-        // For now, we'll handle type conversion manually after parsing for more control.
-        return false; 
-      },
+      dynamicTyping: false, // Corrected and simplified
       complete: (results) => {
         if (results.errors.length > 0) {
           console.error("CSV Parsing Errors:", results.errors);
