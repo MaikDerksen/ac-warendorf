@@ -1,11 +1,26 @@
 
+'use client';
+
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Download, UploadCloud } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
 
 export default function AdminVorstandPage() {
+  const { toast } = useToast();
+
+  const handleUploadClick = () => {
+    toast({
+      title: "Funktion in Entwicklung",
+      description: "Die Möglichkeit, CSV-Dateien hochzuladen, wird in Kürze implementiert.",
+      variant: "default",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -17,24 +32,56 @@ export default function AdminVorstandPage() {
         </Button>
         <PageHeader title="Vorstand Verwalten" subtitle="Vorstandsmitglieder und Rollen pflegen." className="mb-0 pb-0 border-none flex-1" />
       </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>Funktionalität in Entwicklung</CardTitle>
+          <CardTitle>Aktuelle Vorstandsdaten (board-members.csv)</CardTitle>
           <CardDescription>
-            Diese Seite dient zur Verwaltung der Vorstandsmitglieder. Die Bearbeitungsfunktionen werden in einem zukünftigen Schritt implementiert.
-            Aktuell werden die Vorstandsdaten aus der Datei <code>src/data/vorstand/board-members.csv</code> geladen.
+            Hier können Sie die aktuellen Vorstandsdaten herunterladen oder eine neue Version hochladen (Upload-Funktion in Entwicklung).
+            Die Daten werden aus der Datei <code>src/data/vorstand/board-members.csv</code> geladen.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            Um Inhalte zu ändern, bearbeiten Sie bitte die entsprechende CSV-Datei direkt im Projektverzeichnis.
-            Eine web-basierte Bearbeitung über dieses Admin-Panel ist das Ziel für zukünftige Entwicklungen.
+        <CardContent className="space-y-4">
+          <Link href="/api/download/vorstand" passHref legacyBehavior>
+            <Button variant="outline">
+              <Download className="mr-2 h-4 w-4" />
+              board-members.csv herunterladen
+            </Button>
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            Laden Sie die aktuelle CSV-Datei herunter, um sie extern zu bearbeiten.
           </p>
-           <Button variant="outline" className="mt-4" asChild>
-            <Link href="/admin">Zurück zum Dashboard</Link>
-          </Button>
         </CardContent>
       </Card>
+
+      <Separator />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Vorstandsdaten Hochladen</CardTitle>
+          <CardDescription>
+            Laden Sie eine neue <code>board-members.csv</code> Datei hoch, um die Vorstandsmitglieder zu aktualisieren.
+            <strong>Hinweis:</strong> Diese Funktion ist noch in Entwicklung. Das Hochladen einer Datei hier hat aktuell keine Auswirkungen.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-2 items-center">
+            <Input type="file" accept=".csv" className="flex-grow" />
+            <Button onClick={handleUploadClick} className="w-full sm:w-auto">
+              <UploadCloud className="mr-2 h-4 w-4" />
+              CSV Hochladen
+            </Button>
+          </div>
+           <p className="text-xs text-muted-foreground">
+            Stellen Sie sicher, dass die hochgeladene CSV-Datei die korrekten Spaltenüberschriften und Datenformate enthält.
+          </p>
+        </CardContent>
+      </Card>
+      <div className="mt-8 text-center">
+        <Button variant="outline" asChild>
+          <Link href="/admin">Zurück zum Dashboard</Link>
+        </Button>
+      </div>
     </div>
   );
 }
