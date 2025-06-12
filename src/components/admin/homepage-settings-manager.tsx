@@ -14,7 +14,7 @@ import Image from 'next/image';
 import { Loader2, Users, Save, Image as ImageIcon } from 'lucide-react';
 
 const MAX_CONTACT_PERSONS = 4;
-const NONE_OPTION_VALUE = "--none--"; // Unique value for the "none" option
+const NONE_OPTION_VALUE = "--none--";
 
 export function HomepageSettingsManager() {
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -60,9 +60,9 @@ export function HomepageSettingsManager() {
         });
         setSelectedContactIds(initialSelection);
         setCurrentLogoUrl(settingsData.logoUrl);
-        setLogoPreview(null); // Reset preview on data load
+        setLogoPreview(null);
         setCurrentHeroImageUrl(settingsData.homepageHeroImageUrl);
-        setHeroImagePreview(null); // Reset preview on data load
+        setHeroImagePreview(null);
 
       } catch (error: any) {
         toast({
@@ -265,7 +265,7 @@ export function HomepageSettingsManager() {
             <CardDescription>Wählen Sie bis zu {MAX_CONTACT_PERSONS} Ansprechpartner aus.</CardDescription>
         </div>
         {selectedContactIds.map((selectedId, index) => (
-          <div key={`contact-slot-${index}`} className="space-y-2">
+          <div key={`contact-slot-${index}`} className="space-y-2"> {/* Key added here */}
             <Label htmlFor={`contact-person-${index}`}>Ansprechpartner {index + 1}</Label>
             <Select
               value={selectedId || NONE_OPTION_VALUE}
@@ -278,7 +278,7 @@ export function HomepageSettingsManager() {
                 <SelectItem value={NONE_OPTION_VALUE}>-- Keiner --</SelectItem>
                 {boardMembers.map((member) => (
                   <SelectItem 
-                    key={member.id} 
+                    key={member.id} // Key added here
                     value={member.id} 
                     disabled={selectedContactIds.some((id, i) => id === member.id && i !== index && id !== "")}
                   >
