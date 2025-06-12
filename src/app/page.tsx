@@ -5,18 +5,36 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { NewsCard } from '@/components/news-card';
 import { PageHeader } from '@/components/page-header';
-import { getAllNewsArticles, getAllBoardMembers } from '@/lib/data-loader';
-import type { BoardMember } from '@/types';
+import { getAllNewsArticles, getAllBoardMembers, getSiteSettings } from '@/lib/data-loader';
+import type { BoardMember, SiteSettings } from '@/types';
 import { Mail, UserCircle } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
 export default async function HomePage() {
-  const allNews = await getAllNewsArticles(); // Now fetches from Firestore
+  const allNews = await getAllNewsArticles();
   const latestNews = allNews.slice(0, 3);
   
-  const allBoardMembers = await getAllBoardMembers(); // Still from CSV
-  const contactPersonRoles = ['1. Vorsitzender', 'Programmierer', 'Sportleiterin', 'Jugendleiter'];
-  const contactPersons = allBoardMembers.filter(member => contactPersonRoles.includes(member.role));
+  const allBoardMembers = await getAllBoardMembers();
+  const siteSettings: SiteSettings = await getSiteSettings();
+
+  let contactPersons: BoardMember[] = [];
+  if (siteSettings.contactPersonIds && siteSettings.contactPersonIds.length > 0) {
+    contactPersons = allBoardMembers.filter(member => 
+      siteSettings.contactPersonIds?.includes(member.id)
+    );
+    // Ensure the order from settings is respected, and only up to 4 are shown
+    contactPersons.sort((a, b) => 
+      (siteSettings.contactPersonIds?.indexOf(a.id) || 0) - (siteSettings.contactPersonIds?.indexOf(b.id) || 0)
+    );
+    contactPersons = contactPersons.slice(0, 4);
+  } else {
+    // Fallback if no contact persons are specifically set
+    const fallbackRoles = ['1. Vorsitzender', 'Programmierer', 'Sportleiterin', 'Jugendleiter'];
+    contactPersons = allBoardMembers
+      .filter(member => fallbackRoles.includes(member.role))
+      .slice(0, 4); // Limit to 4 even in fallback
+  }
+
 
   const renderContactPersonCard = (person: BoardMember) => {
     const cardContent = (
@@ -26,10 +44,11 @@ export default async function HomePage() {
             <Image
               src={person.imageUrl}
               alt={person.name}
-              fill // Next 13+
+              fill
               style={{ objectFit: 'cover' }}
               className="rounded-lg"
               data-ai-hint="person photo"
+              sizes="(max-width: 640px) 24vw, (max-width: 768px) 28vw, 112px"
             />
           ) : (
             <UserCircle className="w-full h-full text-primary opacity-60 rounded-lg" />
@@ -44,10 +63,10 @@ export default async function HomePage() {
           <h3 className="text-xl font-headline font-semibold text-primary mb-1">{person.name}</h3>
           <p className="text-sm text-muted-foreground mb-2">{person.role}</p>
           {person.slug ? (
-            <div className="text-sm text-primary flex items-center justify-center sm:justify-start">
-              <Mail className="h-4 w-4 mr-2" />
-              {person.email.replace('[at]', '@')}
-            </div>
+             <Link href={`/vorstand/${person.slug}`} className="text-sm text-primary hover:underline flex items-center justify-center sm:justify-start">
+                <Mail className="h-4 w-4 mr-2" />
+                {person.email.replace('[at]', '@')} (Profil)
+            </Link>
           ) : (
             <a
               href={`mailto:${person.email.replace('[at]', '@')}`}
@@ -78,11 +97,15 @@ export default async function HomePage() {
   return (
     <div className="space-y-16">
       {/* Hero Section */}
-      <section className="relative text-center py-12 md:py-20 rounded-lg shadow-md dark:border dark:border-border overflow-hidden bg-[url('/images/general/kart_in_dry.jpg')] bg-cover bg-center">
+      <section 
+        className="relative text-center py-12 md:py-20 rounded-lg shadow-md dark:border dark:border-border overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: `url(${siteSettings.homepageHeroImageUrl || '/images/general/kart_in_dry.jpg'})` }}
+        data-ai-hint="karting race track"
+      >
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-lg"></div>
         <div className="relative z-10 container mx-auto px-4">
           <div className="flex justify-center mb-8">
-            <Logo secondaryTextColor="text-gray-200" />
+            <Logo logoUrl={siteSettings.logoUrl} secondaryTextColor="text-gray-200" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-primary mb-6 font-headline">
             Herzlich willkommen beim Automobilclub Warendorf.
@@ -128,17 +151,19 @@ export default async function HomePage() {
       </section>
 
       {/* Ihre Ansprechpartner */}
-      <section>
-        <PageHeader title="Ihre Ansprechpartner" />
-        <div className="grid md:grid-cols-2 gap-6">
-          {contactPersons.map((person) => renderContactPersonCard(person))}
-        </div>
-        <div className="mt-8 text-center">
-          <Button asChild variant="outline">
-            <Link href="/vorstand">Gesamten Vorstand anzeigen</Link>
-          </Button>
-        </div>
-      </section>
+      {contactPersons.length > 0 && (
+        <section>
+          <PageHeader title="Ihre Ansprechpartner" />
+          <div className="grid md:grid-cols-2 gap-6">
+            {contactPersons.map((person) => renderContactPersonCard(person))}
+          </div>
+          <div className="mt-8 text-center">
+            <Button asChild variant="outline">
+              <Link href="/vorstand">Gesamten Vorstand anzeigen</Link>
+            </Button>
+          </div>
+        </section>
+      )}
 
       {/* Call to Action / Club Intro */}
       <section className="py-12 bg-secondary rounded-lg shadow-md">
@@ -160,3 +185,4 @@ export default async function HomePage() {
     </div>
   );
 }
+
