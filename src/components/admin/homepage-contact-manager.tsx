@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Users, Save } from 'lucide-react';
 
 const MAX_CONTACT_PERSONS = 4;
+const NONE_OPTION_VALUE = "--none--"; // Unique value for the "none" option
 
 export function HomepageContactManager() {
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -30,7 +31,7 @@ export function HomepageContactManager() {
       setIsLoadingData(true);
       try {
         const [membersRes, settingsRes] = await Promise.all([
-          fetch('/api/admin/vorstand'), // Assumes GET endpoint for board members exists
+          fetch('/api/admin/vorstand'), 
           fetch('/api/admin/settings/homepage-contacts')
         ]);
 
@@ -66,16 +67,19 @@ export function HomepageContactManager() {
 
   const handleSelectChange = (index: number, value: string) => {
     const newSelection = [...selectedContactIds];
-    // Prevent duplicate selections
-    if (value && newSelection.some((id, i) => id === value && i !== index)) {
+    // If user selected the "none" option, set state to empty string for placeholder
+    const idToStore = value === NONE_OPTION_VALUE ? "" : value;
+
+    // Prevent duplicate selections (only if idToStore is not an empty string)
+    if (idToStore && newSelection.some((id, i) => id === idToStore && i !== index)) {
         toast({
             title: "Doppelte Auswahl",
             description: "Diese Person wurde bereits ausgewählt. Bitte wählen Sie eine andere Person.",
             variant: "default"
         });
-        return;
+        return; // Do not update state
     }
-    newSelection[index] = value;
+    newSelection[index] = idToStore;
     setSelectedContactIds(newSelection);
   };
 
@@ -85,12 +89,13 @@ export function HomepageContactManager() {
       return;
     }
     setIsSaving(true);
-    const finalContactIds = selectedContactIds.filter(id => id && id !== ''); // Filter out empty strings or placeholder values
+    // Filter out empty strings (slots where "Keiner" was selected or left empty)
+    const finalContactIds = selectedContactIds.filter(id => id && id !== ''); 
 
     if (new Set(finalContactIds).size !== finalContactIds.length) {
         toast({
             title: "Fehler: Doppelte Auswahl",
-            description: "Bitte stellen Sie sicher, dass jede Person nur einmal ausgewählt wird.",
+            description: "Bitte stellen Sie sicher, dass jede Person nur einmal ausgewählt wird (außer '-- Keiner --').",
             variant: "destructive"
         });
         setIsSaving(false);
@@ -164,16 +169,21 @@ export function HomepageContactManager() {
           <div key={index} className="space-y-2">
             <Label htmlFor={`contact-person-${index}`}>Ansprechpartner {index + 1}</Label>
             <Select
-              value={selectedId}
+              value={selectedId} // This value can be "" to show placeholder
               onValueChange={(value) => handleSelectChange(index, value)}
             >
               <SelectTrigger id={`contact-person-${index}`}>
                 <SelectValue placeholder="-- Bitte wählen --" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">-- Keiner --</SelectItem>
+                <SelectItem value={NONE_OPTION_VALUE}>-- Keiner --</SelectItem>
                 {boardMembers.map((member) => (
-                  <SelectItem key={member.id} value={member.id} disabled={selectedContactIds.includes(member.id) && selectedId !== member.id}>
+                  <SelectItem 
+                    key={member.id} 
+                    value={member.id} 
+                    // Disable if this member is selected in another dropdown
+                    disabled={selectedContactIds.some((id, i) => id === member.id && i !== index)}
+                  >
                     {member.name} ({member.role})
                   </SelectItem>
                 ))}
