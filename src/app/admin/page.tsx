@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Users, Newspaper, Shield, Image as ImageIcon, Car } from 'lucide-react';
-import { HomepageSettingsManager } from '@/components/admin/homepage-settings-manager'; // Updated import
+import { HomepageSettingsManager } from '@/components/admin/homepage-settings-manager'; // Ensured import path matches new filename
 
 export default function AdminDashboardPage() {
   const managementSections = [
@@ -52,3 +52,5 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+    
