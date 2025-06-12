@@ -121,7 +121,8 @@ export async function POST(req: NextRequest) {
 
     if (logoFile && logoFile.size > 0) {
       try {
-        newLogoUrl = await uploadFileToFirebaseAdmin(logoFile, 'site_assets/logo/');
+        // New path for logo: general/site_logo/
+        newLogoUrl = await uploadFileToFirebaseAdmin(logoFile, 'general/site_logo/');
         settingsToUpdate.logoUrl = newLogoUrl;
       } catch (uploadError: any) {
         return NextResponse.json({ message: 'Error uploading logo.', error: uploadError.message }, { status: 500 });
@@ -130,14 +131,18 @@ export async function POST(req: NextRequest) {
 
     if (homepageHeroImageFile && homepageHeroImageFile.size > 0) {
       try {
-        newHeroImageUrl = await uploadFileToFirebaseAdmin(homepageHeroImageFile, 'site_assets/hero/');
+        // New path for hero image: general/site_hero/
+        newHeroImageUrl = await uploadFileToFirebaseAdmin(homepageHeroImageFile, 'general/site_hero/');
         settingsToUpdate.homepageHeroImageUrl = newHeroImageUrl;
       } catch (uploadError: any) {
         // Basic rollback for logo if hero upload fails
         if (newLogoUrl && process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) {
           try {
-            const objectPath = new URL(newLogoUrl).pathname.substring(1).split('/').slice(1).join('/');
-            await adminApp.storage().bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET).file(objectPath).delete();
+            // Construct path based on how uploadFileToFirebaseAdmin forms it
+            const logoObjectPath = new URL(newLogoUrl).pathname.substring(1); // e.g. bucketName/general/site_logo/timestamp_filename.ext
+            const pathWithoutBucket = logoObjectPath.split('/').slice(1).join('/'); // e.g. general/site_logo/timestamp_filename.ext
+            await adminApp.storage().bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET).file(pathWithoutBucket).delete();
+            console.log(`Rolled back logo: ${pathWithoutBucket}`);
           } catch (deleteError) { console.error("Error rolling back logo upload:", deleteError); }
         }
         return NextResponse.json({ message: 'Error uploading hero image.', error: uploadError.message }, { status: 500 });
@@ -156,8 +161,11 @@ export async function POST(req: NextRequest) {
         }
     }, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error: any)
+{
     console.error('Error updating site settings:', error);
     return NextResponse.json({ message: 'Error processing request.', error: error.message || String(error) }, { status: 500 });
   }
 }
+
+    
