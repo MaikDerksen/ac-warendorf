@@ -64,5 +64,7 @@ export interface Sponsor {
 export interface SiteSettings {
   logoUrl?: string;
   homepageHeroImageUrl?: string;
+  contactPersonIds?: string[]; // Array of BoardMember IDs for homepage contacts
   // Add other global site settings here as needed
 }
+

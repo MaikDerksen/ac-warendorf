@@ -74,6 +74,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   const defaultSettings: SiteSettings = {
     logoUrl: getFirebaseStoragePublicUrl('images/logo/logo_80px.png'), 
     homepageHeroImageUrl: getFirebaseStoragePublicUrl('images/general/kart_in_dry.jpg'),
+    contactPersonIds: [],
   };
 
   if (!adminApp) {
@@ -91,6 +92,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       return {
         logoUrl: sanitizeString(data?.logoUrl) || defaultSettings.logoUrl,
         homepageHeroImageUrl: sanitizeString(data?.homepageHeroImageUrl) || defaultSettings.homepageHeroImageUrl,
+        contactPersonIds: Array.isArray(data?.contactPersonIds) ? data.contactPersonIds.map(id => sanitizeString(id as string)) : [],
       };
     } else {
       console.log("Site settings document (siteSettings/config) does not exist in Firestore. Returning defaults.");
@@ -387,7 +389,7 @@ export async function getAllSponsors(): Promise<Sponsor[]> {
       } as Sponsor);
     });
     return sponsors;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching sponsors from Firestore (Admin SDK):", error);
     if ((error as any).code === 9) { // FAILED_PRECONDITION for missing index
         console.error("Firestore query requires an index. Please create it in the Firebase console. Link:", (error as any).details);
@@ -395,3 +397,4 @@ export async function getAllSponsors(): Promise<Sponsor[]> {
     return [];
   }
 }
+
