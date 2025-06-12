@@ -3,8 +3,8 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Users, Newspaper, Shield, Image as ImageIcon, Car, Home } from 'lucide-react';
-import { HomepageContactManager } from '@/components/admin/homepage-contact-manager'; // Import the new component
+import { Users, Newspaper, Shield, Image as ImageIcon, Car } from 'lucide-react';
+import { HomepageSettingsManager } from '@/components/admin/homepage-settings-manager'; // Updated import
 
 export default function AdminDashboardPage() {
   const managementSections = [
@@ -13,7 +13,6 @@ export default function AdminDashboardPage() {
     { title: 'Piloten Verwalten', icon: Car, href: '/admin/piloten', description: 'Fahrerprofile und Erfolge aktualisieren.' },
     { title: 'Sponsoren Verwalten', icon: Shield, href: '/admin/sponsoren', description: 'Sponsorenlogos und -informationen verwalten.' },
     { title: 'Bildergalerie Verwalten', icon: ImageIcon, href: '/admin/galerie', description: 'Bilder hochladen und organisieren (Platzhalter).' },
-    // { title: 'Homepage Einstellungen', icon: Home, href: '/admin/settings/homepage', description: 'Ansprechpartner für Startseite festlegen.' }, // Example if we had a separate page
   ];
 
   return (
@@ -26,13 +25,13 @@ export default function AdminDashboardPage() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            Hier können Sie die Inhalte der Webseite verwalten. Wählen Sie einen Bereich zur Bearbeitung aus.
+            Hier können Sie die Inhalte der Webseite verwalten. Wählen Sie einen Bereich zur Bearbeitung aus oder passen Sie die Homepage-Einstellungen an.
           </p>
         </CardContent>
       </Card>
 
-      {/* Homepage Contact Manager */}
-      <HomepageContactManager />
+      {/* Homepage Settings Manager (Logo, Hero, Contacts) */}
+      <HomepageSettingsManager />
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-8">
         {managementSections.map((section) => (
