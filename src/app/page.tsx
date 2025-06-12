@@ -63,10 +63,10 @@ export default async function HomePage() {
           <h3 className="text-xl font-headline font-semibold text-primary mb-1">{person.name}</h3>
           <p className="text-sm text-muted-foreground mb-2">{person.role}</p>
           {person.slug ? (
-             <Link href={`/vorstand/${person.slug}`} className="text-sm text-primary hover:underline flex items-center justify-center sm:justify-start">
-                <Mail className="h-4 w-4 mr-2" />
-                {person.email.replace('[at]', '@')} (Profil)
-            </Link>
+            <div className="text-sm text-primary hover:underline flex items-center justify-center sm:justify-start cursor-pointer">
+              <Mail className="h-4 w-4 mr-2" />
+              {person.email.replace('[at]', '@')} (Profil)
+            </div>
           ) : (
             <a
               href={`mailto:${person.email.replace('[at]', '@')}`}
@@ -185,4 +185,3 @@ export default async function HomePage() {
     </div>
   );
 }
-
