@@ -10,7 +10,8 @@ export interface NewsArticle {
   heroImageUrl?: string;
   dataAiHint?: string;
   youtubeEmbed?: string;
-  createdAt?: any; // Firestore Timestamp, optional for now
+  createdAt?: any; // Firestore Timestamp
+  authorId?: string;
 }
 
 export interface BoardMember {
@@ -34,6 +35,7 @@ export interface Pilot {
   bio?: string;
   achievements?: string[];
   createdAt?: any;
+  createdBy?: string;
 }
 
 export interface FaqItem {
@@ -42,16 +44,24 @@ export interface FaqItem {
   answer: string;
   category?: string;
   displayOrder?: number;
+  icon?: string; // Optional: if we want to specify icons from admin
 }
 
 export interface Sponsor {
-  id: string;
+  id: string; // Firestore document ID
   name: string;
   level: string; // e.g., Hauptsponsor, Premium Partner
-  logoUrl: string;
+  logoUrl: string; // Firebase Storage URL
   websiteUrl?: string;
   dataAiHint?: string;
   displayOrder?: number;
   isActive?: boolean;
-  createdAt?: any;
+  createdAt?: any; // Firestore Timestamp
+  createdBy?: string;
+}
+
+export interface SiteSettings {
+  logoUrl?: string;
+  homepageHeroImageUrl?: string;
+  // Add other global site settings here as needed
 }
