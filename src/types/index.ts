@@ -15,16 +15,17 @@ export interface NewsArticle {
 }
 
 export interface BoardMember {
-  id: string;
+  id: string; // Firestore document ID (e.g. a slug-like identifier like 'max-mustermann')
   name: string;
   role: string;
   term?: string;
   email: string;
-  imageUrl?: string;
-  slug?: string;
+  imageUrl?: string; // Firebase Storage URL
+  slug?: string; // For profile page URL, can be same as id
   description?: string;
   order?: number; // For custom sorting
-  createdAt?: any;
+  createdAt?: any; // Firestore Timestamp
+  createdBy?: string; // UID of admin who created/updated
 }
 
 export interface Pilot {
