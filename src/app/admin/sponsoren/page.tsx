@@ -89,10 +89,12 @@ export default function AdminSponsorenPage() {
       }
     });
     
-    form.control.reset(); // Reset form fields visually immediately
-    const fileInput = document.getElementById('logoFileSponsor') as HTMLInputElement | null;
-    if (fileInput) fileInput.value = '';
+    // If you want to reset form fields visually immediately before API call, use form.reset() here.
+    // For example, to reset to default values: form.reset();
+    // Or to clear specific fields: form.reset({ name: '', id: '', ... });
+    // The line "form.control.reset()" was incorrect and has been removed.
 
+    const fileInput = document.getElementById('logoFileSponsor') as HTMLInputElement | null;
 
     try {
       const response = await fetch('/api/admin/sponsoren', {
