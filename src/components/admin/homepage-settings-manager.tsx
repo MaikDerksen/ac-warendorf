@@ -265,7 +265,7 @@ export function HomepageSettingsManager() {
             <CardDescription>Wählen Sie bis zu {MAX_CONTACT_PERSONS} Ansprechpartner aus.</CardDescription>
         </div>
         {selectedContactIds.map((selectedId, index) => (
-          <div key={`contact-slot-${index}`} className="space-y-2"> {/* Key added here */}
+          <div key={`contact-slot-${index}`} className="space-y-2">
             <Label htmlFor={`contact-person-${index}`}>Ansprechpartner {index + 1}</Label>
             <Select
               value={selectedId || NONE_OPTION_VALUE}
@@ -278,7 +278,7 @@ export function HomepageSettingsManager() {
                 <SelectItem value={NONE_OPTION_VALUE}>-- Keiner --</SelectItem>
                 {boardMembers.map((member) => (
                   <SelectItem 
-                    key={member.id} // Key added here
+                    key={member.id} 
                     value={member.id} 
                     disabled={selectedContactIds.some((id, i) => id === member.id && i !== index && id !== "")}
                   >
@@ -297,5 +297,3 @@ export function HomepageSettingsManager() {
     </Card>
   );
 }
-
-    
