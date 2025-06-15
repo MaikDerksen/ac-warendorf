@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { HelpCircle, Users, Trophy, ShieldCheck, Euro, Sparkles } from 'lucide-react';
+import { HelpCircle, Users, Trophy, ShieldCheck, Euro, Sparkles, CalendarDays } from 'lucide-react';
 import type { MitgliedWerdenPageContent, FaqItem } from '@/types';
 
 const iconMap: { [key: string]: React.ElementType } = {
@@ -16,6 +16,13 @@ const iconMap: { [key: string]: React.ElementType } = {
   faq4: ShieldCheck,
   faq5: Euro,
   faq6: Sparkles,
+  HelpCircle: HelpCircle,
+  Users: Users,
+  Trophy: Trophy,
+  ShieldCheck: ShieldCheck,
+  Euro: Euro,
+  Sparkles: Sparkles,
+  CalendarDays: CalendarDays,
 };
 
 
@@ -49,7 +56,9 @@ export default async function MitgliedWerdenPage() {
                             <span className="font-medium text-base" dangerouslySetInnerHTML={{ __html: item.question }} />
                           </div>
                         </AccordionTrigger>
-                        <AccordionContent className="text-foreground/90 leading-relaxed" dangerouslySetInnerHTML={{ __html: item.answer }} />
+                        <AccordionContent className="text-foreground/90 leading-relaxed">
+                          <div dangerouslySetInnerHTML={{ __html: item.answer }} />
+                        </AccordionContent>
                       </AccordionItem>
                     );
                   })}
@@ -82,7 +91,7 @@ export default async function MitgliedWerdenPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Image 
-                      src={content.imageUrl || "/images/general/kart_in_dry.jpg"} 
+                      src={content.imageUrl || "https://placehold.co/400x250.png"} 
                       alt="Kinder beim Kartfahren" 
                       width={400} 
                       height={250} 

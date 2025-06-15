@@ -6,17 +6,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { HelpCircle, Users, Trophy, ShieldCheck, Euro, Sparkles } from 'lucide-react';
+import { HelpCircle, Users, Trophy, ShieldCheck, Euro, Sparkles, CalendarDays } from 'lucide-react';
 import type { MitgliedWerdenPageContent, FaqItem } from '@/types';
 
 const iconMap: { [key: string]: React.ElementType } = {
-  faq1: HelpCircle, // Default or specific IDs if used
+  faq1: HelpCircle, 
   faq2: Users,
   faq3: Trophy,
   faq4: ShieldCheck,
   faq5: Euro,
   faq6: Sparkles,
-  // Add more icon mappings if your FAQ items have specific icon keys
+  HelpCircle: HelpCircle,
+  Users: Users,
+  Trophy: Trophy,
+  ShieldCheck: ShieldCheck,
+  Euro: Euro,
+  Sparkles: Sparkles,
+  CalendarDays: CalendarDays,
 };
 
 export default async function MitgliedWerdenPage() {
@@ -49,7 +55,9 @@ export default async function MitgliedWerdenPage() {
                             <span className="font-medium text-base" dangerouslySetInnerHTML={{ __html: item.question }} />
                           </div>
                         </AccordionTrigger>
-                        <AccordionContent className="text-foreground/90 leading-relaxed" dangerouslySetInnerHTML={{ __html: item.answer }}/>
+                        <AccordionContent className="text-foreground/90 leading-relaxed">
+                           <div dangerouslySetInnerHTML={{ __html: item.answer }} />
+                        </AccordionContent>
                       </AccordionItem>
                     );
                   })}
