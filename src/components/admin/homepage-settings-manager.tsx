@@ -14,13 +14,14 @@ import Image from 'next/image';
 import { Loader2, Users, Save, Image as ImageIcon } from 'lucide-react';
 
 const MAX_CONTACT_PERSONS = 4;
-const NONE_OPTION_VALUE = "--none--";
+const NONE_OPTION_VALUE = "--none--"; // Unique value for the "none" option
 
 export function HomepageSettingsManager() {
   const { user, isAdmin, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
-  const [selectedContactIds, setSelectedContactIds] = useState<string[]>(Array(MAX_CONTACT_PERSONS).fill(''));
+  // Initialize with enough empty strings for MAX_CONTACT_PERSONS
+  const [selectedContactIds, setSelectedContactIds] = useState<string[]>(() => Array(MAX_CONTACT_PERSONS).fill(''));
   
   const [currentLogoUrl, setCurrentLogoUrl] = useState<string | undefined>(undefined);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -41,6 +42,7 @@ export function HomepageSettingsManager() {
       }
       setIsLoadingData(true);
       try {
+        // Fetch board members and current site settings concurrently
         const [membersRes, settingsRes] = await Promise.all([
           fetch('/api/admin/vorstand'), 
           fetch('/api/admin/settings/homepage-contacts')
@@ -51,6 +53,7 @@ export function HomepageSettingsManager() {
         setBoardMembers(membersData);
 
         if (!settingsRes.ok) throw new Error('Aktuelle Seiteneinstellungen konnten nicht geladen werden.');
+        // Ensure type matches expected API response structure
         const settingsData: SiteSettings & {logoUrl?: string, homepageHeroImageUrl?: string} = await settingsRes.json();
         
         const currentIds = settingsData.contactPersonIds || [];
@@ -59,10 +62,12 @@ export function HomepageSettingsManager() {
           initialSelection[index] = id;
         });
         setSelectedContactIds(initialSelection);
+
+        // Set current image URLs from fetched settings
         setCurrentLogoUrl(settingsData.logoUrl);
-        setLogoPreview(null);
+        setLogoPreview(null); // Clear preview on fetch
         setCurrentHeroImageUrl(settingsData.homepageHeroImageUrl);
-        setHeroImagePreview(null);
+        setHeroImagePreview(null); // Clear preview on fetch
 
       } catch (error: any) {
         toast({
@@ -74,24 +79,28 @@ export function HomepageSettingsManager() {
         setIsLoadingData(false);
       }
     }
+    // Trigger fetch only when auth state is resolved and user is admin
     if (!authLoading && user && isAdmin) {
       fetchData();
     } else if (!authLoading && (!user || !isAdmin)) {
+        // If user is not admin or not logged in, stop loading
         setIsLoadingData(false);
     }
   }, [user, isAdmin, authLoading, toast]);
 
   const handleSelectChange = (index: number, value: string) => {
     const newSelection = [...selectedContactIds];
+    // Use the special NONE_OPTION_VALUE to represent clearing the selection
     const idToStore = value === NONE_OPTION_VALUE ? "" : value;
 
+    // Prevent selecting the same person in multiple dropdowns
     if (idToStore && newSelection.some((id, i) => id === idToStore && i !== index)) {
         toast({
             title: "Doppelte Auswahl",
-            description: "Diese Person wurde bereits ausgewählt.",
-            variant: "default"
+            description: "Diese Person wurde bereits ausgewählt. Bitte wählen Sie eine andere.",
+            variant: "default" // Using "default" or "warning" if available
         });
-        return;
+        return; // Do not update state if selection is a duplicate
     }
     newSelection[index] = idToStore;
     setSelectedContactIds(newSelection);
@@ -108,6 +117,7 @@ export function HomepageSettingsManager() {
         setHeroImagePreview(URL.createObjectURL(file));
       }
     } else {
+      // Clear file and preview if no file is selected (e.g., user cancels file dialog)
       if (type === 'logo') {
         setLogoFile(null);
         setLogoPreview(null);
@@ -120,20 +130,22 @@ export function HomepageSettingsManager() {
 
   const handleSave = async () => {
     if (!user || !isAdmin) {
-      toast({ title: 'Nicht berechtigt', description: 'Sie müssen Admin sein.', variant: 'destructive' });
+      toast({ title: 'Nicht berechtigt', description: 'Sie müssen Admin sein, um Einstellungen zu speichern.', variant: 'destructive' });
       return;
     }
     setIsSaving(true);
     
+    // Filter out empty strings before saving, only send actual IDs
     const finalContactIds = selectedContactIds.filter(id => id && id !== NONE_OPTION_VALUE); 
+    // Double check for duplicates before sending to API, though UI should prevent this
     if (new Set(finalContactIds).size !== finalContactIds.length) {
-        toast({ title: "Fehler: Doppelte Auswahl bei Kontakten", variant: "destructive" });
+        toast({ title: "Fehler: Doppelte Auswahl bei Kontakten", description: "Bitte korrigieren Sie die Auswahl.", variant: "destructive" });
         setIsSaving(false);
         return;
     }
     
     const formData = new FormData();
-    formData.append('contactPersonIds', JSON.stringify(finalContactIds));
+    formData.append('contactPersonIds', JSON.stringify(finalContactIds)); // Send filtered, valid IDs
     if (logoFile) formData.append('logoFile', logoFile);
     if (heroImageFile) formData.append('homepageHeroImageFile', heroImageFile);
 
@@ -141,23 +153,26 @@ export function HomepageSettingsManager() {
       const idToken = await user.getIdToken();
       const response = await fetch('/api/admin/settings/homepage-contacts', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${idToken}` },
+        headers: { 'Authorization': `Bearer ${idToken}` }, // No Content-Type needed for FormData
         body: formData,
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'Fehler beim Speichern.');
+      if (!response.ok) throw new Error(result.message || 'Fehler beim Speichern der Einstellungen.');
       
       toast({
         title: 'Gespeichert!',
-        description: 'Die Seiteneinstellungen wurden aktualisiert.',
+        description: 'Die Homepage-Einstellungen wurden erfolgreich aktualisiert.',
       });
       
+      // Update current URLs if they were returned by the API
       if (result.updatedFields?.logoUrl) setCurrentLogoUrl(result.updatedFields.logoUrl);
       if (result.updatedFields?.homepageHeroImageUrl) setCurrentHeroImageUrl(result.updatedFields.homepageHeroImageUrl);
       
+      // Reset file inputs and previews after successful save
       setLogoFile(null); setLogoPreview(null);
       setHeroImageFile(null); setHeroImagePreview(null);
       
+      // Clear file input fields visually
       const logoInput = document.getElementById('logoFile-settings') as HTMLInputElement | null;
       if (logoInput) logoInput.value = '';
       const heroInput = document.getElementById('heroImageFile-settings') as HTMLInputElement | null;
@@ -166,7 +181,7 @@ export function HomepageSettingsManager() {
     } catch (error: any) {
       toast({
         title: 'Fehler beim Speichern',
-        description: error.message || 'Ein unbekannter Fehler.',
+        description: error.message || 'Ein unbekannter Fehler ist aufgetreten.',
         variant: 'destructive',
       });
     } finally {
@@ -268,7 +283,7 @@ export function HomepageSettingsManager() {
           <div key={`contact-slot-${index}`} className="space-y-2">
             <Label htmlFor={`contact-person-${index}`}>Ansprechpartner {index + 1}</Label>
             <Select
-              value={selectedId || NONE_OPTION_VALUE}
+              value={selectedId || NONE_OPTION_VALUE} // Ensure Select value is set
               onValueChange={(value) => handleSelectChange(index, value)}
             >
               <SelectTrigger id={`contact-person-${index}`}>
@@ -278,7 +293,7 @@ export function HomepageSettingsManager() {
                 <SelectItem value={NONE_OPTION_VALUE}>-- Keiner --</SelectItem>
                 {boardMembers.map((member) => (
                   <SelectItem 
-                    key={member.id} 
+                    key={member.id} // Unique key for each member
                     value={member.id} 
                     disabled={selectedContactIds.some((id, i) => id === member.id && i !== index && id !== "")}
                   >
@@ -297,3 +312,5 @@ export function HomepageSettingsManager() {
     </Card>
   );
 }
+
+    
