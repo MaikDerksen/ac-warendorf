@@ -14,6 +14,7 @@ import { Loader2, Save, Image as ImageIconLucide, ArrowLeft, HelpCircle, FileTex
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import type { MitgliedWerdenPageContent, FaqItem } from '@/types';
+import { FormMessage } from '@/components/ui/form'; // Added this import
 
 const defaultFaqItem: FaqItem = { id: '', question: '', answer: '', displayOrder: 0, icon: 'HelpCircle' };
 
@@ -90,7 +91,7 @@ export default function AdminMitgliedWerdenSettingsPage() {
       }
     } catch (error) {
       // Invalid JSON, don't update content.faqItems yet
-      // Maybe show a small error message next to the textarea
+      // Feedback is provided via FormMessage below
     }
   };
 
@@ -118,15 +119,12 @@ export default function AdminMitgliedWerdenSettingsPage() {
         if (!Array.isArray(parsedFaqsForUpload)) throw new Error("FAQ JSON is not an array.");
     } catch(e: any) {
         toast({title: "FAQ JSON ungültig", description: "Bitte prüfen Sie das JSON-Format der FAQs. Änderungen an FAQs nicht gespeichert.", variant: "destructive"});
-        // Decide if you want to proceed saving other fields or stop
-        // For now, we'll set it back to the state version, or an empty array if state is also problematic
         parsedFaqsForUpload = Array.isArray(content.faqItems) ? content.faqItems : [];
     }
 
     const formData = new FormData();
-    // Append all text fields from content state
     Object.entries(content).forEach(([key, value]) => {
-        if (key === 'faqItems') { // Handled by faqJson
+        if (key === 'faqItems') {
             formData.append(key, JSON.stringify(parsedFaqsForUpload));
         } else if (typeof value === 'string') {
             formData.append(key, value);
@@ -236,7 +234,6 @@ export default function AdminMitgliedWerdenSettingsPage() {
   );
 }
 
-// Helper to check JSON validity for simple UI feedback (optional)
 function isValidJson(str: string) {
   try {
     JSON.parse(str);
@@ -246,7 +243,6 @@ function isValidJson(str: string) {
   return true;
 }
 
-// Helper component for form fields
 interface FormFieldLayoutProps {
     label: string;
     name: keyof MitgliedWerdenPageContent;
@@ -266,6 +262,5 @@ const FormFieldLayout: React.FC<FormFieldLayoutProps> = ({ label, name, value, o
         )}
     </div>
 );
-
 
     
