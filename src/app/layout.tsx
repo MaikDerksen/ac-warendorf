@@ -5,17 +5,21 @@ import { Footer } from '@/components/footer';
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from "@/components/theme-provider";
+import { getSiteSettings } from '@/lib/data-loader'; // Import getSiteSettings
+import type { SiteSettings } from '@/types';
 
 export const metadata: Metadata = {
   title: 'AC Warendorf Digital',
   description: 'Herzlich willkommen beim Automobilclub Warendorf e. V.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({ // Make RootLayout async
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const siteSettings: SiteSettings = await getSiteSettings(); // Fetch site settings
+
   return (
     <html lang="de" suppressHydrationWarning>
       <head>
@@ -31,7 +35,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
         >
-          <Navbar />
+          <Navbar logoUrl={siteSettings.logoUrl} /> {/* Pass logoUrl to Navbar */}
           <main className="flex-grow container mx-auto px-4 py-8">
             {children}
           </main>
