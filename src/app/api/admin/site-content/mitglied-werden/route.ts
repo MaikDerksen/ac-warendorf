@@ -58,20 +58,25 @@ export async function POST(req: NextRequest) {
         try {
           const parsedFaqs = JSON.parse(value);
           if (Array.isArray(parsedFaqs)) {
-            contentToUpdate.faqItems = parsedFaqs.map((item: any) => ({
-              id: item.id || Math.random().toString(36).substring(7),
-              question: item.question || '',
-              answer: item.answer || '',
-              category: item.category || undefined,
-              displayOrder: Number(item.displayOrder) || 0,
-              icon: item.icon || 'HelpCircle',
-            }));
+            contentToUpdate.faqItems = parsedFaqs.map((item: any) => {
+              const newFaqItem: Partial<FaqItem> = { // Use Partial<FaqItem> to build conditionally
+                id: item.id || Math.random().toString(36).substring(7),
+                question: item.question || '',
+                answer: item.answer || '',
+                displayOrder: Number(item.displayOrder) || 0,
+                icon: item.icon || 'HelpCircle', // Default icon if not provided
+              };
+              if (item.category && typeof item.category === 'string' && item.category.trim() !== '') {
+                newFaqItem.category = item.category;
+              }
+              // No need to explicitly add 'icon' if it's already defaulted or provided by item.icon
+              return newFaqItem as FaqItem; // Cast to FaqItem after building
+            });
           } else {
             throw new Error("Parsed FAQs is not an array");
           }
         } catch (e: any) {
           console.error("Error parsing FAQ items JSON:", e.message);
-          // Potentially return error or save other fields and skip FAQs
           return NextResponse.json({ message: `Error parsing FAQ items: ${e.message}. Other fields not saved.` }, { status: 400 });
         }
       } else if (typeof value === 'string') {

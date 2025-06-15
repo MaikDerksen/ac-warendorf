@@ -13,6 +13,9 @@ const PLACEHOLDER_IMAGE_LARGE = "https://placehold.co/1200x675.png";
 const PLACEHOLDER_IMAGE_MEDIUM = "https://placehold.co/600x400.png";
 const PLACEHOLDER_IMAGE_SQUARE = "https://placehold.co/400x400.png";
 const PLACEHOLDER_LOGO_SMALL = "https://placehold.co/80x80.png";
+const PLACEHOLDER_IMAGE_AKTIVITAETEN = "https://placehold.co/600x400.png"; // Default for Aktivitaeten main image
+const PLACEHOLDER_IMAGE_MITGLIED_WERDEN = "https://placehold.co/400x250.png"; // Default for Mitglied werden sidebar image
+
 
 // Helper function to sanitize strings
 function sanitizeString(str: string | undefined | null): string {
@@ -22,24 +25,11 @@ function sanitizeString(str: string | undefined | null): string {
   return str || ''; 
 }
 
-// Helper to construct Firebase Storage public URL
-function getFirebaseStoragePublicUrl(filePath: string): string {
-  const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
-  if (!bucketName) {
-    console.warn(`NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET is not set. Using placeholder for path: ${filePath}`);
-    if (filePath.includes('logo')) return PLACEHOLDER_LOGO_SMALL;
-    if (filePath.includes('hero') || filePath.includes('kart_in_dry') || filePath.includes('kart_in_rain')) return PLACEHOLDER_IMAGE_LARGE;
-    return PLACEHOLDER_IMAGE_MEDIUM;
-  }
-  const objectPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
-  return `https://storage.googleapis.com/${bucketName}/${objectPath}`;
-}
-
 // --- Site Settings (Images Only, contacts are dynamic) ---
 export async function getSiteSettings(): Promise<SiteSettings> {
   const defaultSettings: SiteSettings = {
-    logoUrl: getFirebaseStoragePublicUrl('images/logo/logo_80px.png'), 
-    homepageHeroImageUrl: getFirebaseStoragePublicUrl('images/general/kart_in_dry.jpg'),
+    logoUrl: PLACEHOLDER_LOGO_SMALL, 
+    homepageHeroImageUrl: PLACEHOLDER_IMAGE_LARGE,
   };
 
   if (!adminApp) {
@@ -324,7 +314,7 @@ export async function getAllFaqItems(): Promise<FaqItem[]> {
           id: sanitizeString(item.id) || Math.random().toString(36).substring(7), // Fallback ID
           question: sanitizeString(item.question),
           answer: item.answer, // Keep as is
-          category: sanitizeString(item.category) || undefined,
+          category: item.category ? sanitizeString(item.category) : undefined,
           icon: sanitizeString(item.icon) || 'HelpCircle',
           displayOrder: item.displayOrder !== undefined ? Number(item.displayOrder) : 0,
         })).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
@@ -379,7 +369,7 @@ export async function getAllSponsors(): Promise<Sponsor[]> {
 // --- Aktivitaeten Page Content ---
 export async function getAktivitaetenPageContent(): Promise<AktivitaetenPageContent> {
   const defaults: AktivitaetenPageContent = {
-    mainImageUrl: getFirebaseStoragePublicUrl('images/general/kart_in_dry.jpg'),
+    mainImageUrl: PLACEHOLDER_IMAGE_AKTIVITAETEN,
     kartSlalomSectionTitle: "Kart-Slalom: Unsere Hauptaktivität",
     kartSlalomIntroParagraph: "Zur Zeit konzentriert sich der AC Warendorf e.V. auf den <strong>Kart-Slalom</strong>. Diese spannende und anspruchsvolle Disziplin ist der perfekte Einstieg in den Motorsport für Kinder und Jugendliche.",
     kartSlalomDetailParagraph1: "Im Kart-Slalom geht es darum, einen mit Pylonen abgesteckten Parcours möglichst schnell und fehlerfrei zu durchfahren. Dabei werden wichtige Fähigkeiten wie Fahrzeugbeherrschung, Konzentration und Reaktionsschnelligkeit trainiert.",
@@ -418,15 +408,18 @@ export async function getAktivitaetenPageContent(): Promise<AktivitaetenPageCont
 // --- MitgliedWerden Page Content ---
 export async function getMitgliedWerdenPageContent(): Promise<MitgliedWerdenPageContent> {
   const defaults: MitgliedWerdenPageContent = {
-    imageUrl: getFirebaseStoragePublicUrl('images/general/kart_in_dry.jpg'),
+    imageUrl: PLACEHOLDER_IMAGE_MITGLIED_WERDEN,
     faqItems: [], // Will be populated by getAllFaqItems if needed, or fetched directly
     pageTitle: "Mitglied werden im Kart-Slalom Team",
     pageSubtitle: "Alle wichtigen Informationen für den Einstieg",
     whatIsKartSlalomTitle: "Was ist Kartslalom?",
     whatIsKartSlalomText: "\"Kartslalom ist die Breitensportvariante des Kartsports. Es wird auf großen Parkplätzen, Industrieflächen oder ähnlichen befestigten ebenen Flächen ausgetragen. Die Strecke wird hierbei mit Pylonen markiert. Ziel ist es, die Strecke möglichst schnell und fehlerfrei zu absolvieren. Für das Umwerfen oder Verschieben von Pylonen aus ihrer Markierung gibt es Strafsekunden, welche zur Fahrzeit addiert werden.\"",
-    wikipediaLink: "https://de.wikipedia.org/wiki/Kartslalom",
+    wikipediaLinkText: "Wikipedia - Kartslalom", // Added default
+    wikipediaLinkUrl: "https://de.wikipedia.org/wiki/Kartslalom", // Added default
     sidebarTitle: "Interesse geweckt?",
-    sidebarText: "Kart-Slalom ist ein faszinierender und sicherer Einstieg in die Welt des Motorsports. Es fördert Konzentration, Geschicklichkeit und Teamgeist."
+    sidebarText: "Kart-Slalom ist ein faszinierender und sicherer Einstieg in die Welt des Motorsports. Es fördert Konzentration, Geschicklichkeit und Teamgeist.",
+    sidebarButtonText: "Jetzt Kontakt aufnehmen!", // Added default
+    sidebarButtonLink: "/kontakt" // Added default
   };
 
   if (!adminApp) {
@@ -443,7 +436,7 @@ export async function getMitgliedWerdenPageContent(): Promise<MitgliedWerdenPage
           id: sanitizeString(item.id) || Math.random().toString(36).substring(7),
           question: sanitizeString(item.question),
           answer: item.answer,
-          category: sanitizeString(item.category) || undefined,
+          category: item.category ? sanitizeString(item.category) : undefined,
           icon: sanitizeString(item.icon) || 'HelpCircle',
           displayOrder: item.displayOrder !== undefined ? Number(item.displayOrder) : 0,
         })).sort((a,b) => (a.displayOrder || 0) - (b.displayOrder || 0)) 
