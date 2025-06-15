@@ -14,7 +14,8 @@ import { Loader2, Save, Image as ImageIconLucide, ArrowLeft, HelpCircle, FileTex
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import type { MitgliedWerdenPageContent, FaqItem } from '@/types';
-import { FormMessage } from '@/components/ui/form'; // Added this import
+// FormMessage is no longer needed for the JSON validation part
+// import { FormMessage } from '@/components/ui/form'; 
 
 const defaultFaqItem: FaqItem = { id: '', question: '', answer: '', displayOrder: 0, icon: 'HelpCircle' };
 
@@ -91,7 +92,7 @@ export default function AdminMitgliedWerdenSettingsPage() {
       }
     } catch (error) {
       // Invalid JSON, don't update content.faqItems yet
-      // Feedback is provided via FormMessage below
+      // Feedback is provided via the conditional paragraph below
     }
   };
 
@@ -220,7 +221,10 @@ export default function AdminMitgliedWerdenSettingsPage() {
             rows={15}
             placeholder='[{"id": "faq1", "question": "Frage?", "answer": "<p>Antwort HTML erlaubt.</p>", "displayOrder": 1, "icon": "HelpCircle"}]'
           />
-          <FormMessage>{!isValidJson(faqJson) && faqJson.length > 0 && "Ungültiges JSON-Format!"}</FormMessage>
+          {/* Replaced FormMessage with a styled paragraph for validation */}
+          {!isValidJson(faqJson) && faqJson.trim().length > 0 && (
+            <p className="text-sm font-medium text-destructive mt-2">Ungültiges JSON-Format!</p>
+          )}
         </CardContent>
       </Card>
        
@@ -235,6 +239,7 @@ export default function AdminMitgliedWerdenSettingsPage() {
 }
 
 function isValidJson(str: string) {
+  if (!str.trim()) return true; // Allow empty or whitespace-only string as valid (no error shown)
   try {
     JSON.parse(str);
   } catch (e) {
@@ -245,7 +250,7 @@ function isValidJson(str: string) {
 
 interface FormFieldLayoutProps {
     label: string;
-    name: keyof MitgliedWerdenPageContent;
+    name: keyof MitgliedWerdenPageContent; // This is fine, as these are for the 'content' state object
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
     type?: 'text' | 'textarea';
@@ -262,5 +267,4 @@ const FormFieldLayout: React.FC<FormFieldLayoutProps> = ({ label, name, value, o
         )}
     </div>
 );
-
     
