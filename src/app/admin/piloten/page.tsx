@@ -5,11 +5,10 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Download, UploadCloud, UserPlus } from 'lucide-react';
+import { ArrowLeft, UserPlus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '@/components/ui/separator';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -22,7 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useAuth } from '@/context/AuthContext'; // Import useAuth
+import { useAuth } from '@/context/AuthContext';
 
 const pilotFormSchema = z.object({
   name: z.string().min(2, { message: "Name muss mindestens 2 Zeichen lang sein." }),
@@ -32,14 +31,14 @@ const pilotFormSchema = z.object({
     .refine(files => !files || files.length === 0 || (files[0] && files[0].size <= 5 * 1024 * 1024), `Maximale Dateigröße ist 5MB.`)
     .refine(files => !files || files.length === 0 || (files[0] && ['image/jpeg', 'image/png', 'image/gif'].includes(files[0].type)), 'Nur JPG, PNG, GIF erlaubt.'),
   bio: z.string().optional(),
-  achievements: z.string().optional(), // Pipe-separated
+  achievements: z.string().optional(), 
 });
 
 type PilotFormValues = z.infer<typeof pilotFormSchema>;
 
 export default function AdminPilotenPage() {
   const { toast } = useToast();
-  const { user, loading: authLoading, isAdmin } = useAuth(); // Get user and isAdmin status
+  const { user, loading: authLoading, isAdmin } = useAuth(); 
 
   const form = useForm<PilotFormValues>({
     resolver: zodResolver(pilotFormSchema),
@@ -51,14 +50,6 @@ export default function AdminPilotenPage() {
       achievements: "",
     },
   });
-
-  const handleLegacyUploadClick = () => {
-    toast({
-      title: "Funktion für Legacy CSV Veraltet",
-      description: "Pilotendaten werden nun direkt in Firestore gespeichert. Der Upload von CSVs ist nicht mehr vorgesehen.",
-      variant: "default",
-    });
-  };
 
   async function onSubmit(data: PilotFormValues) {
     if (!user) {
@@ -164,36 +155,6 @@ export default function AdminPilotenPage() {
         </Button>
         <PageHeader title="Piloten Verwalten" subtitle="Fahrerprofile und Erfolge aktualisieren (speichert in Firestore & Firebase Storage)." className="mb-0 pb-0 border-none flex-1" />
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Legacy Pilotendaten (pilots.csv)</CardTitle>
-          <CardDescription>
-            Die Webseite liest Pilotendaten nun aus Firestore. Die CSV-Datei ist nur noch als Backup oder für historische Daten relevant.
-            Ein direkter Upload von CSVs ist nicht mehr vorgesehen.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Link href="/api/download/piloten" passHref legacyBehavior>
-            <Button variant="outline">
-              <Download className="mr-2 h-4 w-4" />
-              pilots.csv herunterladen (Legacy)
-            </Button>
-          </Link>
-          <p className="text-xs text-muted-foreground">
-            Laden Sie die aktuelle CSV-Datei herunter, um sie extern zu bearbeiten.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-2 items-center pt-4 border-t mt-4">
-            <Input type="file" accept=".csv" className="flex-grow" disabled />
-            <Button onClick={handleLegacyUploadClick} className="w-full sm:w-auto" disabled>
-              <UploadCloud className="mr-2 h-4 w-4" />
-              CSV Hochladen (Veraltet)
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Separator />
 
       <Card>
         <CardHeader>

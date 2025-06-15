@@ -5,11 +5,10 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Download, UploadCloud, FilePlus } from 'lucide-react';
+import { ArrowLeft, FilePlus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '@/components/ui/separator';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -22,13 +21,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useAuth } from '@/context/AuthContext'; // Import useAuth
+import { useAuth } from '@/context/AuthContext'; 
 
 const newsFormSchema = z.object({
   slug: z.string().min(3, { message: "Slug muss mindestens 3 Zeichen haben (z.B. mein-artikel)." }).regex(/^[a-z0-9-]+$/, { message: "Nur Kleinbuchstaben, Zahlen und Bindestriche."}),
   title: z.string().min(5, { message: "Titel muss mindestens 5 Zeichen haben." }),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Datum muss im Format YYYY-MM-DD sein." }),
-  categories: z.string().optional(), // Pipe-separated
+  categories: z.string().optional(), 
   excerpt: z.string().min(10, { message: "Kurzbeschreibung muss mindestens 10 Zeichen haben." }),
   content: z.string().min(20, { message: "Inhalt muss mindestens 20 Zeichen haben." }),
   heroImageFile: z.any()
@@ -44,7 +43,7 @@ type NewsFormValues = z.infer<typeof newsFormSchema>;
 
 export default function AdminNewsPage() {
   const { toast } = useToast();
-  const { user, loading: authLoading, isAdmin } = useAuth(); // Get user and isAdmin status
+  const { user, loading: authLoading, isAdmin } = useAuth(); 
 
   const form = useForm<NewsFormValues>({
     resolver: zodResolver(newsFormSchema),
@@ -60,14 +59,6 @@ export default function AdminNewsPage() {
       dataAiHint: "",
     },
   });
-
-  const handleLegacyUploadClick = () => {
-    toast({
-      title: "Funktion für Legacy CSV Veraltet",
-      description: "News werden nun direkt in Firestore gespeichert. Der Upload von CSVs für News ist nicht mehr vorgesehen.",
-      variant: "default",
-    });
-  };
 
   async function onSubmit(data: NewsFormValues) {
     if (!user) {
@@ -173,33 +164,6 @@ export default function AdminNewsPage() {
         </Button>
         <PageHeader title="News Verwalten" subtitle="Artikel erstellen (speichert in Firestore & Firebase Storage)." className="mb-0 pb-0 border-none flex-1" />
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Legacy News-Daten (news.csv)</CardTitle>
-          <CardDescription>
-            Die Webseite liest News-Artikel nun aus Firestore. Die CSV-Datei ist nur noch als Backup oder für historische Daten relevant.
-            Ein direkter Upload von CSVs für News ist nicht mehr vorgesehen.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Link href="/api/download/news" passHref legacyBehavior>
-            <Button variant="outline">
-              <Download className="mr-2 h-4 w-4" />
-              news.csv herunterladen (Legacy)
-            </Button>
-          </Link>
-          <div className="flex flex-col sm:flex-row gap-2 items-center pt-4 border-t mt-4">
-            <Input type="file" accept=".csv" className="flex-grow" disabled />
-            <Button onClick={handleLegacyUploadClick} className="w-full sm:w-auto" disabled>
-              <UploadCloud className="mr-2 h-4 w-4" />
-              CSV Hochladen (Veraltet)
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Separator />
 
       <Card>
         <CardHeader>

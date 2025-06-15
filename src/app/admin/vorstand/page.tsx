@@ -5,11 +5,10 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Download, UploadCloud, UserCog } from 'lucide-react';
+import { ArrowLeft, UserCog } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '@/components/ui/separator';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -59,14 +58,6 @@ export default function AdminVorstandPage() {
       imageFile: undefined,
     },
   });
-
-  const handleLegacyUploadClick = () => {
-    toast({
-      title: "Funktion für Legacy CSV Veraltet",
-      description: "Vorstandsdaten werden nun direkt in Firestore gespeichert. Der Upload von CSVs ist nicht mehr vorgesehen.",
-      variant: "default",
-    });
-  };
 
   async function onSubmit(data: BoardMemberFormValues) {
     if (!user) {
@@ -148,32 +139,6 @@ export default function AdminVorstandPage() {
         </Button>
         <PageHeader title="Vorstand Verwalten" subtitle="Vorstandsmitglieder in Firestore erstellen & Bilder zu Storage hochladen." className="mb-0 pb-0 border-none flex-1" />
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Legacy Vorstandsdaten (board-members.csv)</CardTitle>
-          <CardDescription>
-            Die Webseite liest Vorstandsdaten nun aus Firestore. Die CSV-Datei ist nur noch als Backup relevant.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Link href="/api/download/vorstand" passHref legacyBehavior>
-            <Button variant="outline">
-              <Download className="mr-2 h-4 w-4" />
-              board-members.csv herunterladen (Legacy)
-            </Button>
-          </Link>
-          <div className="flex flex-col sm:flex-row gap-2 items-center pt-4 border-t mt-4">
-            <Input type="file" accept=".csv" className="flex-grow" disabled />
-            <Button onClick={handleLegacyUploadClick} className="w-full sm:w-auto" disabled>
-              <UploadCloud className="mr-2 h-4 w-4" />
-              CSV Hochladen (Veraltet)
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Separator />
 
       <Card>
         <CardHeader>

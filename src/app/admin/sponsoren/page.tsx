@@ -5,10 +5,9 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Download, UploadCloud, Building } from 'lucide-react';
+import { ArrowLeft, Building } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '@/components/ui/separator';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -53,14 +52,6 @@ export default function AdminSponsorenPage() {
     },
   });
 
-  const handleLegacyUploadClick = () => {
-    toast({
-      title: "Funktion für Legacy CSV Veraltet",
-      description: "Sponsorendaten werden nun direkt in Firestore gespeichert. Der Upload von CSVs ist nicht mehr vorgesehen.",
-      variant: "default",
-    });
-  };
-
   async function onSubmit(data: SponsorFormValues) {
     if (!user) {
       toast({ title: "Nicht Angemeldet", description: "Bitte melden Sie sich an.", variant: "destructive" });
@@ -89,11 +80,6 @@ export default function AdminSponsorenPage() {
       }
     });
     
-    // If you want to reset form fields visually immediately before API call, use form.reset() here.
-    // For example, to reset to default values: form.reset();
-    // Or to clear specific fields: form.reset({ name: '', id: '', ... });
-    // The line "form.control.reset()" was incorrect and has been removed.
-
     const fileInput = document.getElementById('logoFileSponsor') as HTMLInputElement | null;
 
     try {
@@ -121,7 +107,7 @@ export default function AdminSponsorenPage() {
         ),
         duration: 10000,
       });
-      form.reset({ // Fully reset form values to default after successful submission
+      form.reset({ 
           id: "",
           name: "",
           level: "Partner",
@@ -130,7 +116,6 @@ export default function AdminSponsorenPage() {
           dataAiHint: "",
       });
       if (fileInput) fileInput.value = '';
-
 
     } catch (error: any) {
       console.error("Fehler beim Senden des Sponsoren-Formulars:", error);
@@ -154,32 +139,6 @@ export default function AdminSponsorenPage() {
         </Button>
         <PageHeader title="Sponsoren Verwalten" subtitle="Sponsoren in Firestore erstellen & Logos zu Firebase Storage hochladen." className="mb-0 pb-0 border-none flex-1" />
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Legacy Sponsorendaten (sponsors.csv)</CardTitle>
-          <CardDescription>
-            Die Webseite liest Sponsorendaten nun aus Firestore. Die CSV-Datei ist nur noch als Backup oder für historische Daten relevant.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Link href="/api/download/sponsoren" passHref legacyBehavior>
-            <Button variant="outline">
-              <Download className="mr-2 h-4 w-4" />
-              sponsors.csv herunterladen (Legacy)
-            </Button>
-          </Link>
-          <div className="flex flex-col sm:flex-row gap-2 items-center pt-4 border-t mt-4">
-            <Input type="file" accept=".csv" className="flex-grow" disabled />
-            <Button onClick={handleLegacyUploadClick} className="w-full sm:w-auto" disabled>
-              <UploadCloud className="mr-2 h-4 w-4" />
-              CSV Hochladen (Veraltet)
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Separator />
 
       <Card>
         <CardHeader>

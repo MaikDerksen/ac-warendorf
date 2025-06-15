@@ -3,16 +3,15 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Users, Newspaper, Shield, Image as ImageIcon, Car } from 'lucide-react';
-import { HomepageSettingsManager } from '@/components/admin/homepage-settings-manager'; // Ensured import path matches new filename
+import { Users, Newspaper, Shield, Settings, Car } from 'lucide-react'; // Replaced ImageIcon with Settings
 
 export default function AdminDashboardPage() {
   const managementSections = [
+    { title: 'Homepage Einstellungen', icon: Settings, href: '/admin/homepage-settings', description: 'Logo, Hero-Bild und Ansprechpartner der Startseite verwalten.' },
     { title: 'News Verwalten', icon: Newspaper, href: '/admin/news', description: 'Artikel erstellen, bearbeiten und löschen.' },
     { title: 'Vorstand Verwalten', icon: Users, href: '/admin/vorstand', description: 'Vorstandsmitglieder und Rollen pflegen.' },
     { title: 'Piloten Verwalten', icon: Car, href: '/admin/piloten', description: 'Fahrerprofile und Erfolge aktualisieren.' },
     { title: 'Sponsoren Verwalten', icon: Shield, href: '/admin/sponsoren', description: 'Sponsorenlogos und -informationen verwalten.' },
-    { title: 'Bildergalerie Verwalten', icon: ImageIcon, href: '/admin/galerie', description: 'Bilder hochladen und organisieren (Platzhalter).' },
   ];
 
   return (
@@ -25,13 +24,10 @@ export default function AdminDashboardPage() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            Hier können Sie die Inhalte der Webseite verwalten. Wählen Sie einen Bereich zur Bearbeitung aus oder passen Sie die Homepage-Einstellungen an.
+            Hier können Sie die Inhalte der Webseite verwalten. Wählen Sie einen Bereich zur Bearbeitung aus.
           </p>
         </CardContent>
       </Card>
-
-      {/* Homepage Settings Manager (Logo, Hero, Contacts) */}
-      <HomepageSettingsManager />
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-8">
         {managementSections.map((section) => (
@@ -52,5 +48,4 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
     
