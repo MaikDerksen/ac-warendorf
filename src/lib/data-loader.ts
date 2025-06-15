@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import Papa from 'papaparse';
-import type { NewsArticle, BoardMember, Pilot, FaqItem, Sponsor, SiteSettings } from '@/types';
+import type { NewsArticle, BoardMember, Pilot, FaqItem, Sponsor, SiteSettings, AktivitaetenPageContent, MitgliedWerdenPageContent, KontaktPageContent } from '@/types';
 import { adminApp } from '@/lib/firebaseAdminConfig'; 
 import { FieldValue } from 'firebase-admin/firestore';
 
@@ -35,46 +35,11 @@ function getFirebaseStoragePublicUrl(filePath: string): string {
   return `https://storage.googleapis.com/${bucketName}/${objectPath}`;
 }
 
-function parseCSV<T>(filePath: string): Promise<T[]> {
-  return new Promise((resolve, reject) => {
-    if (!fs.existsSync(filePath)) {
-      console.warn(`CSV file not found at ${filePath}. Returning empty array.`);
-      resolve([]);
-      return;
-    }
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    Papa.parse<T>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
-      dynamicTyping: false, 
-      transformHeader: header => sanitizeString(header).trim(),
-      transform: (value, header) => {
-        if (header === 'content' || header === 'answer' || header === 'bio' || header === 'description') {
-          return value;
-        }
-        return sanitizeString(value);
-      },
-      complete: (results) => {
-        if (results.errors.length > 0) {
-          console.error("CSV Parsing Errors for file:", filePath, results.errors);
-          reject(new Error(`Error parsing CSV file: ${filePath}`));
-          return;
-        }
-        resolve(results.data);
-      },
-      error: (error) => {
-        reject(error);
-      },
-    });
-  });
-}
-
-// --- Site Settings (using Admin SDK) ---
+// --- Site Settings (Images Only, contacts are dynamic) ---
 export async function getSiteSettings(): Promise<SiteSettings> {
   const defaultSettings: SiteSettings = {
     logoUrl: getFirebaseStoragePublicUrl('images/logo/logo_80px.png'), 
     homepageHeroImageUrl: getFirebaseStoragePublicUrl('images/general/kart_in_dry.jpg'),
-    contactPersonIds: [],
   };
 
   if (!adminApp) {
@@ -92,7 +57,6 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       return {
         logoUrl: sanitizeString(data?.logoUrl) || defaultSettings.logoUrl,
         homepageHeroImageUrl: sanitizeString(data?.homepageHeroImageUrl) || defaultSettings.homepageHeroImageUrl,
-        contactPersonIds: Array.isArray(data?.contactPersonIds) ? data.contactPersonIds.map(id => sanitizeString(id as string)) : [],
       };
     } else {
       console.log("Site settings document (siteSettings/config) does not exist in Firestore. Returning defaults.");
@@ -190,6 +154,7 @@ export async function getAllBoardMembers(): Promise<BoardMember[]> {
   const firestoreDb = adminApp.firestore();
   try {
     const membersCollectionRef = firestoreDb.collection("boardMembers");
+    // Primary sort by 'order' (user-defined for importance), then by 'name'
     const q = membersCollectionRef.orderBy("order", "asc").orderBy("name", "asc");
     const querySnapshot = await q.get();
     
@@ -197,15 +162,15 @@ export async function getAllBoardMembers(): Promise<BoardMember[]> {
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       members.push({
-        id: doc.id, // Firestore document ID
+        id: doc.id, 
         name: sanitizeString(data.name),
         role: sanitizeString(data.role),
         term: data.term ? sanitizeString(data.term) : undefined,
-        email: sanitizeString(data.email), // Store as is, handle [at] on display
+        email: sanitizeString(data.email), 
         imageUrl: data.imageUrl ? sanitizeString(data.imageUrl) : PLACEHOLDER_IMAGE_SQUARE,
-        slug: data.slug ? sanitizeString(data.slug) : doc.id, // Fallback slug to doc.id if not present
-        description: data.description ? data.description : undefined, // Keep as is
-        order: data.order !== undefined ? Number(data.order) : 0,
+        slug: data.slug ? sanitizeString(data.slug) : doc.id, 
+        description: data.description ? data.description : undefined,
+        order: data.order !== undefined ? Number(data.order) : 99, // Default high order if not set
         createdAt: data.createdAt,
         createdBy: data.createdBy ? sanitizeString(data.createdBy) : undefined,
       } as BoardMember);
@@ -226,12 +191,10 @@ export async function getBoardMemberBySlug(slug: string): Promise<BoardMember | 
   const sanitizedSlug = sanitizeString(slug);
   try {
     const membersCollectionRef = firestoreDb.collection("boardMembers");
-    // Query by 'slug' field. If 'slug' can be the document ID, you might query by ID.
     const q = membersCollectionRef.where("slug", "==", sanitizedSlug).limit(1);
     const querySnapshot = await q.get();
 
     if (querySnapshot.empty) {
-      // Try fetching by document ID if slug matches ID pattern and no slug match found
       const docById = await membersCollectionRef.doc(sanitizedSlug).get();
       if (docById.exists) {
         const data = docById.data()!;
@@ -244,7 +207,7 @@ export async function getBoardMemberBySlug(slug: string): Promise<BoardMember | 
           imageUrl: data.imageUrl ? sanitizeString(data.imageUrl) : PLACEHOLDER_IMAGE_SQUARE,
           slug: data.slug ? sanitizeString(data.slug) : docById.id,
           description: data.description ? data.description : undefined,
-          order: data.order !== undefined ? Number(data.order) : 0,
+          order: data.order !== undefined ? Number(data.order) : 99,
           createdAt: data.createdAt,
           createdBy: data.createdBy ? sanitizeString(data.createdBy) : undefined,
         } as BoardMember;
@@ -265,7 +228,7 @@ export async function getBoardMemberBySlug(slug: string): Promise<BoardMember | 
       imageUrl: data.imageUrl ? sanitizeString(data.imageUrl) : PLACEHOLDER_IMAGE_SQUARE,
       slug: data.slug ? sanitizeString(data.slug) : docSnap.id,
       description: data.description ? data.description : undefined,
-      order: data.order !== undefined ? Number(data.order) : 0,
+      order: data.order !== undefined ? Number(data.order) : 99,
       createdAt: data.createdAt,
       createdBy: data.createdBy ? sanitizeString(data.createdBy) : undefined,
     } as BoardMember;
@@ -274,7 +237,6 @@ export async function getBoardMemberBySlug(slug: string): Promise<BoardMember | 
     return undefined;
   }
 }
-
 
 // --- Pilots (from Firestore, using Admin SDK) ---
 export async function getAllPilots(): Promise<Pilot[]> {
@@ -345,19 +307,35 @@ export async function getPilotBySlug(slug: string): Promise<Pilot | undefined> {
   }
 }
 
-// --- FAQ Items (still from CSV for now) ---
-// TODO: Migrate FAQ to Firestore and update this function
+// --- FAQ Items (from Firestore) ---
 export async function getAllFaqItems(): Promise<FaqItem[]> {
-  const filePath = path.join(process.cwd(), 'src/data/faq/faq.csv');
-  const items = await parseCSV<any>(filePath);
-  return items.map(item => ({
-    id: sanitizeString(item.id),
-    question: sanitizeString(item.question),
-    answer: item.answer, // Keep as is
-    category: sanitizeString(item.category),
-    icon: sanitizeString(item.icon) || 'HelpCircle', 
-    displayOrder: item.displayOrder ? parseInt(sanitizeString(item.displayOrder), 10) : undefined,
-  }));
+  if (!adminApp) {
+    console.error("CRITICAL: Firebase Admin App not initialized in getAllFaqItems. Returning empty array.");
+    return [];
+  }
+  const firestoreDb = adminApp.firestore();
+  try {
+    const docRef = firestoreDb.collection("siteContent").doc("mitgliedWerden");
+    const docSnap = await docRef.get();
+    if (docSnap.exists) {
+      const data = docSnap.data();
+      if (Array.isArray(data?.faqItems)) {
+        return data.faqItems.map((item: any) => ({
+          id: sanitizeString(item.id) || Math.random().toString(36).substring(7), // Fallback ID
+          question: sanitizeString(item.question),
+          answer: item.answer, // Keep as is
+          category: sanitizeString(item.category) || undefined,
+          icon: sanitizeString(item.icon) || 'HelpCircle',
+          displayOrder: item.displayOrder !== undefined ? Number(item.displayOrder) : 0,
+        })).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+      }
+    }
+    console.log("No FAQ items found in siteContent/mitgliedWerden or document doesn't exist.");
+    return [];
+  } catch (error) {
+    console.error("Error fetching FAQ items from Firestore:", error);
+    return [];
+  }
 }
 
 // --- Sponsors (from Firestore, using Admin SDK) ---
@@ -391,10 +369,125 @@ export async function getAllSponsors(): Promise<Sponsor[]> {
     return sponsors;
   } catch (error: any) {
     console.error("Error fetching sponsors from Firestore (Admin SDK):", error);
-    if ((error as any).code === 9) { // FAILED_PRECONDITION for missing index
+    if ((error as any).code === 9) { 
         console.error("Firestore query requires an index. Please create it in the Firebase console. Link:", (error as any).details);
     }
     return [];
   }
 }
 
+// --- Aktivitaeten Page Content ---
+export async function getAktivitaetenPageContent(): Promise<AktivitaetenPageContent> {
+  const defaults: AktivitaetenPageContent = {
+    mainImageUrl: getFirebaseStoragePublicUrl('images/general/kart_in_dry.jpg'),
+    kartSlalomSectionTitle: "Kart-Slalom: Unsere Hauptaktivität",
+    kartSlalomIntroParagraph: "Zur Zeit konzentriert sich der AC Warendorf e.V. auf den <strong>Kart-Slalom</strong>. Diese spannende und anspruchsvolle Disziplin ist der perfekte Einstieg in den Motorsport für Kinder und Jugendliche.",
+    kartSlalomDetailParagraph1: "Im Kart-Slalom geht es darum, einen mit Pylonen abgesteckten Parcours möglichst schnell und fehlerfrei zu durchfahren. Dabei werden wichtige Fähigkeiten wie Fahrzeugbeherrschung, Konzentration und Reaktionsschnelligkeit trainiert.",
+    kartSlalomDetailParagraph2: "Unsere jungen Talente nehmen regelmäßig an regionalen und überregionalen Wettbewerben teil und haben dabei schon beachtliche Erfolge erzielt.",
+    youtubeEmbedId: "RCK5CPkfXbY",
+    youtubeSectionTitle: "Kart-Slalom in Aktion",
+    youtubeSectionText: "Sehen Sie hier ein Beispielvideo, um einen Eindruck vom Kart-Slalom zu bekommen.",
+    futurePossibilitiesTitle: "Zukünftige Möglichkeiten",
+    futurePossibilitiesIntro: "Wenn ausreichend Interesse besteht, könnten zukünftig auch andere Motorsportarten im AC Warendorf angeboten werden. Denkbar wären beispielsweise:",
+    futurePossibilitiesItems: [
+      "<strong>SimRacing:</strong> Virtueller Motorsport an professionellen Simulatoren.",
+      "<strong>Youngster Slalom Cup:</strong> Der nächste Schritt nach dem Kart-Slalom, mit Serienfahrzeugen auf abgesperrten Strecken.",
+      "<strong>Oldtimer-Ausfahrten oder -Treffen:</strong> Für Liebhaber klassischer Fahrzeuge."
+    ]
+  };
+
+  if (!adminApp) {
+    console.error("CRITICAL: Firebase Admin App not initialized in getAktivitaetenPageContent. Returning defaults.");
+    return defaults;
+  }
+  const firestoreDb = adminApp.firestore();
+  try {
+    const docRef = firestoreDb.collection("siteContent").doc("aktivitaeten");
+    const docSnap = await docRef.get();
+    if (docSnap.exists) {
+      const data = docSnap.data() as Partial<AktivitaetenPageContent>;
+      return { ...defaults, ...data };
+    }
+    return defaults;
+  } catch (error) {
+    console.error("Error fetching Aktivitaeten page content:", error);
+    return defaults;
+  }
+}
+
+// --- MitgliedWerden Page Content ---
+export async function getMitgliedWerdenPageContent(): Promise<MitgliedWerdenPageContent> {
+  const defaults: MitgliedWerdenPageContent = {
+    imageUrl: getFirebaseStoragePublicUrl('images/general/kart_in_dry.jpg'),
+    faqItems: [], // Will be populated by getAllFaqItems if needed, or fetched directly
+    pageTitle: "Mitglied werden im Kart-Slalom Team",
+    pageSubtitle: "Alle wichtigen Informationen für den Einstieg",
+    whatIsKartSlalomTitle: "Was ist Kartslalom?",
+    whatIsKartSlalomText: "\"Kartslalom ist die Breitensportvariante des Kartsports. Es wird auf großen Parkplätzen, Industrieflächen oder ähnlichen befestigten ebenen Flächen ausgetragen. Die Strecke wird hierbei mit Pylonen markiert. Ziel ist es, die Strecke möglichst schnell und fehlerfrei zu absolvieren. Für das Umwerfen oder Verschieben von Pylonen aus ihrer Markierung gibt es Strafsekunden, welche zur Fahrzeit addiert werden.\"",
+    wikipediaLink: "https://de.wikipedia.org/wiki/Kartslalom",
+    sidebarTitle: "Interesse geweckt?",
+    sidebarText: "Kart-Slalom ist ein faszinierender und sicherer Einstieg in die Welt des Motorsports. Es fördert Konzentration, Geschicklichkeit und Teamgeist."
+  };
+
+  if (!adminApp) {
+    console.error("CRITICAL: Firebase Admin App not initialized in getMitgliedWerdenPageContent. Returning defaults.");
+    return { ...defaults, faqItems: await getAllFaqItems() }; // try to get FAQs even if main content fails
+  }
+  const firestoreDb = adminApp.firestore();
+  try {
+    const docRef = firestoreDb.collection("siteContent").doc("mitgliedWerden");
+    const docSnap = await docRef.get();
+    if (docSnap.exists) {
+      const data = docSnap.data() as Partial<MitgliedWerdenPageContent>;
+      const fetchedFaqs = Array.isArray(data.faqItems) ? data.faqItems.map((item: any) => ({
+          id: sanitizeString(item.id) || Math.random().toString(36).substring(7),
+          question: sanitizeString(item.question),
+          answer: item.answer,
+          category: sanitizeString(item.category) || undefined,
+          icon: sanitizeString(item.icon) || 'HelpCircle',
+          displayOrder: item.displayOrder !== undefined ? Number(item.displayOrder) : 0,
+        })).sort((a,b) => (a.displayOrder || 0) - (b.displayOrder || 0)) 
+        : await getAllFaqItems(); // Fallback to separate fetch if not in doc
+
+      return { ...defaults, ...data, faqItems: fetchedFaqs };
+    }
+    return { ...defaults, faqItems: await getAllFaqItems() }; // fetch FAQs if doc doesn't exist
+  } catch (error) {
+    console.error("Error fetching MitgliedWerden page content:", error);
+    return { ...defaults, faqItems: await getAllFaqItems() };
+  }
+}
+
+// --- Kontakt Page Content ---
+export async function getKontaktPageContent(): Promise<KontaktPageContent> {
+  const defaults: KontaktPageContent = {
+    pageTitle: "Kontakt aufnehmen",
+    pageSubtitle: "Wir freuen uns auf Ihre Nachricht!",
+    formTitle: "Schreiben Sie uns eine Nachricht",
+    alternativeContactTitle: "Alternative Kontaktmöglichkeiten",
+    addressStreet: "Musterstraße 1",
+    addressCity: "48231 Warendorf",
+    examplePhoneNumber: "+49 123 4567890 (Vorstand, falls angegeben)",
+    dataPrivacyNoteHtml: "Bitte beachten Sie unsere <a href=\"/datenschutz\" class=\"text-primary hover:underline\">Datenschutzerklärung</a> bei der Übermittlung Ihrer Daten."
+  };
+
+  if (!adminApp) {
+    console.error("CRITICAL: Firebase Admin App not initialized in getKontaktPageContent. Returning defaults.");
+    return defaults;
+  }
+  const firestoreDb = adminApp.firestore();
+  try {
+    const docRef = firestoreDb.collection("siteContent").doc("kontaktPage");
+    const docSnap = await docRef.get();
+    if (docSnap.exists) {
+      const data = docSnap.data() as Partial<KontaktPageContent>;
+      return { ...defaults, ...data };
+    }
+    return defaults;
+  } catch (error) {
+    console.error("Error fetching Kontakt page content:", error);
+    return defaults;
+  }
+}
+
+    

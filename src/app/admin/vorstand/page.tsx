@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/form";
 import { useAuth } from '@/context/AuthContext';
 
+// Removed 'order' field from schema
 const boardMemberFormSchema = z.object({
   id: z.string().min(3, { message: "ID muss mind. 3 Zeichen haben (z.B. max-mustermann)."}).regex(/^[a-z0-9-]+$/, { message: "Nur Kleinbuchstaben, Zahlen, Bindestriche."}),
   name: z.string().min(2, { message: "Name muss mindestens 2 Zeichen lang sein." }),
@@ -31,7 +32,6 @@ const boardMemberFormSchema = z.object({
   term: z.string().optional(),
   slug: z.string().optional().transform(val => val ? val.toLowerCase().replace(/\s+/g, '-') : undefined),
   description: z.string().optional(),
-  order: z.coerce.number().int().min(0).optional().default(0),
   imageFile: z.any()
     .optional()
     .refine(files => !files || files.length === 0 || (files[0] && files[0].size <= 5 * 1024 * 1024), `Maximale Dateigröße ist 5MB.`)
@@ -54,7 +54,7 @@ export default function AdminVorstandPage() {
       term: "",
       slug: "",
       description: "",
-      order: 0,
+      // order: 0, // Removed default for order
       imageFile: undefined,
     },
   });
@@ -145,6 +145,7 @@ export default function AdminVorstandPage() {
           <CardTitle className="flex items-center"><UserCog className="mr-2 h-5 w-5 text-primary"/>Neues Vorstandsmitglied Erstellen/Aktualisieren</CardTitle>
           <CardDescription>
             Füllen Sie die Felder aus. Wenn die ID existiert, wird der Eintrag aktualisiert. Admin-Login erforderlich.
+            Die Anzeigereihenfolge auf der Startseite wird automatisch durch die Datenbank bestimmt (erste 4 Mitglieder).
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -238,20 +239,7 @@ export default function AdminVorstandPage() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="order"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Anzeigereihenfolge (Optional, Zahl)</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="0" {...field} />
-                      </FormControl>
-                      <FormDescription>Niedrigere Zahlen werden zuerst angezeigt.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                 {/* Removed Order Field */}
                  <FormField
                   control={form.control}
                   name="description"
@@ -303,3 +291,5 @@ export default function AdminVorstandPage() {
     </div>
   );
 }
+
+    

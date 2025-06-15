@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card'; // Only Card, CardContent etc. removed if not used directly
 import { NewsCard } from '@/components/news-card';
 import { PageHeader } from '@/components/page-header';
 import { getAllNewsArticles, getAllBoardMembers, getSiteSettings } from '@/lib/data-loader';
@@ -14,27 +14,11 @@ export default async function HomePage() {
   const allNews = await getAllNewsArticles();
   const latestNews = allNews.slice(0, 3);
   
-  const allBoardMembers = await getAllBoardMembers();
+  const allBoardMembers = await getAllBoardMembers(); // Fetches all, sorted by order, then name
   const siteSettings: SiteSettings = await getSiteSettings();
 
-  let contactPersons: BoardMember[] = [];
-  if (siteSettings.contactPersonIds && siteSettings.contactPersonIds.length > 0) {
-    contactPersons = allBoardMembers.filter(member => 
-      siteSettings.contactPersonIds?.includes(member.id)
-    );
-    // Ensure the order from settings is respected, and only up to 4 are shown
-    contactPersons.sort((a, b) => 
-      (siteSettings.contactPersonIds?.indexOf(a.id) || 0) - (siteSettings.contactPersonIds?.indexOf(b.id) || 0)
-    );
-    contactPersons = contactPersons.slice(0, 4);
-  } else {
-    // Fallback if no contact persons are specifically set
-    const fallbackRoles = ['1. Vorsitzender', 'Programmierer', 'Sportleiterin', 'Jugendleiter'];
-    contactPersons = allBoardMembers
-      .filter(member => fallbackRoles.includes(member.role))
-      .slice(0, 4); // Limit to 4 even in fallback
-  }
-
+  // Display the first 4 board members based on the default sorting (order, then name)
+  const contactPersons = allBoardMembers.slice(0, 4);
 
   const renderContactPersonCard = (person: BoardMember) => {
     const cardContent = (
@@ -96,7 +80,6 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-16">
-      {/* Hero Section */}
       <section 
         className="relative text-center py-12 md:py-20 rounded-lg shadow-md dark:border dark:border-border overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: `url(${siteSettings.homepageHeroImageUrl || '/images/general/kart_in_dry.jpg'})` }}
@@ -120,7 +103,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Neueste Nachrichten */}
       <section>
         <PageHeader title="Neueste Nachrichten" />
         {latestNews.length > 0 ? (
@@ -150,7 +132,6 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* Ihre Ansprechpartner */}
       {contactPersons.length > 0 && (
         <section>
           <PageHeader title="Ihre Ansprechpartner" />
@@ -165,7 +146,6 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Call to Action / Club Intro */}
       <section className="py-12 bg-secondary rounded-lg shadow-md">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-primary mb-4 font-headline">Engagiert im Motorsport</h2>
@@ -185,3 +165,5 @@ export default async function HomePage() {
     </div>
   );
 }
+
+    

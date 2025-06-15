@@ -3,22 +3,27 @@ import { PageHeader } from '@/components/page-header';
 import { ContactForm } from '@/components/contact-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, Phone, MapPin } from 'lucide-react';
-import { getAllBoardMembers } from '@/lib/data-loader';
+import { getAllBoardMembers, getKontaktPageContent } from '@/lib/data-loader';
+import type { KontaktPageContent } from '@/types';
 
 export default async function KontaktPage() {
   const boardMembers = await getAllBoardMembers();
-  const chairman = boardMembers.find(m => m.role === "1. Vorsitzender");
+  const chairman = boardMembers.find(m => m.role === "1. Vorsitzender"); // Assuming role is exact
+  const content: KontaktPageContent = await getKontaktPageContent();
 
   return (
     <div className="space-y-12">
-      <PageHeader title="Kontakt aufnehmen" subtitle="Wir freuen uns auf Ihre Nachricht!" />
+      <PageHeader 
+        title={content.pageTitle || "Kontakt aufnehmen"} 
+        subtitle={content.pageSubtitle || "Wir freuen uns auf Ihre Nachricht!"} 
+      />
       
       <div className="grid md:grid-cols-2 gap-12 items-start">
-        <ContactForm />
+        <ContactForm formTitle={content.formTitle} />
 
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="text-2xl font-headline text-primary">Alternative Kontaktmöglichkeiten</CardTitle>
+            <CardTitle className="text-2xl font-headline text-primary" dangerouslySetInnerHTML={{ __html: content.alternativeContactTitle || "Alternative Kontaktmöglichkeiten"}} />
           </CardHeader>
           <CardContent className="space-y-6">
             {chairman && (
@@ -38,8 +43,8 @@ export default async function KontaktPage() {
                 <MapPin className="h-5 w-5 mr-2 mt-1 flex-shrink-0 text-primary" />
                 <span>
                   Automobilclub Warendorf e.V. im ADAC<br />
-                  Musterstraße 1<br />
-                  48231 Warendorf
+                  {content.addressStreet || "Musterstraße 1"}<br />
+                  {content.addressCity || "48231 Warendorf"}
                 </span>
               </p>
             </div>
@@ -48,16 +53,18 @@ export default async function KontaktPage() {
               <h3 className="text-lg font-semibold text-foreground mb-1">Telefon (Beispiel)</h3>
               <p className="text-muted-foreground flex items-center">
                 <Phone className="h-4 w-4 mr-2 text-primary" />
-                <span>+49 123 4567890 (Vorstand, falls angegeben)</span>
+                <span>{content.examplePhoneNumber || "+49 123 4567890 (Vorstand, falls angegeben)"}</span>
               </p>
             </div>
             
-            <p className="text-sm text-muted-foreground pt-4 border-t">
-              Bitte beachten Sie unsere <a href="/datenschutz" className="text-primary hover:underline">Datenschutzerklärung</a> bei der Übermittlung Ihrer Daten.
-            </p>
+            {content.dataPrivacyNoteHtml && (
+                <p className="text-sm text-muted-foreground pt-4 border-t" dangerouslySetInnerHTML={{ __html: content.dataPrivacyNoteHtml }} />
+            )}
           </CardContent>
         </Card>
       </div>
     </div>
   );
 }
+
+    

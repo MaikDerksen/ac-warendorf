@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,7 +25,11 @@ const formSchema = z.object({
   message: z.string().min(10, { message: "Nachricht muss mindestens 10 Zeichen lang sein." }),
 });
 
-export function ContactForm() {
+interface ContactFormProps {
+  formTitle?: string;
+}
+
+export function ContactForm({ formTitle }: ContactFormProps) {
   const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,7 +54,7 @@ export function ContactForm() {
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-lg">
       <CardHeader>
-        <CardTitle className="text-2xl font-headline text-center">Schreiben Sie uns eine Nachricht</CardTitle>
+        <CardTitle className="text-2xl font-headline text-center" dangerouslySetInnerHTML={{ __html: formTitle || "Schreiben Sie uns eine Nachricht"}} />
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -115,3 +120,5 @@ export function ContactForm() {
     </Card>
   );
 }
+
+    

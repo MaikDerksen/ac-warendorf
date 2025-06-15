@@ -4,25 +4,19 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import type { BoardMember, SiteSettings } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
-import { Loader2, Users, Save, Image as ImageIcon, ArrowLeft } from 'lucide-react';
+import { Loader2, Save, Image as ImageIcon, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
-
-const MAX_CONTACT_PERSONS = 4;
-const NONE_OPTION_VALUE = "--none--";
+import type { SiteSettings } from '@/types';
 
 export default function HomepageSettingsPage() {
   const { user, isAdmin, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
-  const [selectedContactIds, setSelectedContactIds] = useState<string[]>(() => Array(MAX_CONTACT_PERSONS).fill(''));
   
   const [currentLogoUrl, setCurrentLogoUrl] = useState<string | undefined>(undefined);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -43,25 +37,10 @@ export default function HomepageSettingsPage() {
       }
       setIsLoadingData(true);
       try {
-        const [membersRes, settingsRes] = await Promise.all([
-          fetch('/api/admin/vorstand'), 
-          fetch('/api/admin/settings/homepage-contacts')
-        ]);
-
-        if (!membersRes.ok) throw new Error('Vorstandsmitglieder konnten nicht geladen werden.');
-        const membersData = await membersRes.json();
-        setBoardMembers(membersData);
-
+        const settingsRes = await fetch('/api/admin/settings/homepage-images'); 
         if (!settingsRes.ok) throw new Error('Aktuelle Seiteneinstellungen konnten nicht geladen werden.');
-        const settingsData: SiteSettings & {logoUrl?: string, homepageHeroImageUrl?: string} = await settingsRes.json();
+        const settingsData: Partial<SiteSettings> = await settingsRes.json();
         
-        const currentIds = settingsData.contactPersonIds || [];
-        const initialSelection = Array(MAX_CONTACT_PERSONS).fill('');
-        currentIds.slice(0, MAX_CONTACT_PERSONS).forEach((id: string, index: number) => {
-          initialSelection[index] = id;
-        });
-        setSelectedContactIds(initialSelection);
-
         setCurrentLogoUrl(settingsData.logoUrl);
         setLogoPreview(null); 
         setCurrentHeroImageUrl(settingsData.homepageHeroImageUrl);
@@ -83,22 +62,6 @@ export default function HomepageSettingsPage() {
         setIsLoadingData(false);
     }
   }, [user, isAdmin, authLoading, toast]);
-
-  const handleSelectChange = (index: number, value: string) => {
-    const newSelection = [...selectedContactIds];
-    const idToStore = value === NONE_OPTION_VALUE ? "" : value;
-
-    if (idToStore && newSelection.some((id, i) => id === idToStore && i !== index)) {
-        toast({
-            title: "Doppelte Auswahl",
-            description: "Diese Person wurde bereits ausgewählt. Bitte wählen Sie eine andere.",
-            variant: "default"
-        });
-        return; 
-    }
-    newSelection[index] = idToStore;
-    setSelectedContactIds(newSelection);
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'hero') => {
     const file = e.target.files?.[0];
@@ -127,22 +90,20 @@ export default function HomepageSettingsPage() {
       return;
     }
     setIsSaving(true);
-    
-    const finalContactIds = selectedContactIds.filter(id => id && id !== NONE_OPTION_VALUE); 
-    if (new Set(finalContactIds).size !== finalContactIds.length) {
-        toast({ title: "Fehler: Doppelte Auswahl bei Kontakten", description: "Bitte korrigieren Sie die Auswahl.", variant: "destructive" });
-        setIsSaving(false);
-        return;
-    }
-    
+        
     const formData = new FormData();
-    formData.append('contactPersonIds', JSON.stringify(finalContactIds)); 
     if (logoFile) formData.append('logoFile', logoFile);
     if (heroImageFile) formData.append('homepageHeroImageFile', heroImageFile);
 
+    if (!logoFile && !heroImageFile) {
+      toast({ title: 'Keine Änderungen', description: 'Es wurden keine neuen Bilder zum Speichern ausgewählt.', variant: 'default' });
+      setIsSaving(false);
+      return;
+    }
+
     try {
       const idToken = await user.getIdToken();
-      const response = await fetch('/api/admin/settings/homepage-contacts', {
+      const response = await fetch('/api/admin/settings/homepage-images', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${idToken}` }, 
         body: formData,
@@ -152,7 +113,7 @@ export default function HomepageSettingsPage() {
       
       toast({
         title: 'Gespeichert!',
-        description: 'Die Homepage-Einstellungen wurden erfolgreich aktualisiert.',
+        description: 'Die Homepage-Bilder wurden erfolgreich aktualisiert.',
       });
       
       if (result.updatedFields?.logoUrl) setCurrentLogoUrl(result.updatedFields.logoUrl);
@@ -187,7 +148,7 @@ export default function HomepageSettingsPage() {
                <span className="sr-only">Zurück zum Admin Dashboard</span>
             </Link>
           </Button>
-          <PageHeader title="Homepage Einstellungen" subtitle="Logo, Hero-Bild und Ansprechpartner für die Startseite." className="mb-0 pb-0 border-none flex-1" />
+          <PageHeader title="Homepage Bilder Verwalten" subtitle="Logo und Hero-Hintergrundbild der Startseite festlegen." className="mb-0 pb-0 border-none flex-1" />
         </div>
         <Card>
             <CardContent className="flex items-center justify-center p-10">
@@ -209,7 +170,7 @@ export default function HomepageSettingsPage() {
                <span className="sr-only">Zurück zum Admin Dashboard</span>
             </Link>
           </Button>
-          <PageHeader title="Homepage Einstellungen" subtitle="Logo, Hero-Bild und Ansprechpartner für die Startseite." className="mb-0 pb-0 border-none flex-1" />
+          <PageHeader title="Homepage Bilder Verwalten" subtitle="Logo und Hero-Hintergrundbild der Startseite festlegen." className="mb-0 pb-0 border-none flex-1" />
         </div>
         <Card>
             <CardContent>
@@ -229,7 +190,7 @@ export default function HomepageSettingsPage() {
                  <span className="sr-only">Zurück zum Admin Dashboard</span>
             </Link>
             </Button>
-            <PageHeader title="Homepage Einstellungen Verwalten" subtitle="Logo, Hero-Hintergrundbild und bis zu 4 Ansprechpartner für die Startseite festlegen." className="mb-0 pb-0 border-none flex-1"/>
+            <PageHeader title="Homepage Bilder Verwalten" subtitle="Logo und Hero-Hintergrundbild der Startseite festlegen." className="mb-0 pb-0 border-none flex-1"/>
         </div>
         <Card className="shadow-lg">
         <CardHeader>
@@ -284,47 +245,15 @@ export default function HomepageSettingsPage() {
             </div>
         </CardContent>
         </Card>
-
-        <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle className="flex items-center"><Users className="mr-2 h-5 w-5 text-primary"/>Ansprechpartner auf der Homepage</CardTitle>
-                <CardDescription>Wählen Sie bis zu {MAX_CONTACT_PERSONS} Ansprechpartner aus, die auf der Startseite angezeigt werden sollen.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                {selectedContactIds.map((selectedId, index) => (
-                <div key={`contact-slot-${index}`} className="space-y-2">
-                    <Label htmlFor={`contact-person-${index}`}>Ansprechpartner {index + 1}</Label>
-                    <Select
-                    value={selectedId || NONE_OPTION_VALUE}
-                    onValueChange={(value) => handleSelectChange(index, value)}
-                    >
-                    <SelectTrigger id={`contact-person-${index}`}>
-                        <SelectValue placeholder="-- Bitte wählen --" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value={NONE_OPTION_VALUE}>-- Keiner --</SelectItem>
-                        {boardMembers.map((member) => (
-                        <SelectItem 
-                            key={member.id}
-                            value={member.id} 
-                            disabled={selectedContactIds.some((id, i) => id === member.id && i !== index && id !== "")}
-                        >
-                            {member.name} ({member.role})
-                        </SelectItem>
-                        ))}
-                    </SelectContent>
-                    </Select>
-                </div>
-                ))}
-            </CardContent>
-        </Card>
+       
         <div className="text-center mt-8 mb-8">
              <Button onClick={handleSave} disabled={isSaving || isLoadingData} size="lg">
             {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Alle Homepage-Einstellungen Speichern
+            Homepage-Bilder Speichern
             </Button>
         </div>
-       
     </div>
   );
 }
+
+    

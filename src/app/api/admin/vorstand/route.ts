@@ -6,7 +6,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 
 export const config = {
   api: {
-    bodyParser: false, // Required for FormData
+    bodyParser: false, 
   },
 };
 
@@ -61,41 +61,39 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     
-    const id = formData.get('id') as string; // Document ID for Firestore
+    const id = formData.get('id') as string; 
     const name = formData.get('name') as string;
     const role = formData.get('role') as string;
     const email = formData.get('email') as string;
     const term = formData.get('term') as string | undefined;
-    const slug = formData.get('slug') as string | undefined; // For profile URL
+    const slug = formData.get('slug') as string | undefined; 
     const description = formData.get('description') as string | undefined;
-    const orderStr = formData.get('order') as string | undefined;
+    // 'order' is no longer taken from form data
     const imageFile = formData.get('imageFile') as File | null;
 
     if (!id || !name || !role || !email) {
         return NextResponse.json({ message: 'Missing required fields: id, name, role, or email.' }, { status: 400 });
     }
 
-    const order = orderStr ? parseInt(orderStr, 10) : 0;
-    if (isNaN(order)) {
-        return NextResponse.json({ message: 'Invalid order value. Must be a number.'}, { status: 400});
-    }
-
-
     const newBoardMemberData: any = {
-      // id is used as document id, not stored in fields typically unless duplicated
       name: name,
       role: role,
-      email: email, // Store as is, replace [at] on display
+      email: email, 
       term: term || '',
       slug: slug ? slug.toLowerCase().replace(/\s+/g, '-') : id.toLowerCase().replace(/\s+/g, '-'),
       description: description || '',
-      order: order,
-      imageUrl: '', // Will be updated after upload
+      // order: is no longer set here, keep existing or default in Firestore if needed for other sorting
+      imageUrl: '', 
       createdAt: FieldValue.serverTimestamp(),
       createdBy: adminCheck.uid,
       updatedAt: FieldValue.serverTimestamp(),
       updatedBy: adminCheck.uid,
     };
+
+    // If 'order' is crucial for other parts and needs a default, set it only on creation.
+    // For updates, we generally want to preserve the existing order unless explicitly changed.
+    // Since 'order' is removed from the form, we'll rely on existing values or Firestore defaults.
+    // A default order could be set in Firestore rules or when documents are first created, e.g., 99.
 
     let uploadedImageUrl: string | null = null;
 
@@ -115,9 +113,7 @@ export async function POST(req: NextRequest) {
     const memberDocRef = firestoreDb.collection("boardMembers").doc(id);
     
     try {
-      // Using .set() to create or overwrite the document with the specified ID.
-      // Use .update() if you only want to update existing documents.
-      await memberDocRef.set(newBoardMemberData, { merge: true }); // merge: true to update if exists, create if not
+      await memberDocRef.set(newBoardMemberData, { merge: true }); 
       return NextResponse.json({
         message: `Board member data processed and saved to Firestore with ID: ${id}. ${uploadedImageUrl ? 'Image uploaded.' : 'No image uploaded/changed.'}`,
         firestoreId: id,
@@ -147,14 +143,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Optional: Add GET to fetch all board members
 export async function GET(req: NextRequest) {
-  // Add admin verification if this endpoint needs to be protected
-  // const adminCheck = await verifyAdmin(req);
-  // if (!adminCheck.isAdmin) {
-  //   return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: adminCheck.status || 401 });
-  // }
-
   if (!adminApp) {
     console.error("CRITICAL: Firebase Admin App not initialized for fetching board members.");
     return NextResponse.json({ message: 'Server configuration error: Admin SDK not available.' }, { status: 500 });
@@ -163,13 +152,14 @@ export async function GET(req: NextRequest) {
 
   try {
     const membersCollectionRef = firestoreDb.collection("boardMembers");
+    // Still useful to sort by order if that field exists and has meaning for other contexts
     const q = membersCollectionRef.orderBy("order", "asc").orderBy("name", "asc");
     const querySnapshot = await q.get();
     
     const members: any[] = [];
     querySnapshot.forEach((doc) => {
       members.push({
-        docId: doc.id, // The document ID
+        docId: doc.id, 
         ...doc.data(),
       });
     });
@@ -180,3 +170,5 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: 'Error fetching board members.', error: error.message || String(error) }, { status: 500 });
   }
 }
+
+    
