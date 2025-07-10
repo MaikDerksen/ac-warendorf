@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
 
   if (!smtpHost || !smtpPort || !smtpUser || !smtpPassword) {
     console.error('Missing SMTP configuration in environment variables.');
-    return NextResponse.json({ message: 'Server is not configured to send emails.' }, { status: 500 });
+    return NextResponse.json({ message: 'Server is not configured to send emails. Please contact an administrator.' }, { status: 500 });
   }
 
   // Parse form data from the request
