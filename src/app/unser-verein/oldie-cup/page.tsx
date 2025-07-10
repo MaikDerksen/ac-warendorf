@@ -20,7 +20,8 @@ import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
-import { Users, CalendarDays, Trophy, HardHat, Mail, User, MessageSquare } from 'lucide-react';
+import { Users, CalendarDays, Trophy, HardHat, Mail, User, MessageSquare, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 const oldieCupFormSchema = z.object({
   name: z.string().min(2, { message: "Name muss mindestens 2 Zeichen lang sein." }),
@@ -33,6 +34,7 @@ type OldieCupFormValues = z.infer<typeof oldieCupFormSchema>;
 
 export default function OldieCupPage() {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<OldieCupFormValues>({
     resolver: zodResolver(oldieCupFormSchema),
     defaultValues: {
@@ -44,13 +46,39 @@ export default function OldieCupPage() {
   });
 
   async function onSubmit(values: OldieCupFormValues) {
-    // TODO: Implement actual form submission logic (e.g., send email, save to DB for Oldie Cup interest)
-    console.log("Oldie-Cup Form submitted:", values);
-    toast({
-      title: "Anmeldung erhalten!",
-      description: "Vielen Dank für Ihr Interesse am Oldie-Cup. Wir werden Sie ggf. kontaktieren.",
-    });
-    form.reset();
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...values,
+          subject: `Interesse am Oldie-Cup: ${values.name}`,
+          formType: "Oldie-Cup Interesse",
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Fehler beim Senden der E-Mail.');
+      }
+      
+      toast({
+        title: "Nachricht erhalten!",
+        description: "Vielen Dank für Ihr Interesse am Oldie-Cup. Wir werden Sie ggf. kontaktieren.",
+      });
+      form.reset();
+
+    } catch (error: any) {
+      console.error("Fehler beim Senden des Formulars:", error);
+      toast({
+        title: "Fehler",
+        description: "Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const keyFacts = [
@@ -173,8 +201,8 @@ export default function OldieCupPage() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full">
-                  Interesse bekunden / Senden
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                   {isSubmitting ? <Loader2 className="animate-spin" /> : 'Interesse bekunden / Senden'}
                 </Button>
               </form>
             </Form>
@@ -184,4 +212,3 @@ export default function OldieCupPage() {
     </div>
   );
 }
-

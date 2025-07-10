@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name muss mindestens 2 Zeichen lang sein." }),
@@ -31,6 +33,7 @@ interface ContactFormProps {
 
 export function ContactForm({ formTitle }: ContactFormProps) {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -42,19 +45,43 @@ export function ContactForm({ formTitle }: ContactFormProps) {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // TODO: Implement actual form submission logic (e.g., send email, save to DB)
-    console.log("Form submitted:", values);
-    toast({
-      title: "Nachricht gesendet!",
-      description: "Vielen Dank für Ihre Kontaktaufnahme. Wir werden uns so schnell wie möglich bei Ihnen melden.",
-    });
-    form.reset();
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...values,
+          formType: "Allgemeines Kontaktformular",
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Fehler beim Senden der E-Mail.');
+      }
+      
+      toast({
+        title: "Nachricht gesendet!",
+        description: "Vielen Dank für Ihre Kontaktaufnahme. Wir werden uns so schnell wie möglich bei Ihnen melden.",
+      });
+      form.reset();
+    } catch (error: any) {
+      console.error("Fehler beim Senden des Formulars:", error);
+      toast({
+        title: "Fehler",
+        description: "Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es später erneut oder kontaktieren Sie uns direkt.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-lg">
       <CardHeader>
-        <CardTitle className="text-2xl font-headline text-center" dangerouslySetInnerHTML={{ __html: formTitle || "Schreiben Sie uns eine Nachricht"}} />
+        <CardTitle className="text-2xl font-headline text-center text-primary-foreground-alt" dangerouslySetInnerHTML={{ __html: formTitle || "Schreiben Sie uns eine Nachricht"}} />
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -111,8 +138,8 @@ export function ContactForm({ formTitle }: ContactFormProps) {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" variant="default">
-              Nachricht senden
+            <Button type="submit" className="w-full" variant="default" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="animate-spin" /> : 'Nachricht senden'}
             </Button>
           </form>
         </Form>
@@ -120,5 +147,3 @@ export function ContactForm({ formTitle }: ContactFormProps) {
     </Card>
   );
 }
-
-    
