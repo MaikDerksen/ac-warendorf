@@ -68,7 +68,7 @@ export default function OldieCupPage() {
         <div className="space-y-8">
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-xl font-headline text-primary">Was ist der Oldie-Cup?</CardTitle>
+              <CardTitle className="text-xl font-headline text-primary-foreground-alt">Was ist der Oldie-Cup?</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-foreground">
@@ -82,8 +82,8 @@ export default function OldieCupPage() {
                 <Image
                   src="/images/general/kart_in_rain.jpg"
                   alt="Kart-Slalom für Erwachsene"
-                  layout="fill"
-                  objectFit="cover"
+                  fill
+                  style={{ objectFit: 'cover' }}
                   data-ai-hint="adult karting race"
                 />
               </div>
@@ -92,7 +92,7 @@ export default function OldieCupPage() {
 
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-xl font-headline text-primary">Grundfakten zum Oldie-Cup</CardTitle>
+              <CardTitle className="text-xl font-headline text-primary-foreground-alt">Grundfakten zum Oldie-Cup</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
@@ -109,7 +109,7 @@ export default function OldieCupPage() {
 
         <Card className="shadow-lg sticky top-24">
           <CardHeader>
-            <CardTitle className="text-2xl font-headline text-center text-primary">Jetzt hier melden!</CardTitle>
+            <CardTitle className="text-2xl font-headline text-center text-primary-foreground-alt">Jetzt hier melden!</CardTitle>
             <p className="text-sm text-muted-foreground text-center">Bekunden Sie Ihr Interesse oder stellen Sie Ihre Fragen.</p>
           </CardHeader>
           <CardContent>
@@ -184,3 +184,4 @@ export default function OldieCupPage() {
     </div>
   );
 }
+

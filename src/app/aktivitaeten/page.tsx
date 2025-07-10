@@ -17,7 +17,7 @@ export default async function AktivitaetenPage() {
 
       <Card className="shadow-lg overflow-hidden">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline text-primary" dangerouslySetInnerHTML={{ __html: content.kartSlalomSectionTitle || "Kart-Slalom: Unsere Hauptaktivität" }} />
+          <CardTitle className="text-2xl font-headline text-primary-foreground-alt" dangerouslySetInnerHTML={{ __html: content.kartSlalomSectionTitle || "Kart-Slalom: Unsere Hauptaktivität" }} />
         </CardHeader>
         <CardContent className="space-y-4">
           {content.kartSlalomIntroParagraph && <p className="text-lg text-foreground" dangerouslySetInnerHTML={{ __html: content.kartSlalomIntroParagraph }} />}
@@ -35,7 +35,7 @@ export default async function AktivitaetenPage() {
             <div className="space-y-3">
               {content.kartSlalomDetailParagraph1 && <p className="text-foreground" dangerouslySetInnerHTML={{ __html: content.kartSlalomDetailParagraph1 }} />}
               {content.kartSlalomDetailParagraph2 && <p className="text-foreground" dangerouslySetInnerHTML={{ __html: content.kartSlalomDetailParagraph2 }} />}
-              <Button asChild variant="link" className="text-primary px-0">
+              <Button asChild variant="link" className="text-primary-foreground-alt px-0">
                 <Link href="/kontakt/mitglied-werden">Mehr zum Kart-Slalom und Mitgliedschaft erfahren</Link>
               </Button>
             </div>
@@ -45,7 +45,7 @@ export default async function AktivitaetenPage() {
 
       {content.youtubeEmbedId && (
         <section className="py-6">
-          {content.youtubeSectionTitle && <h2 className="text-2xl font-headline font-semibold text-primary mb-4 text-center" dangerouslySetInnerHTML={{ __html: content.youtubeSectionTitle }} />}
+          {content.youtubeSectionTitle && <h2 className="text-2xl font-headline font-semibold text-primary-foreground-alt mb-4 text-center" dangerouslySetInnerHTML={{ __html: content.youtubeSectionTitle }} />}
           {content.youtubeSectionText && <p className="text-center text-muted-foreground mb-6" dangerouslySetInnerHTML={{ __html: content.youtubeSectionText }} />}
           <YouTubeEmbed embedId={content.youtubeEmbedId} title={content.kartSlalomSectionTitle || "Kart-Slalom Video"} />
         </section>
@@ -53,7 +53,7 @@ export default async function AktivitaetenPage() {
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline text-primary" dangerouslySetInnerHTML={{ __html: content.futurePossibilitiesTitle || "Zukünftige Möglichkeiten"}} />
+          <CardTitle className="text-2xl font-headline text-primary-foreground-alt" dangerouslySetInnerHTML={{ __html: content.futurePossibilitiesTitle || "Zukünftige Möglichkeiten"}} />
         </CardHeader>
         <CardContent>
           {content.futurePossibilitiesIntro && <p className="text-foreground" dangerouslySetInnerHTML={{ __html: content.futurePossibilitiesIntro }} />}
@@ -72,5 +72,3 @@ export default async function AktivitaetenPage() {
     </div>
   );
 }
-
-    

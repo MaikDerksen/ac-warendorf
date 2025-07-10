@@ -20,7 +20,7 @@ export default function SchutzkonzeptPage() {
 
       <Card className="shadow-lg">
         <CardHeader className="flex flex-row items-start space-x-4">
-          <ShieldAlert className="h-10 w-10 text-primary mt-1" />
+          <ShieldAlert className="h-10 w-10 text-primary-foreground-alt mt-1" />
           <div>
             <CardTitle className="text-2xl font-headline">Unser Engagement für ein sicheres Umfeld</CardTitle>
             <p className="text-muted-foreground">Prävention, Intervention und Aufarbeitung</p>
@@ -31,7 +31,7 @@ export default function SchutzkonzeptPage() {
             Der Automobilclub Warendorf e.V. im ADAC (AC Warendorf) bekennt sich ausdrücklich zu seiner Verantwortung, ein sicheres, respektvolles und unterstützendes Umfeld für alle Mitglieder, insbesondere für Kinder und Jugendliche, zu gewährleisten. Unser Schutzkonzept dient dazu, präventive Maßnahmen zu etablieren, klare Handlungsrichtlinien im Falle von Grenzüberschreitungen, Diskriminierung oder (sexualisierter) Gewalt zu definieren und eine Kultur des Hinsehens und der Verantwortungsübernahme zu fördern.
           </p>
           
-          <h3 className="text-lg font-semibold font-headline text-primary pt-2">Ziele unseres Schutzkonzepts:</h3>
+          <h3 className="text-lg font-semibold font-headline text-primary-foreground-alt pt-2">Ziele unseres Schutzkonzepts:</h3>
           <ul className="list-disc list-inside ml-4 space-y-1">
             <li><strong>Prävention:</strong> Verhinderung von jeglicher Form von Gewalt, Mobbing und Diskriminierung.</li>
             <li><strong>Sensibilisierung:</strong> Aufklärung und Schulung aller Beteiligten (Mitglieder, Trainer, Eltern, Vorstand) für das Thema Kindeswohl und grenzachtenden Umgang.</li>
@@ -40,7 +40,7 @@ export default function SchutzkonzeptPage() {
             <li><strong>Kultur:</strong> Etablierung einer offenen und vertrauensvollen Vereinskultur, in der Probleme angesprochen werden können.</li>
           </ul>
 
-          <h3 className="text-lg font-semibold font-headline text-primary pt-2">Wichtige Bausteine (Auszug):</h3>
+          <h3 className="text-lg font-semibold font-headline text-primary-foreground-alt pt-2">Wichtige Bausteine (Auszug):</h3>
            <ul className="list-disc list-inside ml-4 space-y-1">
             <li>Benennung von Vertrauenspersonen / Ansprechpartnern für Kinderschutz.</li>
             <li>Verpflichtung zur Vorlage erweiterter Führungszeugnisse für bestimmte Funktionsträger.</li>
@@ -57,7 +57,7 @@ export default function SchutzkonzeptPage() {
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-xl font-headline flex items-center"><UserCheck className="mr-2 h-6 w-6 text-primary"/> Schutzbeauftragte für die Jugendgruppe</CardTitle>
+          <CardTitle className="text-xl font-headline flex items-center"><UserCheck className="mr-2 h-6 w-6 text-primary-foreground-alt"/> Schutzbeauftragte für die Jugendgruppe</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-foreground">
            <p>
@@ -71,17 +71,17 @@ export default function SchutzkonzeptPage() {
            </p>
            <ul className="list-disc list-inside ml-4 mt-2 space-y-1 text-foreground">
               <li>Über die Vereins-App <strong>Spond</strong> (sofern Sie Mitglied sind und Zugriff haben).</li>
-              <li>Über unser <Link href="/kontakt" className="text-primary hover:underline">allgemeines Kontaktformular</Link>. Bitte geben Sie im Betreff oder in der Nachricht an, dass Ihre Anfrage für Lorraine Schürhörster bestimmt ist.</li>
+              <li>Über unser <Link href="/kontakt" className="text-primary-foreground-alt hover:underline">allgemeines Kontaktformular</Link>. Bitte geben Sie im Betreff oder in der Nachricht an, dass Ihre Anfrage für Lorraine Schürhörster bestimmt ist.</li>
            </ul>
            <p className="text-sm text-muted-foreground pt-2">
-             Alternativ können Sie sich auch jederzeit vertrauensvoll an den <Link href="/vorstand" className="text-primary hover:underline">Vorstand des AC Warendorf</Link> wenden.
+             Alternativ können Sie sich auch jederzeit vertrauensvoll an den <Link href="/vorstand" className="text-primary-foreground-alt hover:underline">Vorstand des AC Warendorf</Link> wenden.
            </p>
         </CardContent>
       </Card>
 
       <Card className="shadow-lg bg-secondary">
         <CardHeader>
-          <CardTitle className="text-xl font-headline flex items-center"><Info className="mr-2 h-6 w-6 text-primary"/> So erreichen Sie Lorraine</CardTitle>
+          <CardTitle className="text-xl font-headline flex items-center"><Info className="mr-2 h-6 w-6 text-primary-foreground-alt"/> So erreichen Sie Lorraine</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-foreground">
            <p>Wenn Sie Lorraine Schürhörster (z.B. über das Kontaktformular) eine Nachricht zukommen lassen möchten, helfen folgende Angaben für eine schnelle Bearbeitung:</p>

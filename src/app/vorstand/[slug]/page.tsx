@@ -44,8 +44,8 @@ export default async function BoardMemberProfilePage({ params }: BoardMemberProf
                   <Image
                     src={member.imageUrl}
                     alt={member.name}
-                    layout="fill"
-                    objectFit="cover"
+                    fill
+                    style={{ objectFit: 'cover' }}
                     priority
                     sizes="(max-width: 767px) 90vw, 30vw"
                     className="rounded-lg" // Ensure consistency if images are not square
@@ -53,13 +53,13 @@ export default async function BoardMemberProfilePage({ params }: BoardMemberProf
                   />
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center rounded-lg">
-                    <UserCircle className="h-32 w-32 text-primary opacity-60" />
+                    <UserCircle className="h-32 w-32 text-primary-foreground-alt opacity-60" />
                   </div>
                 )}
               </div>
             </CardHeader>
             <CardContent className="p-4 text-center">
-              <h2 className="text-2xl font-headline text-primary">{member.name}</h2>
+              <h2 className="text-2xl font-headline text-primary-foreground-alt">{member.name}</h2>
               <p className="text-sm text-muted-foreground">{member.role}</p>
             </CardContent>
           </Card>
@@ -71,7 +71,7 @@ export default async function BoardMemberProfilePage({ params }: BoardMemberProf
         <div className="md:col-span-2 space-y-8">
           <Card className="shadow-lg">
             <CardHeader className="flex flex-row items-center space-x-3">
-              <Briefcase className="h-6 w-6 text-primary" />
+              <Briefcase className="h-6 w-6 text-primary-foreground-alt" />
               <CardTitle className="text-xl font-headline">Amt & Kontakt</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-foreground">
@@ -91,7 +91,7 @@ export default async function BoardMemberProfilePage({ params }: BoardMemberProf
                 <h3 className="text-sm font-semibold text-muted-foreground flex items-center">
                   <Mail className="h-4 w-4 mr-2" /> E-Mail
                 </h3>
-                <a href={`mailto:${member.email.replace('[at]', '@')}`} className="text-primary hover:underline">
+                <a href={`mailto:${member.email.replace('[at]', '@')}`} className="text-primary-foreground-alt hover:underline">
                   {member.email.replace('[at]', '@')}
                 </a>
               </div>
@@ -101,7 +101,7 @@ export default async function BoardMemberProfilePage({ params }: BoardMemberProf
           {member.description && (
             <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center space-x-3">
-                <Info className="h-6 w-6 text-primary" />
+                <Info className="h-6 w-6 text-primary-foreground-alt" />
                 <CardTitle className="text-xl font-headline">Weitere Informationen</CardTitle>
               </CardHeader>
               <CardContent className="prose max-w-none text-foreground">

@@ -18,7 +18,7 @@ export default async function VorstandPage() {
       <Card className="shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-2xl font-headline flex items-center">
-            <Users className="h-7 w-7 mr-3 text-primary" />
+            <Users className="h-7 w-7 mr-3 text-primary-foreground-alt" />
             Unsere Vorstandsmitglieder
           </CardTitle>
           <span className="text-sm text-muted-foreground">
@@ -38,8 +38,8 @@ export default async function VorstandPage() {
                       <Image
                         src={member.imageUrl}
                         alt={member.name}
-                        layout="fill"
-                        objectFit="cover"
+                        fill
+                        style={{ objectFit: 'cover' }}
                         data-ai-hint="person photo"
                         className="rounded-t-lg" 
                         sizes="(max-width: 639px) 90vw, (max-width: 767px) 45vw, 30vw"
@@ -48,7 +48,7 @@ export default async function VorstandPage() {
                       />
                     ) : (
                       <div className="w-full h-full bg-muted flex items-center justify-center rounded-t-lg">
-                        <UserCircle className="h-32 w-32 text-primary opacity-60" />
+                        <UserCircle className="h-32 w-32 text-primary-foreground-alt opacity-60" />
                       </div>
                     )}
                   </div>
@@ -59,7 +59,7 @@ export default async function VorstandPage() {
                     <div>
                       <h3 className="font-semibold text-lg text-foreground mb-1">
                         {member.slug ? (
-                           <Link href={`/vorstand/${member.slug}`} className="hover:text-primary hover:underline">
+                           <Link href={`/vorstand/${member.slug}`} className="hover:text-primary-foreground-alt hover:underline">
                             {member.name}
                           </Link>
                         ) : (
@@ -69,7 +69,7 @@ export default async function VorstandPage() {
                       <p className="text-sm text-muted-foreground mb-2">{member.role}</p>
                     </div>
                     {member.slug && (
-                      <Button variant="link" size="sm" asChild className="mt-auto text-xs text-primary">
+                      <Button variant="link" size="sm" asChild className="mt-auto text-xs text-primary-foreground-alt">
                         <Link href={`/vorstand/${member.slug}`}>Profil ansehen</Link>
                       </Button>
                     )}
@@ -86,13 +86,13 @@ export default async function VorstandPage() {
       </Card>
 
       <section className="mt-12 p-6 bg-secondary rounded-lg shadow">
-        <h2 className="text-2xl font-headline font-semibold text-primary mb-3">Mitwirken und Kontakt</h2>
+        <h2 className="text-2xl font-headline font-semibold text-primary-foreground-alt mb-3">Mitwirken und Kontakt</h2>
         <p className="text-foreground mb-4">
           Unser Vorstandsteam engagiert sich ehrenamtlich für die Belange des Vereins und die Förderung des Motorsports in Warendorf. 
           Bei Fragen zu Mitgliedschaft, Veranstaltungen oder anderen Themen rund um den AC Warendorf stehen Ihnen unsere Vorstandsmitglieder gerne zur Verfügung.
         </p>
         <p className="text-foreground">
-          Die Kontaktaufnahme ist am einfachsten per E-Mail über die einzelnen Profilseiten oder über unser allgemeines <Link href="/kontakt" className="text-primary hover:underline">Kontaktformular</Link>.
+          Die Kontaktaufnahme ist am einfachsten per E-Mail über die einzelnen Profilseiten oder über unser allgemeines <Link href="/kontakt" className="text-primary-foreground-alt hover:underline">Kontaktformular</Link>.
         </p>
       </section>
     </div>

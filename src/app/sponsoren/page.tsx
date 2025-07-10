@@ -16,7 +16,7 @@ export default async function SponsorenPage() {
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline text-primary">Ein herzliches Dankeschön!</CardTitle>
+          <CardTitle className="text-2xl font-headline text-primary-foreground-alt">Ein herzliches Dankeschön!</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-lg text-foreground">
@@ -30,7 +30,7 @@ export default async function SponsorenPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-xl font-headline text-primary">Unsere Partner</CardTitle>
+          <CardTitle className="text-xl font-headline text-primary-foreground-alt">Unsere Partner</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-stretch text-center">
           {sponsors.length > 0 ? sponsors.map((sponsor: Sponsor) => (
@@ -39,8 +39,8 @@ export default async function SponsorenPage() {
                 <Image 
                   src={sponsor.logoUrl} 
                   alt={`${sponsor.name} Logo`} 
-                  layout="fill" 
-                  objectFit="contain" 
+                  fill
+                  style={{ objectFit: 'contain' }}
                   className="mb-2" 
                   data-ai-hint={sponsor.dataAiHint || "company logo"}
                 />
@@ -63,7 +63,7 @@ export default async function SponsorenPage() {
       
       <Card className="shadow-lg bg-secondary">
         <CardHeader>
-          <CardTitle className="text-xl font-headline text-primary">Werden auch Sie Sponsor!</CardTitle>
+          <CardTitle className="text-xl font-headline text-primary-foreground-alt">Werden auch Sie Sponsor!</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-foreground">

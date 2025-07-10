@@ -35,7 +35,7 @@ export default async function HomePage() {
               sizes="(max-width: 640px) 24vw, (max-width: 768px) 28vw, 112px"
             />
           ) : (
-            <UserCircle className="w-full h-full text-primary opacity-60 rounded-lg" />
+            <UserCircle className="w-full h-full text-primary-foreground-alt opacity-60 rounded-lg" />
           )}
         </div>
         
@@ -44,17 +44,17 @@ export default async function HomePage() {
         </div>
 
         <div className="flex-grow text-center sm:text-left">
-          <h3 className="text-xl font-headline font-semibold text-primary mb-1">{person.name}</h3>
+          <h3 className="text-xl font-headline font-semibold text-primary-foreground-alt mb-1">{person.name}</h3>
           <p className="text-sm text-muted-foreground mb-2">{person.role}</p>
           {person.slug ? (
-            <div className="text-sm text-primary hover:underline flex items-center justify-center sm:justify-start cursor-pointer">
+            <div className="text-sm text-primary-foreground-alt hover:underline flex items-center justify-center sm:justify-start cursor-pointer">
               <Mail className="h-4 w-4 mr-2" />
               {person.email.replace('[at]', '@')} (Profil)
             </div>
           ) : (
             <a
               href={`mailto:${person.email.replace('[at]', '@')}`}
-              className="text-sm text-primary hover:underline flex items-center justify-center sm:justify-start"
+              className="text-sm text-primary-foreground-alt hover:underline flex items-center justify-center sm:justify-start"
             >
               <Mail className="h-4 w-4 mr-2" />
               {person.email.replace('[at]', '@')}
@@ -148,7 +148,7 @@ export default async function HomePage() {
 
       <section className="py-12 bg-secondary rounded-lg shadow-md">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-primary mb-4 font-headline">Engagiert im Motorsport</h2>
+          <h2 className="text-3xl font-bold text-primary-foreground-alt mb-4 font-headline">Engagiert im Motorsport</h2>
           <p className="text-lg text-foreground max-w-2xl mx-auto mb-6">
             Der AC Warendorf e.V. im ADAC fördert den Motorsportnachwuchs und bietet eine Plattform für Motorsportbegeisterte jeden Alters. Erfahren Sie mehr über unsere Aktivitäten und wie Sie Teil unserer Gemeinschaft werden können.
           </p>
@@ -166,4 +166,3 @@ export default async function HomePage() {
   );
 }
 
-    

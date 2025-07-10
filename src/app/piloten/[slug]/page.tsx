@@ -52,13 +52,13 @@ export default async function PilotProfilePage({ params }: PilotProfilePageProps
                   />
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <User className="h-32 w-32 text-primary opacity-60" />
+                    <User className="h-32 w-32 text-primary-foreground-alt opacity-60" />
                   </div>
                 )}
               </div>
             </CardHeader>
             <CardContent className="p-4 text-center">
-              <h2 className="text-2xl font-headline text-primary">{pilot.name}</h2>
+              <h2 className="text-2xl font-headline text-primary-foreground-alt">{pilot.name}</h2>
             </CardContent>
           </Card>
            <Button asChild variant="outline" className="w-full">
@@ -69,7 +69,7 @@ export default async function PilotProfilePage({ params }: PilotProfilePageProps
         <div className="md:col-span-2 space-y-8">
           <Card className="shadow-lg">
             <CardHeader className="flex flex-row items-center space-x-3">
-              <Info className="h-6 w-6 text-primary" />
+              <Info className="h-6 w-6 text-primary-foreground-alt" />
               <CardTitle className="text-xl font-headline">Über Mich</CardTitle>
             </CardHeader>
             <CardContent className="prose max-w-none text-foreground">
@@ -83,7 +83,7 @@ export default async function PilotProfilePage({ params }: PilotProfilePageProps
 
           <Card className="shadow-lg">
             <CardHeader className="flex flex-row items-center space-x-3">
-              <Trophy className="h-6 w-6 text-primary" />
+              <Trophy className="h-6 w-6 text-primary-foreground-alt" />
               <CardTitle className="text-xl font-headline">Meine Erfolge</CardTitle>
             </CardHeader>
             <CardContent className="prose max-w-none text-foreground">

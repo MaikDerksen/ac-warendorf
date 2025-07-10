@@ -18,7 +18,7 @@ export default async function PilotenPage() {
       <Card className="shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-2xl font-headline flex items-center">
-            <Users className="h-7 w-7 mr-3 text-primary" />
+            <Users className="h-7 w-7 mr-3 text-primary-foreground-alt" />
             Aktive Talente
           </CardTitle>
           <span className="text-sm text-muted-foreground">
@@ -47,7 +47,7 @@ export default async function PilotenPage() {
                       />
                     ) : (
                       <div className="w-full h-full bg-muted flex items-center justify-center">
-                        <User className="h-32 w-32 text-primary opacity-60" />
+                        <User className="h-32 w-32 text-primary-foreground-alt opacity-60" />
                       </div>
                     )}
                   </div>
@@ -57,7 +57,7 @@ export default async function PilotenPage() {
                   <div className="p-4 text-center">
                     <p className="font-semibold text-lg text-foreground mb-2">{pilot.name}</p>
                     {pilot.profileSlug ? (
-                      <Button variant="link" size="sm" asChild className="mt-1 text-xs text-primary">
+                      <Button variant="link" size="sm" asChild className="mt-1 text-xs text-primary-foreground-alt">
                         <Link href={`/piloten/${pilot.profileSlug}`}>Profil ansehen</Link>
                       </Button>
                     ) : (
@@ -76,7 +76,7 @@ export default async function PilotenPage() {
       </Card>
 
       <section className="mt-12 p-6 bg-secondary rounded-lg shadow">
-        <h2 className="text-2xl font-headline font-semibold text-primary mb-3">Werde Teil unseres Teams!</h2>
+        <h2 className="text-2xl font-headline font-semibold text-primary-foreground-alt mb-3">Werde Teil unseres Teams!</h2>
         <p className="text-foreground mb-4">
           Du hast Benzin im Blut und möchtest deine Fähigkeiten im Kartsport unter Beweis stellen? 
           Der AC Warendorf bietet dir die ideale Plattform, um in den Motorsport einzusteigen und dich weiterzuentwickeln.
