@@ -22,6 +22,7 @@ body {
 
     --primary: 49 100% 50%; /* ADAC Yellow #FFD100 */
     --primary-foreground: 240 10% 3.9%; /* Dark Gray/Black for text on yellow */
+    --primary-foreground-alt: 45 33% 33%; /* #986C12 */
 
     --secondary: 240 4.8% 95.9%; /* Default light gray for secondary elements */
     --secondary-foreground: 240 5.9% 10%; /* Default dark text */
@@ -68,6 +69,7 @@ body {
 
     --primary: 49 100% 50%; /* ADAC Yellow #FFD100 */
     --primary-foreground: 240 10% 3.9%; /* Dark Gray/Black for text on yellow */
+    --primary-foreground-alt: 49 100% 50%; /* ADAC Yellow for dark mode */
 
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
