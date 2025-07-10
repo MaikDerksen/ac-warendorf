@@ -1,334 +1,224 @@
 
 'use client';
 
+import { useEffect, useState } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, FilePlus } from 'lucide-react';
+import { ArrowLeft, FilePlus, Trash2, Edit, Loader2, List } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useAuth } from '@/context/AuthContext'; 
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useAuth } from '@/context/AuthContext';
+import type { NewsArticle } from '@/types';
+import Image from 'next/image';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const newsFormSchema = z.object({
-  slug: z.string().min(3, { message: "Slug muss mindestens 3 Zeichen haben (z.B. mein-artikel)." }).regex(/^[a-z0-9-]+$/, { message: "Nur Kleinbuchstaben, Zahlen und Bindestriche."}),
   title: z.string().min(5, { message: "Titel muss mindestens 5 Zeichen haben." }),
+  slug: z.string().min(3, { message: "Slug muss mindestens 3 Zeichen haben (z.B. mein-artikel)." }).regex(/^[a-z0-9-]+$/, { message: "Nur Kleinbuchstaben, Zahlen und Bindestriche."}),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Datum muss im Format YYYY-MM-DD sein." }),
   categories: z.string().optional(), 
   excerpt: z.string().min(10, { message: "Kurzbeschreibung muss mindestens 10 Zeichen haben." }),
   content: z.string().min(20, { message: "Inhalt muss mindestens 20 Zeichen haben." }),
-  heroImageFile: z.any()
-    .optional()
-    .refine(files => !files || files.length === 0 || (files[0] && files[0].size <= 5 * 1024 * 1024), `Maximale Dateigröße ist 5MB.`)
-    .refine(files => !files || files.length === 0 || (files[0] && ['image/jpeg', 'image/png', 'image/gif'].includes(files[0].type)), 'Nur JPG, PNG, GIF erlaubt.'),
+  heroImageFile: z.any().optional(),
   youtubeEmbed: z.string().optional(),
   dataAiHint: z.string().max(50, {message: "Maximal 50 Zeichen."}).optional(),
 });
 
 type NewsFormValues = z.infer<typeof newsFormSchema>;
 
-
 export default function AdminNewsPage() {
   const { toast } = useToast();
   const { user, loading: authLoading, isAdmin } = useAuth(); 
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [editingArticle, setEditingArticle] = useState<NewsArticle | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const form = useForm<NewsFormValues>({
     resolver: zodResolver(newsFormSchema),
-    defaultValues: {
-      slug: "",
-      title: "",
-      date: new Date().toISOString().split('T')[0],
-      categories: "",
-      excerpt: "",
-      content: "<p>Ihr Artikelinhalt hier...</p>",
-      heroImageFile: undefined,
-      youtubeEmbed: "",
-      dataAiHint: "",
-    },
+    defaultValues: { title: "", slug: "", date: new Date().toISOString().split('T')[0], categories: "", excerpt: "", content: "<p>Ihr Artikelinhalt hier...</p>", heroImageFile: undefined, youtubeEmbed: "", dataAiHint: "" },
   });
 
-  async function onSubmit(data: NewsFormValues) {
-    if (!user) {
-      toast({
-        title: "Nicht Angemeldet",
-        description: "Bitte melden Sie sich an, um einen Artikel zu erstellen.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (!isAdmin) {
-      toast({
-        title: "Keine Berechtigung",
-        description: "Sie haben keine Berechtigung, Artikel zu erstellen.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    let idToken;
+  const fetchArticles = async () => {
+    if (!isAdmin) return;
+    setIsLoading(true);
     try {
-      idToken = await user.getIdToken();
-    } catch (error) {
-      console.error("Error getting ID token:", error);
-      toast({
-        title: "Authentifizierungsfehler",
-        description: "ID Token konnte nicht abgerufen werden. Bitte versuchen Sie es erneut.",
-        variant: "destructive",
-      });
-      return;
+      const response = await fetch('/api/admin/news');
+      if (!response.ok) throw new Error('Artikel konnten nicht geladen werden.');
+      const data = await response.json();
+      setArticles(data);
+    } catch (error: any) {
+      toast({ title: "Fehler beim Laden", description: error.message, variant: "destructive" });
+    } finally {
+      setIsLoading(false);
     }
+  };
 
+  useEffect(() => {
+    if (isAdmin) fetchArticles();
+    else if (!authLoading) setIsLoading(false);
+  }, [user, isAdmin, authLoading]);
+
+  const handleEditClick = (article: NewsArticle) => {
+    setEditingArticle(article);
+    form.reset({
+      title: article.title,
+      slug: article.slug,
+      date: article.date,
+      categories: article.categories.join('|'),
+      excerpt: article.excerpt,
+      content: article.content,
+      youtubeEmbed: article.youtubeEmbed || "",
+      dataAiHint: article.dataAiHint || "",
+      heroImageFile: undefined,
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
+  const handleCancelEdit = () => {
+    setEditingArticle(null);
+    form.reset({ title: "", slug: "", date: new Date().toISOString().split('T')[0], categories: "", excerpt: "", content: "<p>Ihr Artikelinhalt hier...</p>", heroImageFile: undefined, youtubeEmbed: "", dataAiHint: "" });
+  };
+  
+  const handleDelete = async (articleId: string) => {
+    if (!isAdmin || !user) return;
+    try {
+        const idToken = await user.getIdToken();
+        const response = await fetch(`/api/admin/news?id=${articleId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${idToken}` },
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Fehler beim Löschen des Artikels.');
+        }
+        toast({ title: "Erfolg", description: "Artikel wurde gelöscht." });
+        fetchArticles(); // Refresh list
+    } catch (error: any) {
+        toast({ title: "Löschfehler", description: error.message, variant: "destructive" });
+    }
+  };
+
+  async function onSubmit(data: NewsFormValues) {
+    if (!user || !isAdmin) return;
+    
+    const idToken = await user.getIdToken();
     const formData = new FormData();
-    (Object.keys(data) as Array<keyof NewsFormValues>).forEach(key => {
-      if (key === 'heroImageFile' && data.heroImageFile && data.heroImageFile.length > 0) {
-        formData.append(key, data.heroImageFile[0]);
-      } else if (data[key] !== undefined && data[key] !== null && key !== 'heroImageFile') {
-         formData.append(key, String(data[key]));
+    Object.entries(data).forEach(([key, value]) => {
+      if (key === 'heroImageFile' && value?.[0]) {
+        formData.append(key, value[0]);
+      } else if (value !== undefined && value !== null && key !== 'heroImageFile') {
+        formData.append(key, String(value));
       }
     });
 
+    const isUpdating = !!editingArticle;
+    const url = isUpdating ? `/api/admin/news?id=${editingArticle.id}` : '/api/admin/news';
+    const method = isUpdating ? 'PUT' : 'POST';
+
     try {
-      const response = await fetch('/api/admin/news', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${idToken}`,
-        },
+      const response = await fetch(url, {
+        method,
+        headers: { 'Authorization': `Bearer ${idToken}` },
         body: formData,
       });
 
       const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Fehler beim Speichern.');
 
-      if (!response.ok) {
-        throw new Error(result.message || 'Fehler beim Senden der Daten an den Server.');
-      }
-
-      toast({
-        title: "News Artikel Verarbeitet!",
-        description: (
-          <div>
-            <p>{result.message}</p>
-            {result.firestoreId && <p>Firestore Document ID: {result.firestoreId}</p>}
-            {result.imagePath && result.imagePath.startsWith('https://firebasestorage.googleapis.com') && (
-              <p>Bild in Firebase Storage: <a href={result.imagePath} target="_blank" rel="noopener noreferrer" className="text-primary underline">Link</a></p>
-            )}
-            <p className="mt-2 font-semibold">Wichtiger Hinweis:</p>
-            <p>Der Artikel wurde zu Firestore hinzugefügt. Die News-Seiten lesen nun direkt aus Firestore.</p>
-            {result.imagePath && result.imagePath.startsWith('https://firebasestorage.googleapis.com')
-              ? <p>Das Bild wurde zu Firebase Storage hochgeladen.</p>
-              : result.imagePath === 'No image uploaded or saved.'
-                ? <p>Es wurde kein Bild hochgeladen.</p>
-                : <p>Bildpfad (Legacy): {result.imagePath}</p>
-            }
-          </div>
-        ),
-        duration: 12000,
-      });
-      form.reset();
-      const fileInput = document.getElementById('heroImageFile') as HTMLInputElement | null;
-      if (fileInput) {
-        fileInput.value = '';
-      }
+      toast({ title: "Erfolg!", description: `Artikel wurde ${isUpdating ? 'aktualisiert' : 'erstellt'}.` });
+      handleCancelEdit();
+      fetchArticles(); // Refresh list
     } catch (error: any) {
-      console.error("Fehler beim Senden des News-Formulars:", error);
-      toast({
-        title: "Fehler",
-        description: error.message || "Ein Fehler ist beim Verarbeiten des Artikels aufgetreten.",
-        variant: "destructive",
-      });
+      toast({ title: "Speicherfehler", description: error.message, variant: "destructive" });
     }
   }
-
+  
   const isSubmitDisabled = authLoading || !user || !isAdmin || form.formState.isSubmitting;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" asChild>
-          <Link href="/admin">
-            <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">Zurück zum Admin Dashboard</span>
-          </Link>
-        </Button>
-        <PageHeader title="News Verwalten" subtitle="Artikel erstellen (speichert in Firestore & Firebase Storage)." className="mb-0 pb-0 border-none flex-1" />
+        <Button variant="outline" size="icon" asChild><Link href="/admin"><ArrowLeft className="h-4 w-4" /></Link></Button>
+        <PageHeader title="News Verwalten" subtitle="Artikel erstellen, bearbeiten und löschen." className="mb-0 pb-0 border-none flex-1" />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><FilePlus className="mr-2 h-5 w-5 text-primary"/>Neuen News-Artikel Erstellen</CardTitle>
+          <CardTitle className="flex items-center"><FilePlus className="mr-2 h-5 w-5 text-primary"/>{editingArticle ? 'Artikel Bearbeiten' : 'Neuen News-Artikel Erstellen'}</CardTitle>
           <CardDescription>
-            Füllen Sie die Felder aus, um einen neuen Artikel hinzuzufügen. Das Bild wird zu Firebase Storage hochgeladen und der Artikel in Firestore gespeichert.
-            Sie müssen als Admin angemeldet sein, um diese Funktion zu nutzen.
+            {editingArticle ? `Bearbeiten Sie den Artikel "${editingArticle.title}".` : 'Füllen Sie die Felder aus, um einen neuen Artikel hinzuzufügen.'}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!user && !authLoading && (
-            <p className="text-destructive">Bitte melden Sie sich an, um Artikel zu erstellen.</p>
-          )}
-          {user && !isAdmin && !authLoading && (
-            <p className="text-destructive">Sie haben keine Admin-Berechtigung, um Artikel zu erstellen.</p>
-          )}
-          {(user && isAdmin || authLoading) && (
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Titel*</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Spannender Artikeltitel" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="slug"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Slug* (für URL)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="spannender-artikeltitel" {...field} />
-                      </FormControl>
-                      <FormDescription>Kurzer, URL-freundlicher Name. Nur Kleinbuchstaben, Zahlen und Bindestriche.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="date"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Datum* (YYYY-MM-DD)</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="categories"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kategorien (Optional, getrennt durch | )</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Kart-Slalom|Vereinsleben" {...field} />
-                      </FormControl>
-                      <FormDescription>Mehrere Kategorien mit "|" trennen, z.B. Kart-Slalom|Vereinsleben.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="excerpt"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kurzbeschreibung / Auszug*</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Eine kurze Zusammenfassung des Artikels..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Inhalt* (HTML erlaubt)</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="<p>Der vollständige Artikelinhalt...</p>" {...field} rows={10}/>
-                      </FormControl>
-                      <FormDescription>Sie können hier HTML-Tags für Formatierungen verwenden.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="heroImageFile"
-                  render={({ field: { onChange, value, ...rest } }) => (
-                    <FormItem>
-                      <FormLabel>Titelbild Hochladen (Optional, max 5MB, JPG/PNG/GIF)</FormLabel>
-                      <FormControl>
-                        <Input
-                          id="heroImageFile"
-                          type="file"
-                          accept="image/jpeg,image/png,image/gif"
-                          onChange={(e) => {
-                            onChange(e.target.files);
-                          }}
-                          {...rest}
-                        />
-                      </FormControl>
-                      <FormDescription>Wählen Sie eine Bilddatei von Ihrem Computer. Wird zu Firebase Storage hochgeladen.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="dataAiHint"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Bild KI-Hinweis (Optional, für Titelbild)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="z.B. kart race" {...field} />
-                      </FormControl>
-                      <FormDescription>1-2 Stichworte für KI-Bildgenerierung, falls kein Bild angegeben.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="youtubeEmbed"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>YouTube Video ID (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="z.B. dQw4w9WgXcQ" {...field} />
-                      </FormControl>
-                      <FormDescription>Nur die ID des Videos, nicht die volle URL.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Titel*</FormLabel><FormControl><Input placeholder="Spannender Artikeltitel" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="slug" render={({ field }) => (<FormItem><FormLabel>Slug* (für URL)</FormLabel><FormControl><Input placeholder="spannender-artikeltitel" {...field} disabled={!!editingArticle} /></FormControl><FormDescription>Eindeutig, nur Kleinbuchstaben, Zahlen, Bindestriche. Kann nach Erstellung nicht mehr geändert werden.</FormDescription><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="date" render={({ field }) => (<FormItem><FormLabel>Datum* (YYYY-MM-DD)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="categories" render={({ field }) => (<FormItem><FormLabel>Kategorien (getrennt durch | )</FormLabel><FormControl><Input placeholder="Kart-Slalom|Vereinsleben" {...field} /></FormControl><FormDescription>Mehrere Kategorien mit "|" trennen.</FormDescription><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="excerpt" render={({ field }) => (<FormItem><FormLabel>Kurzbeschreibung*</FormLabel><FormControl><Textarea placeholder="Eine kurze Zusammenfassung..." {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="content" render={({ field }) => (<FormItem><FormLabel>Inhalt* (HTML erlaubt)</FormLabel><FormControl><Textarea placeholder="<p>Der vollständige Artikelinhalt...</p>" {...field} rows={10}/></FormControl><FormDescription>Sie können HTML-Tags für Formatierungen verwenden.</FormDescription><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="heroImageFile" render={({ field: { onChange, value, ...rest } }) => (<FormItem><FormLabel>Titelbild {editingArticle ? 'ersetzen' : 'hochladen'} (Optional)</FormLabel><FormControl><Input id="heroImageFile" type="file" accept="image/jpeg,image/png,image/gif" onChange={(e) => onChange(e.target.files)} {...rest} /></FormControl><FormDescription>{editingArticle ? 'Lassen Sie das Feld frei, um das aktuelle Bild beizubehalten.' : 'Wählen Sie eine Bilddatei von Ihrem Computer.'}</FormDescription><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="dataAiHint" render={({ field }) => (<FormItem><FormLabel>Bild KI-Hinweis (Optional)</FormLabel><FormControl><Input placeholder="z.B. kart race" {...field} /></FormControl><FormDescription>1-2 Stichworte für KI-Bildgenerierung, falls kein Bild angegeben.</FormDescription><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="youtubeEmbed" render={({ field }) => (<FormItem><FormLabel>YouTube Video ID (Optional)</FormLabel><FormControl><Input placeholder="z.B. dQw4w9WgXcQ" {...field} /></FormControl><FormDescription>Nur die ID des Videos, nicht die volle URL.</FormDescription><FormMessage /></FormItem>)} />
+              <div className="flex gap-4">
                 <Button type="submit" disabled={isSubmitDisabled}>
-                  <FilePlus className="mr-2 h-4 w-4" />
-                  {form.formState.isSubmitting ? 'Wird verarbeitet...' : 'News-Artikel Speichern'}
+                    {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (editingArticle ? <Edit className="mr-2 h-4 w-4" /> : <FilePlus className="mr-2 h-4 w-4" />)}
+                    {editingArticle ? 'Artikel Aktualisieren' : 'Artikel Speichern'}
                 </Button>
-              </form>
-            </Form>
+                {editingArticle && (<Button type="button" variant="outline" onClick={handleCancelEdit}>Abbrechen</Button>)}
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center"><List className="mr-2"/>Aktuelle News-Artikel</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex items-center justify-center p-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /><span className="ml-2">Lade Artikel...</span></div>
+          ) : articles.length === 0 ? (
+            <p className="text-muted-foreground">Keine Artikel gefunden.</p>
+          ) : (
+            <div className="space-y-4">
+              {articles.map(article => (
+                <div key={article.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center gap-4">
+                     <Image src={article.heroImageUrl || "https://placehold.co/100x75.png"} alt={article.title} width={100} height={75} className="rounded-md object-cover" data-ai-hint="news article"/>
+                     <div>
+                        <p className="font-semibold">{article.title}</p>
+                        <p className="text-sm text-muted-foreground">{article.slug} - {new Date(article.date).toLocaleDateString('de-DE')}</p>
+                     </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="icon" onClick={() => handleEditClick(article)}><Edit className="h-4 w-4"/><span className="sr-only">Bearbeiten</span></Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild><Button variant="destructive" size="icon"><Trash2 className="h-4 w-4" /><span className="sr-only">Löschen</span></Button></AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader><AlertDialogTitle>Sind Sie sicher?</AlertDialogTitle><AlertDialogDescription>Diese Aktion kann nicht rückgängig gemacht werden. Der Artikel "{article.title}" wird dauerhaft gelöscht.</AlertDialogDescription></AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(article.id)}>Löschen</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>
-
-       <div className="mt-8 text-center">
-        <Button variant="outline" asChild>
-          <Link href="/admin">Zurück zum Dashboard</Link>
-        </Button>
-      </div>
     </div>
   );
 }

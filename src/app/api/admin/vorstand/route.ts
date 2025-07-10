@@ -3,172 +3,112 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { adminApp } from '@/lib/firebaseAdminConfig';
 import { verifyAdmin } from '@/lib/adminAuth';
 import { FieldValue } from 'firebase-admin/firestore';
+import type { BoardMember } from '@/types';
 
-export const config = {
-  api: {
-    bodyParser: false, 
-  },
-};
+export const config = { api: { bodyParser: false } };
 
 async function uploadBoardMemberImageToFirebaseAdmin(file: File): Promise<string> {
-  if (!adminApp) {
-    throw new Error('Admin SDK not initialized for file upload.');
-  }
+  if (!adminApp) throw new Error('Admin SDK not initialized.');
   const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
-  if (!bucketName) {
-    throw new Error('Storage bucket name not configured in environment variables.');
-  }
-  const bucket = adminApp.storage().bucket(bucketName);
+  if (!bucketName) throw new Error('Storage bucket name not configured.');
   
+  const bucket = adminApp.storage().bucket(bucketName);
   const fileBuffer = Buffer.from(await file.arrayBuffer());
   const safeOriginalName = file.name.replace(/[^a-zA-Z0-9_.-]/g, '_');
   const uniqueFilename = `vorstand_images/${Date.now()}_${safeOriginalName}`;
   
   const blob = bucket.file(uniqueFilename);
-  const blobStream = blob.createWriteStream({
-    metadata: {
-      contentType: file.type || 'application/octet-stream',
-    },
-    public: true,
-  });
-
-  return new Promise((resolve, reject) => {
-    blobStream.on('error', (err) => {
-      console.error("Firebase Admin Storage upload error (Board Members):", err);
-      reject(err);
-    });
-    blobStream.on('finish', () => {
-      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-      resolve(publicUrl);
-    });
-    blobStream.end(fileBuffer);
-  });
+  await blob.save(fileBuffer, { metadata: { contentType: file.type }, public: true });
+  return `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
 }
 
-export async function POST(req: NextRequest) {
-  const adminCheck = await verifyAdmin(req);
-  if (!adminCheck.isAdmin || !adminCheck.uid) {
-    return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: adminCheck.status || 401 });
-  }
-  console.log(`Admin user ${adminCheck.uid} is creating/updating a board member.`);
-
-  if (!adminApp) {
-    console.error("CRITICAL: Firebase Admin App not initialized in API route for board members.");
-    return NextResponse.json({ message: 'Server configuration error: Admin SDK not available.' }, { status: 500 });
-  }
-  const firestoreDb = adminApp.firestore();
-
-  try {
-    const formData = await req.formData();
-    
-    const id = formData.get('id') as string; 
-    const name = formData.get('name') as string;
-    const role = formData.get('role') as string;
-    const email = formData.get('email') as string;
-    const term = formData.get('term') as string | undefined;
-    const slug = formData.get('slug') as string | undefined; 
-    const description = formData.get('description') as string | undefined;
-    // 'order' is no longer taken from form data
-    const imageFile = formData.get('imageFile') as File | null;
-
-    if (!id || !name || !role || !email) {
-        return NextResponse.json({ message: 'Missing required fields: id, name, role, or email.' }, { status: 400 });
-    }
-
-    const newBoardMemberData: any = {
-      name: name,
-      role: role,
-      email: email, 
-      term: term || '',
-      slug: slug ? slug.toLowerCase().replace(/\s+/g, '-') : id.toLowerCase().replace(/\s+/g, '-'),
-      description: description || '',
-      // order: is no longer set here, keep existing or default in Firestore if needed for other sorting
-      imageUrl: '', 
-      createdAt: FieldValue.serverTimestamp(),
-      createdBy: adminCheck.uid,
-      updatedAt: FieldValue.serverTimestamp(),
-      updatedBy: adminCheck.uid,
-    };
-
-    // If 'order' is crucial for other parts and needs a default, set it only on creation.
-    // For updates, we generally want to preserve the existing order unless explicitly changed.
-    // Since 'order' is removed from the form, we'll rely on existing values or Firestore defaults.
-    // A default order could be set in Firestore rules or when documents are first created, e.g., 99.
-
-    let uploadedImageUrl: string | null = null;
-
-    if (imageFile && imageFile.size > 0) {
-      try {
-        uploadedImageUrl = await uploadBoardMemberImageToFirebaseAdmin(imageFile);
-        newBoardMemberData.imageUrl = uploadedImageUrl;
-      } catch (uploadError: any) {
-        console.error('Board member image upload to Firebase Storage failed:', uploadError);
-        return NextResponse.json({
-          message: 'Error uploading board member image to Firebase Storage.',
-          error: uploadError.message || String(uploadError)
-        }, { status: 500 });
-      }
-    }
-    
-    const memberDocRef = firestoreDb.collection("boardMembers").doc(id);
-    
-    try {
-      await memberDocRef.set(newBoardMemberData, { merge: true }); 
-      return NextResponse.json({
-        message: `Board member data processed and saved to Firestore with ID: ${id}. ${uploadedImageUrl ? 'Image uploaded.' : 'No image uploaded/changed.'}`,
-        firestoreId: id,
-        imageUrl: newBoardMemberData.imageUrl,
-      }, { status: 200 });
-
-    } catch (firestoreError: any) {
-      console.error('Error saving board member document to Firestore:', firestoreError);
-      if (uploadedImageUrl) {
-        try {
-           const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
-           if (bucketName) {
-            const objectPath = new URL(uploadedImageUrl).pathname.substring(1).split('/').slice(1).join('/');
-            await adminApp.storage().bucket(bucketName).file(objectPath).delete();
-            console.log(`Rolled back: Deleted board member image ${objectPath} from Firebase Storage due to Firestore error.`);
-           }
-        } catch (deleteError) {
-          console.error(`Error deleting image from Firebase Storage during rollback: ${deleteError}`);
-        }
-      }
-      return NextResponse.json({ message: 'Error saving board member data to Firestore.', error: firestoreError.message || String(firestoreError) }, { status: 500 });
-    }
-
-  } catch (error: any) {
-    console.error('Error processing board member submission:', error);
-    return NextResponse.json({ message: 'Error processing request.', error: error.message || String(error) }, { status: 500 });
-  }
-}
-
+// GET all board members
 export async function GET(req: NextRequest) {
-  if (!adminApp) {
-    console.error("CRITICAL: Firebase Admin App not initialized for fetching board members.");
-    return NextResponse.json({ message: 'Server configuration error: Admin SDK not available.' }, { status: 500 });
-  }
-  const firestoreDb = adminApp.firestore();
-
+  if (!adminApp) return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
+  
   try {
-    const membersCollectionRef = firestoreDb.collection("boardMembers");
-    // Still useful to sort by order if that field exists and has meaning for other contexts
-    const q = membersCollectionRef.orderBy("order", "asc").orderBy("name", "asc");
-    const querySnapshot = await q.get();
-    
-    const members: any[] = [];
-    querySnapshot.forEach((doc) => {
-      members.push({
-        docId: doc.id, 
-        ...doc.data(),
-      });
-    });
-    
+    const membersCollectionRef = adminApp.firestore().collection("boardMembers").orderBy("order", "asc").orderBy("name", "asc");
+    const querySnapshot = await membersCollectionRef.get();
+    const members = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as BoardMember[];
     return NextResponse.json(members, { status: 200 });
   } catch (error: any) {
-    console.error("Error fetching board members from Firestore:", error);
-    return NextResponse.json({ message: 'Error fetching board members.', error: error.message || String(error) }, { status: 500 });
+    return NextResponse.json({ message: 'Error fetching members', error: error.message }, { status: 500 });
   }
 }
 
-    
+async function handleRequest(req: NextRequest, isUpdate: boolean) {
+    const adminCheck = await verifyAdmin(req);
+    if (!adminCheck.isAdmin) return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: 401 });
+
+    if (!adminApp) return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
+
+    try {
+        const formData = await req.formData();
+        const memberId = formData.get('id') as string;
+        if (!memberId) return NextResponse.json({ message: 'Member ID is required' }, { status: 400 });
+
+        const memberRef = adminApp.firestore().collection("boardMembers").doc(memberId);
+
+        const memberData: any = {
+            name: formData.get('name') as string,
+            role: formData.get('role') as string,
+            email: formData.get('email') as string,
+            term: (formData.get('term') as string) || '',
+            description: (formData.get('description') as string) || '',
+            order: Number(formData.get('order') as string) || 99,
+            slug: memberId, // Use the ID as slug
+            updatedAt: FieldValue.serverTimestamp(),
+            updatedBy: adminCheck.uid,
+        };
+        
+        if (!isUpdate) {
+            memberData.createdAt = FieldValue.serverTimestamp();
+            memberData.createdBy = adminCheck.uid;
+        }
+        
+        const imageFile = formData.get('imageFile') as File | null;
+        if (imageFile) {
+            memberData.imageUrl = await uploadBoardMemberImageToFirebaseAdmin(imageFile);
+        }
+
+        await memberRef.set(memberData, { merge: isUpdate });
+
+        return NextResponse.json({
+            message: `Member ${isUpdate ? 'updated' : 'created'} successfully`,
+            id: memberId,
+        }, { status: isUpdate ? 200 : 201 });
+
+    } catch (error: any) {
+        return NextResponse.json({ message: `Error ${isUpdate ? 'updating' : 'creating'} member`, error: error.message }, { status: 500 });
+    }
+}
+
+
+// POST a new board member
+export async function POST(req: NextRequest) {
+    return handleRequest(req, false);
+}
+
+// PUT (update) a board member
+export async function PUT(req: NextRequest) {
+    return handleRequest(req, true);
+}
+
+
+// DELETE a board member
+export async function DELETE(req: NextRequest) {
+    const adminCheck = await verifyAdmin(req);
+    if (!adminCheck.isAdmin) return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: 401 });
+
+    const memberId = req.nextUrl.searchParams.get('id');
+    if (!memberId) return NextResponse.json({ message: 'Member ID is required' }, { status: 400 });
+
+    if (!adminApp) return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
+
+    try {
+        await adminApp.firestore().collection("boardMembers").doc(memberId).delete();
+        return NextResponse.json({ message: 'Member deleted successfully' }, { status: 200 });
+    } catch (error: any) {
+        return NextResponse.json({ message: 'Error deleting member', error: error.message }, { status: 500 });
+    }
+}

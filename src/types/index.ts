@@ -12,6 +12,7 @@ export interface NewsArticle {
   youtubeEmbed?: string;
   createdAt?: any; 
   authorId?: string;
+  updatedAt?: any;
 }
 
 export interface BoardMember {
@@ -23,9 +24,11 @@ export interface BoardMember {
   imageUrl?: string; 
   slug?: string; 
   description?: string;
-  order?: number; // Still used for general sorting, but not for homepage selection
+  order: number;
   createdAt?: any; 
   createdBy?: string; 
+  updatedAt?: any;
+  updatedBy?: string;
 }
 
 export interface Pilot {
@@ -37,6 +40,7 @@ export interface Pilot {
   achievements?: string[];
   createdAt?: any;
   createdBy?: string;
+  updatedAt?: any;
 }
 
 export interface FaqItem {
@@ -55,16 +59,16 @@ export interface Sponsor {
   logoUrl: string; 
   websiteUrl?: string;
   dataAiHint?: string;
-  displayOrder?: number;
+  displayOrder: number;
   isActive?: boolean;
   createdAt?: any; 
   createdBy?: string;
+  updatedAt?: any;
 }
 
 export interface SiteSettings {
   logoUrl?: string;
   homepageHeroImageUrl?: string;
-  // contactPersonIds is removed
 }
 
 export interface AktivitaetenPageContent {
@@ -107,5 +111,3 @@ export interface KontaktPageContent {
   examplePhoneNumber?: string;
   dataPrivacyNoteHtml?: string; // HTML allowed
 }
-
-    
