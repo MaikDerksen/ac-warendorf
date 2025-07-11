@@ -1,26 +1,18 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Navbar } from '@/components/navbar';
-import { Footer } from '@/components/footer';
-import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
-import { ThemeProvider } from "@/components/theme-provider";
-import { getSiteSettings } from '@/lib/data-loader';
-import type { SiteSettings } from '@/types';
-import { AuthProvider } from '@/context/AuthContext';
+import { Providers } from '@/components/providers';
 
 export const metadata: Metadata = {
   title: 'AC Warendorf Digital',
   description: 'Herzlich willkommen beim Automobilclub Warendorf e. V.',
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const siteSettings: SiteSettings = await getSiteSettings();
-
   return (
     <html lang="de" suppressHydrationWarning>
       <head>
@@ -30,21 +22,9 @@ export default async function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
       </head>
       <body className={cn("font-body antialiased min-h-screen flex flex-col")}>
-        <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-        >
-          <AuthProvider>
-            <Navbar logoUrl={siteSettings.logoUrl} />
-            <main className="flex-grow container mx-auto px-4 py-8">
-              {children}
-            </main>
-            <Footer />
-            <Toaster />
-          </AuthProvider>
-        </ThemeProvider>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

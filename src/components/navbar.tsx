@@ -1,9 +1,9 @@
 
-// Removed 'use client' - Navbar can be a Server Component if it receives all data as props
-// import { useState } from 'react'; // No longer needed if mobile menu is handled differently or Navbar becomes client again later
+'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown } from 'lucide-react'; // Removed Menu, X as they are in MobileNav
+import { ChevronDown } from 'lucide-react';
 import { Logo } from './logo';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,9 +12,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-// import { cn } from '@/lib/utils'; // Not used directly here
 import { ModeToggle } from './mode-toggle';
-import { MobileNav } from './mobile-nav'; // Import MobileNav
+import { MobileNav } from './mobile-nav';
+import type { SiteSettings } from '@/types';
 
 const navLinks = [
   { href: '/', label: 'Startseite' },
@@ -40,17 +40,34 @@ const navLinks = [
   },
 ];
 
-interface NavbarProps {
-  logoUrl?: string; // Add logoUrl prop
-}
 
-export function Navbar({ logoUrl }: NavbarProps) { // Accept logoUrl prop
-  // Mobile menu state and toggle logic moved to MobileNav component
+export function Navbar() {
+  const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        // Since this is a client component, we fetch from the public API endpoint
+        const settingsRes = await fetch('/api/admin/settings/homepage-images');
+        if (settingsRes.ok) {
+          const settingsData: Partial<SiteSettings> = await settingsRes.json();
+          setLogoUrl(settingsData.logoUrl);
+        }
+      } catch (error) {
+        console.error("Failed to fetch site settings for Navbar:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchSettings();
+  }, []);
+
 
   return (
     <header className="bg-card shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <Logo logoUrl={logoUrl} /> {/* Pass logoUrl to Logo */}
+        <Logo logoUrl={logoUrl} />
         <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
           {navLinks.map((link) =>
             link.dropdown ? (
@@ -79,11 +96,9 @@ export function Navbar({ logoUrl }: NavbarProps) { // Accept logoUrl prop
         </nav>
         <div className="md:hidden flex items-center space-x-2">
           <ModeToggle />
-          {/* MobileNav will handle its own open/close button and state */}
           <MobileNav navLinks={navLinks} />
         </div>
       </div>
-      {/* Mobile menu rendering (the dropdown part) is now handled by MobileNav's SheetContent */}
     </header>
   );
 }
