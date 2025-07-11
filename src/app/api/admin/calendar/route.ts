@@ -2,13 +2,13 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { adminApp } from '@/lib/firebaseAdminConfig';
 import { verifyAdmin } from '@/lib/adminAuth';
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldValue, WriteBatch } from 'firebase-admin/firestore';
 import { z } from 'zod';
 import type { CalendarEvent, EventCategory } from '@/types';
+import { add, nextDay, isBefore, isSameDay, Day } from 'date-fns';
 
 export const config = { api: { bodyParser: true } };
 
-// Zod schema for event validation
 const eventSchema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters long."),
     start: z.string().datetime("Invalid start date-time format."),
@@ -18,6 +18,48 @@ const eventSchema = z.object({
     description: z.string().optional(),
     category: z.enum(['Training', 'Rennen', 'Sitzung', 'Feier', 'Arbeitseinsatz', 'Sonstiges']),
 });
+
+const dayMap: { [key: string]: Day } = {
+  sunday: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+};
+
+async function createRecurringEvents(batch: WriteBatch, firestore: FirebaseFirestore.Firestore, rawData: any, adminUid: string) {
+    const { title, start, end, allDay, location, description, category, recurrence } = rawData;
+    const recurrenceGroupId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const recurrenceEndDate = new Date(recurrence.endDate);
+    
+    let currentDate = new Date(start);
+    const originalStartDate = new Date(start);
+    const originalEndDate = new Date(end);
+    const duration = originalEndDate.getTime() - originalStartDate.getTime();
+    
+    const recurrenceDays: Day[] = recurrence.days.map((day: string) => dayMap[day]);
+
+    while (isBefore(currentDate, recurrenceEndDate) || isSameDay(currentDate, recurrenceEndDate)) {
+        if (recurrenceDays.includes(currentDate.getDay() as Day)) {
+            const newStart = currentDate;
+            const newEnd = new Date(newStart.getTime() + duration);
+            
+            const newEventData = {
+                title, allDay, location, description, category,
+                start: newStart.toISOString(),
+                end: newEnd.toISOString(),
+                createdAt: FieldValue.serverTimestamp(),
+                createdBy: adminUid,
+                recurrenceGroupId,
+            };
+            const docRef = firestore.collection("calendarEvents").doc();
+            batch.set(docRef, newEventData);
+        }
+        currentDate = add(currentDate, { days: 1 });
+    }
+}
 
 // GET all calendar events
 export async function GET(req: NextRequest) {
@@ -35,25 +77,33 @@ export async function GET(req: NextRequest) {
 // POST a new calendar event
 export async function POST(req: NextRequest) {
   const adminCheck = await verifyAdmin(req);
-  if (!adminCheck.isAdmin) return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: 401 });
+  if (!adminCheck.isAdmin || !adminCheck.uid) return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: 401 });
 
   if (!adminApp) return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
+  const firestoreDb = adminApp.firestore();
   
   try {
     const rawData = await req.json();
-    const validation = eventSchema.safeParse(rawData);
-    if (!validation.success) {
-        return NextResponse.json({ message: "Invalid event data", errors: validation.error.flatten().fieldErrors }, { status: 400 });
+
+    if (rawData.recurring && rawData.recurrence) {
+        const batch = firestoreDb.batch();
+        await createRecurringEvents(batch, firestoreDb, rawData, adminCheck.uid);
+        await batch.commit();
+        return NextResponse.json({ message: "Recurring events created successfully" }, { status: 201 });
+    } else {
+        const validation = eventSchema.safeParse(rawData);
+        if (!validation.success) {
+            return NextResponse.json({ message: "Invalid event data", errors: validation.error.flatten().fieldErrors }, { status: 400 });
+        }
+        const newEventData = {
+            ...validation.data,
+            createdAt: FieldValue.serverTimestamp(),
+            createdBy: adminCheck.uid,
+        };
+
+        const docRef = await firestoreDb.collection("calendarEvents").add(newEventData);
+        return NextResponse.json({ message: `Event created with ID: ${docRef.id}`, id: docRef.id }, { status: 201 });
     }
-
-    const newEventData = {
-        ...validation.data,
-        createdAt: FieldValue.serverTimestamp(),
-        createdBy: adminCheck.uid,
-    };
-
-    const docRef = await adminApp.firestore().collection("calendarEvents").add(newEventData);
-    return NextResponse.json({ message: `Event created with ID: ${docRef.id}`, id: docRef.id }, { status: 201 });
   } catch (error: any) {
     console.error("Error creating event:", error);
     return NextResponse.json({ message: 'Error creating event', error: error.message }, { status: 500 });
@@ -99,12 +149,33 @@ export async function DELETE(req: NextRequest) {
 
     const eventId = req.nextUrl.searchParams.get('id');
     if (!eventId) return NextResponse.json({ message: 'Event ID is required' }, { status: 400 });
+    
+    const recurrenceGroupId = req.nextUrl.searchParams.get('recurrenceGroupId');
+    const deleteAllFuture = req.nextUrl.searchParams.get('deleteAllFuture') === 'true';
 
     if (!adminApp) return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
+    const firestoreDb = adminApp.firestore();
 
     try {
-        await adminApp.firestore().collection("calendarEvents").doc(eventId).delete();
-        return NextResponse.json({ message: 'Event deleted successfully' }, { status: 200 });
+        if (deleteAllFuture && recurrenceGroupId) {
+            const eventToDelete = await firestoreDb.collection("calendarEvents").doc(eventId).get();
+            if (!eventToDelete.exists) throw new Error("Event to delete not found.");
+
+            const eventStartDate = eventToDelete.data()!.start;
+            const q = firestoreDb.collection("calendarEvents")
+                                .where('recurrenceGroupId', '==', recurrenceGroupId)
+                                .where('start', '>=', eventStartDate);
+
+            const snapshot = await q.get();
+            const batch = firestoreDb.batch();
+            snapshot.docs.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            return NextResponse.json({ message: `Deleted ${snapshot.size} recurring events.` }, { status: 200 });
+
+        } else {
+            await firestoreDb.collection("calendarEvents").doc(eventId).delete();
+            return NextResponse.json({ message: 'Event deleted successfully' }, { status: 200 });
+        }
     } catch (error: any) {
         return NextResponse.json({ message: 'Error deleting event', error: error.message }, { status: 500 });
     }

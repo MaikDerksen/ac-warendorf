@@ -127,4 +127,5 @@ export interface CalendarEvent {
   createdAt?: any;
   updatedAt?: any;
   createdBy?: string;
+  recurrenceGroupId?: string; // New: To group recurring events
 }
