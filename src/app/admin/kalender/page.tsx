@@ -90,6 +90,8 @@ export default function AdminCalendarPage() {
         }
     },
   });
+  
+  const { isSubmitting } = form.formState;
 
   const fetchEvents = async () => {
     if (!isAdmin) return;
@@ -221,7 +223,6 @@ export default function AdminCalendarPage() {
     }
   }
   
-  const isSubmitDisabled = authLoading || !user || !isAdmin || form.formState.isSubmitting;
   const allDay = form.watch("allDay");
   const isRecurring = form.watch("recurring");
 
@@ -301,7 +302,7 @@ export default function AdminCalendarPage() {
                                                 <Button
                                                     key={day.id}
                                                     type="button"
-                                                    variant={field.value?.includes(day.id) ? "default" : "outline"}
+                                                    variant={(field.value || []).includes(day.id) ? "default" : "outline"}
                                                     onClick={() => {
                                                         const currentDays = field.value || [];
                                                         const newDays = currentDays.includes(day.id)
@@ -325,8 +326,8 @@ export default function AdminCalendarPage() {
 
 
               <div className="flex gap-4 pt-4">
-                <Button type="submit" disabled={isSubmitDisabled}>
-                    {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (editingEvent ? <Edit className="mr-2 h-4 w-4" /> : <CalendarPlus className="mr-2 h-4 w-4" />)}
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (editingEvent ? <Edit className="mr-2 h-4 w-4" /> : <CalendarPlus className="mr-2 h-4 w-4" />)}
                     {editingEvent ? 'Termin Aktualisieren' : 'Termin Speichern'}
                 </Button>
                 {editingEvent && (<Button type="button" variant="outline" onClick={handleCancelEdit}>Abbrechen</Button>)}
