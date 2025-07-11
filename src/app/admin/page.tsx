@@ -1,14 +1,16 @@
 
+
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Users, Newspaper, Shield, Settings, Car, FileText, Contact, Image as ImageIconLucide } from 'lucide-react';
+import { Users, Newspaper, Shield, Settings, Car, FileText, Contact, Image as ImageIconLucide, Calendar } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const managementSections = [
     { title: 'Homepage Bilder', icon: Settings, href: '/admin/homepage-settings', description: 'Logo und Hero-Bild der Startseite verwalten.' },
     { title: 'News Verwalten', icon: Newspaper, href: '/admin/news', description: 'Artikel erstellen, bearbeiten und löschen.' },
+    { title: 'Kalender Verwalten', icon: Calendar, href: '/admin/kalender', description: 'Vereinstermine erstellen und pflegen.' },
     { title: 'Vorstand Verwalten', icon: Users, href: '/admin/vorstand', description: 'Vorstandsmitglieder und Rollen pflegen.' },
     { title: 'Piloten Verwalten', icon: Car, href: '/admin/piloten', description: 'Fahrerprofile und Erfolge aktualisieren.' },
     { title: 'Sponsoren Verwalten', icon: Shield, href: '/admin/sponsoren', description: 'Sponsorenlogos und -informationen verwalten.' },
@@ -51,5 +53,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-    

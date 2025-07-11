@@ -1,3 +1,4 @@
+
 // Removed 'use client' - Navbar can be a Server Component if it receives all data as props
 // import { useState } from 'react'; // No longer needed if mobile menu is handled differently or Navbar becomes client again later
 
@@ -23,6 +24,7 @@ const navLinks = [
       { href: '/vorstand', label: 'Vorstand' },
       { href: '/piloten', label: 'Piloten' },
       { href: '/unser-verein/oldie-cup', label: 'Oldie-Cup' },
+      { href: '/unser-verein/kalender', label: 'Termine & Kalender' },
     ]
   },
   { href: '/aktivitaeten', label: 'Kart-Slalom' },

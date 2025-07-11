@@ -1,10 +1,11 @@
 
+
 'use server';
 
 import fs from 'fs';
 import path from 'path';
 import Papa from 'papaparse';
-import type { NewsArticle, BoardMember, Pilot, FaqItem, Sponsor, SiteSettings, AktivitaetenPageContent, MitgliedWerdenPageContent, KontaktPageContent } from '@/types';
+import type { NewsArticle, BoardMember, Pilot, FaqItem, Sponsor, SiteSettings, AktivitaetenPageContent, MitgliedWerdenPageContent, KontaktPageContent, CalendarEvent } from '@/types';
 import { adminApp } from '@/lib/firebaseAdminConfig'; 
 import { FieldValue } from 'firebase-admin/firestore';
 
@@ -13,8 +14,8 @@ const PLACEHOLDER_IMAGE_LARGE = "https://placehold.co/1200x675.png";
 const PLACEHOLDER_IMAGE_MEDIUM = "https://placehold.co/600x400.png";
 const PLACEHOLDER_IMAGE_SQUARE = "https://placehold.co/400x400.png";
 const PLACEHOLDER_LOGO_SMALL = "https://placehold.co/80x80.png";
-const PLACEHOLDER_IMAGE_AKTIVITAETEN = "https://placehold.co/600x400.png"; // Default for Aktivitaeten main image
-const PLACEHOLDER_IMAGE_MITGLIED_WERDEN = "https://placehold.co/400x250.png"; // Default for Mitglied werden sidebar image
+const PLACEHOLDER_IMAGE_AKTIVITAETEN = "https://placehold.co/600x400.png";
+const PLACEHOLDER_IMAGE_MITGLIED_WERDEN = "https://placehold.co/400x250.png";
 
 
 // Helper function to sanitize strings
@@ -483,4 +484,34 @@ export async function getKontaktPageContent(): Promise<KontaktPageContent> {
   }
 }
 
+// --- Calendar Events ---
+export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
+  if (!adminApp) {
+    console.error("CRITICAL: Firebase Admin App not initialized in getAllCalendarEvents. Returning empty array.");
+    return [];
+  }
+  const firestoreDb = adminApp.firestore();
+  try {
+    const eventsCollectionRef = firestoreDb.collection("calendarEvents");
+    const q = eventsCollectionRef.orderBy("start", "asc");
+    const querySnapshot = await q.get();
     
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        title: data.title,
+        start: data.start, // ISO String
+        end: data.end,     // ISO String
+        allDay: data.allDay,
+        location: data.location,
+        description: data.description,
+        category: data.category,
+        // No need to include timestamps unless you want to display them
+      } as CalendarEvent;
+    });
+  } catch (error) {
+    console.error("Error fetching calendar events from Firestore (Admin SDK):", error);
+    return [];
+  }
+}

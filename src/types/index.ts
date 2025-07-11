@@ -1,4 +1,5 @@
 
+
 export interface NewsArticle {
   id: string; 
   slug: string;
@@ -110,4 +111,20 @@ export interface KontaktPageContent {
   addressCity?: string;
   examplePhoneNumber?: string;
   dataPrivacyNoteHtml?: string; // HTML allowed
+}
+
+export type EventCategory = 'Training' | 'Rennen' | 'Sitzung' | 'Feier' | 'Arbeitseinsatz' | 'Sonstiges';
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  start: string; // ISO 8601 format
+  end: string;   // ISO 8601 format
+  allDay: boolean;
+  location?: string;
+  description?: string;
+  category: EventCategory;
+  createdAt?: any;
+  updatedAt?: any;
+  createdBy?: string;
 }
