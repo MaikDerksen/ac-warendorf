@@ -170,7 +170,6 @@ export async function DELETE(req: NextRequest) {
 
     try {
         if (deleteAllFuture && recurrenceGroupId) {
-            // Step 1: Get the document of the event that was clicked to find its start time.
             const eventToDeleteSnapshot = await firestoreDb.collection("calendarEvents").doc(eventId).get();
             if (!eventToDeleteSnapshot.exists) {
                 throw new Error("The starting event for deletion could not be found.");
@@ -180,22 +179,20 @@ export async function DELETE(req: NextRequest) {
                 throw new Error("The starting event's data is incomplete or has an invalid start date.");
             }
             
-            // This is the start time from which we want to delete all future events.
-            const eventStartDateISO = eventData.start;
+            // Correctly parse the start date to a Date object for reliable comparison
+            const eventStartDate = parseISO(eventData.start);
 
-            // Step 2: Query for all events in the same series that occur on or after this start time.
             const q = firestoreDb.collection("calendarEvents")
                                 .where('recurrenceGroupId', '==', recurrenceGroupId)
-                                .where('start', '>=', eventStartDateISO);
+                                .where('start', '>=', eventStartDate.toISOString());
 
             const snapshot = await q.get();
             if (snapshot.empty) {
-                // This case can happen if the clicked event is the very last one. We still need to delete it.
+                // This can happen if the clicked event is the very last one. We still need to delete it.
                 await firestoreDb.collection("calendarEvents").doc(eventId).delete();
                 return NextResponse.json({ message: `Deleted 1 final event.` }, { status: 200 });
             }
             
-            // Step 3: Use a batch to delete all found documents atomically.
             const batch = firestoreDb.batch();
             snapshot.docs.forEach(doc => {
                 batch.delete(doc.ref);
@@ -205,7 +202,7 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ message: `Deleted ${snapshot.size} recurring events.` }, { status: 200 });
 
         } else {
-            // This is the simple case: delete only one event.
+            // Simple case: delete only one event.
             await firestoreDb.collection("calendarEvents").doc(eventId).delete();
             return NextResponse.json({ message: 'Event deleted successfully' }, { status: 200 });
         }
