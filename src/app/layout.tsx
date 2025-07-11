@@ -5,20 +5,21 @@ import { Footer } from '@/components/footer';
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from "@/components/theme-provider";
-import { getSiteSettings } from '@/lib/data-loader'; // Import getSiteSettings
+import { getSiteSettings } from '@/lib/data-loader';
 import type { SiteSettings } from '@/types';
+import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata: Metadata = {
   title: 'AC Warendorf Digital',
   description: 'Herzlich willkommen beim Automobilclub Warendorf e. V.',
 };
 
-export default async function RootLayout({ // Make RootLayout async
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const siteSettings: SiteSettings = await getSiteSettings(); // Fetch site settings
+  const siteSettings: SiteSettings = await getSiteSettings();
 
   return (
     <html lang="de" suppressHydrationWarning>
@@ -35,12 +36,14 @@ export default async function RootLayout({ // Make RootLayout async
             enableSystem
             disableTransitionOnChange
         >
-          <Navbar logoUrl={siteSettings.logoUrl} /> {/* Pass logoUrl to Navbar */}
-          <main className="flex-grow container mx-auto px-4 py-8">
-            {children}
-          </main>
-          <Footer />
-          <Toaster />
+          <AuthProvider>
+            <Navbar logoUrl={siteSettings.logoUrl} />
+            <main className="flex-grow container mx-auto px-4 py-8">
+              {children}
+            </main>
+            <Footer />
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
