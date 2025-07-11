@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Youtube, Facebook } from 'lucide-react';
+import { Youtube, Instagram } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -18,16 +18,17 @@ export function Footer() {
               <li><Link href="/impressum" className="hover:text-primary transition-colors">Impressum</Link></li>
               <li><Link href="/datenschutz" className="hover:text-primary transition-colors">Datenschutz</Link></li>
               <li><Link href="/kontakt" className="hover:text-primary transition-colors">Kontakt</Link></li>
+              <li><a href="https://www.adac.de" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">ADAC e.V.</a></li>
             </ul>
           </div>
           <div>
             <h3 className="text-lg font-headline font-semibold mb-2">Folgen Sie uns</h3>
             <div className="flex space-x-4">
-              <a href="#" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="hover:text-primary transition-colors">
+              <a href="https://www.youtube.com/channel/UCrFTrQjUMHAR7qmUh0DoAEg" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="hover:text-primary transition-colors">
                 <Youtube className="h-6 w-6" />
               </a>
-              <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-primary transition-colors">
-                <Facebook className="h-6 w-6" />
+              <a href="https://www.instagram.com/ac_warendorf/?hl=de" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-primary transition-colors">
+                <Instagram className="h-6 w-6" />
               </a>
             </div>
           </div>
