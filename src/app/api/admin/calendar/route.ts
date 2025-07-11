@@ -2,10 +2,10 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { adminApp } from '@/lib/firebaseAdminConfig';
 import { verifyAdmin } from '@/lib/adminAuth';
-import { FieldValue, WriteBatch } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import { z } from 'zod';
 import type { CalendarEvent, EventCategory } from '@/types';
-import { add, nextDay, isBefore, isSameDay, Day } from 'date-fns';
+import { add, nextDay, isBefore, isSameDay, Day, parseISO } from 'date-fns';
 
 export const config = { api: { bodyParser: true } };
 
@@ -29,17 +29,24 @@ const dayMap: { [key: string]: Day } = {
   saturday: 6,
 };
 
-async function createRecurringEvents(batch: WriteBatch, firestore: FirebaseFirestore.Firestore, rawData: any, adminUid: string) {
+async function createRecurringEvents(batch: FirebaseFirestore.WriteBatch, firestore: FirebaseFirestore.Firestore, rawData: any, adminUid: string) {
     const { title, start, end, allDay, location, description, category, recurrence } = rawData;
-    const recurrenceGroupId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    const recurrenceEndDate = new Date(recurrence.endDate);
     
-    let currentDate = new Date(start);
-    const originalStartDate = new Date(start);
-    const originalEndDate = new Date(end);
+    if (!recurrence.days || recurrence.days.length === 0) {
+        throw new Error("Recurring event must have at least one day selected.");
+    }
+    
+    const recurrenceGroupId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const recurrenceEndDate = parseISO(recurrence.endDate); // Use parseISO for reliability
+    
+    const originalStartDate = parseISO(start);
+    const originalEndDate = parseISO(end);
     const duration = originalEndDate.getTime() - originalStartDate.getTime();
     
     const recurrenceDays: Day[] = recurrence.days.map((day: string) => dayMap[day]);
+
+    // Start iterating from the user-provided start date
+    let currentDate = originalStartDate;
 
     while (isBefore(currentDate, recurrenceEndDate) || isSameDay(currentDate, recurrenceEndDate)) {
         if (recurrenceDays.includes(currentDate.getDay() as Day)) {
@@ -57,6 +64,7 @@ async function createRecurringEvents(batch: WriteBatch, firestore: FirebaseFires
             const docRef = firestore.collection("calendarEvents").doc();
             batch.set(docRef, newEventData);
         }
+        // Move to the next day for the next iteration
         currentDate = add(currentDate, { days: 1 });
     }
 }
@@ -158,15 +166,25 @@ export async function DELETE(req: NextRequest) {
 
     try {
         if (deleteAllFuture && recurrenceGroupId) {
-            const eventToDelete = await firestoreDb.collection("calendarEvents").doc(eventId).get();
-            if (!eventToDelete.exists) throw new Error("Event to delete not found.");
+            const eventToDeleteSnapshot = await firestoreDb.collection("calendarEvents").doc(eventId).get();
+            if (!eventToDeleteSnapshot.exists) throw new Error("Event to delete from not found.");
 
-            const eventStartDate = eventToDelete.data()!.start;
+            const eventData = eventToDeleteSnapshot.data();
+            if (!eventData || !eventData.start) throw new Error("Event data is incomplete.");
+            
+            const eventStartDate = eventData.start; // This is an ISO string
+
             const q = firestoreDb.collection("calendarEvents")
                                 .where('recurrenceGroupId', '==', recurrenceGroupId)
                                 .where('start', '>=', eventStartDate);
 
             const snapshot = await q.get();
+            if(snapshot.empty) {
+                // If no future events are found, just delete the single one.
+                await firestoreDb.collection("calendarEvents").doc(eventId).delete();
+                return NextResponse.json({ message: `Deleted 1 event.` }, { status: 200 });
+            }
+            
             const batch = firestoreDb.batch();
             snapshot.docs.forEach(doc => batch.delete(doc.ref));
             await batch.commit();
@@ -177,6 +195,6 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ message: 'Event deleted successfully' }, { status: 200 });
         }
     } catch (error: any) {
-        return NextResponse.json({ message: 'Error deleting event', error: error.message }, { status: 500 });
+        return NextResponse.json({ message: 'Error deleting event(s)', error: error.message }, { status: 500 });
     }
 }
