@@ -29,6 +29,8 @@ const dayMap: { [key: string]: Day } = {
   saturday: 6,
 };
 
+// This function finds the first occurrence of a desired day of the week,
+// on or after the given start date.
 function findFirstOccurrence(startDate: Date, desiredDay: Day): Date {
     const startDay = startDate.getDay() as Day;
     if (startDay === desiredDay) {
@@ -55,6 +57,7 @@ async function createRecurringEvents(batch: FirebaseFirestore.WriteBatch, firest
     const recurrenceDays: Day[] = recurrence.days.map((day: string) => dayMap[day]);
 
     for (const day of recurrenceDays) {
+        // Find the first valid date for this day of the week
         let currentDate = findFirstOccurrence(originalStartDate, day);
 
         while (isBefore(currentDate, recurrenceEndDate) || isSameDay(currentDate, recurrenceEndDate)) {
@@ -67,11 +70,12 @@ async function createRecurringEvents(batch: FirebaseFirestore.WriteBatch, firest
                 end: newEnd.toISOString(),
                 createdAt: FieldValue.serverTimestamp(),
                 createdBy: adminUid,
-                recurrenceGroupId,
+                recurrenceGroupId, // Add the group ID to each event
             };
             const docRef = firestore.collection("calendarEvents").doc();
             batch.set(docRef, newEventData);
 
+            // Move to the next week
             currentDate = add(currentDate, { weeks: 1 });
         }
     }
@@ -99,7 +103,8 @@ export async function POST(req: NextRequest) {
   try {
     const rawData = await req.json();
 
-    if (rawData.recurring && rawData.recurrence) {
+    // The most reliable check for a recurring event is the presence of the 'recurrence' object.
+    if (rawData.recurrence && rawData.recurrence.days && rawData.recurrence.endDate) {
         const batch = firestoreDb.batch();
         await createRecurringEvents(batch, firestoreDb, rawData, adminCheck.uid);
         await batch.commit();
@@ -184,6 +189,7 @@ export async function DELETE(req: NextRequest) {
 
             const snapshot = await q.get();
             if(snapshot.empty) {
+                // This can happen if only one event is left, so just delete it.
                 await firestoreDb.collection("calendarEvents").doc(eventId).delete();
                 return NextResponse.json({ message: `Deleted 1 event.` }, { status: 200 });
             }
