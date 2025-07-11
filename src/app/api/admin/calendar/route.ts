@@ -170,7 +170,7 @@ export async function DELETE(req: NextRequest) {
 
     try {
         if (deleteAllFuture && recurrenceGroupId) {
-            // Step 1: Get the document of the event that was clicked, to find its start time.
+            // Step 1: Get the document of the event that was clicked to find its start time.
             const eventToDeleteSnapshot = await firestoreDb.collection("calendarEvents").doc(eventId).get();
             if (!eventToDeleteSnapshot.exists) {
                 throw new Error("The starting event for deletion could not be found.");
