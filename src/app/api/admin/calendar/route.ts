@@ -29,11 +29,10 @@ const dayMap: { [key: string]: Day } = {
   saturday: 6,
 };
 
-// Finds the first occurrence of a desired day of the week on or after a given start date.
 function findFirstOccurrence(startDate: Date, desiredDay: Day): Date {
     const startDay = startDate.getDay() as Day;
     if (startDay === desiredDay) {
-        return startDate; // The start date is already the correct day of the week
+        return startDate;
     }
     return nextDay(startDate, desiredDay);
 }
@@ -55,12 +54,9 @@ async function createRecurringEvents(batch: FirebaseFirestore.WriteBatch, firest
     
     const recurrenceDays: Day[] = recurrence.days.map((day: string) => dayMap[day]);
 
-    // For each selected weekday, create its own series of events
     for (const day of recurrenceDays) {
-        // Find the very first date for this specific weekday rule
         let currentDate = findFirstOccurrence(originalStartDate, day);
 
-        // Now iterate weekly from this first occurrence
         while (isBefore(currentDate, recurrenceEndDate) || isSameDay(currentDate, recurrenceEndDate)) {
             const newStart = currentDate;
             const newEnd = new Date(newStart.getTime() + duration);
@@ -76,13 +72,11 @@ async function createRecurringEvents(batch: FirebaseFirestore.WriteBatch, firest
             const docRef = firestore.collection("calendarEvents").doc();
             batch.set(docRef, newEventData);
 
-            // Move to the next week for the next iteration
             currentDate = add(currentDate, { weeks: 1 });
         }
     }
 }
 
-// GET all calendar events
 export async function GET(req: NextRequest) {
   if (!adminApp) return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
   try {
@@ -95,7 +89,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST a new calendar event
 export async function POST(req: NextRequest) {
   const adminCheck = await verifyAdmin(req);
   if (!adminCheck.isAdmin || !adminCheck.uid) return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: 401 });
@@ -131,7 +124,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PUT (update) a calendar event
 export async function PUT(req: NextRequest) {
     const adminCheck = await verifyAdmin(req);
     if (!adminCheck.isAdmin) return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: 401 });
@@ -163,7 +155,6 @@ export async function PUT(req: NextRequest) {
     }
 }
 
-// DELETE a calendar event
 export async function DELETE(req: NextRequest) {
     const adminCheck = await verifyAdmin(req);
     if (!adminCheck.isAdmin) return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: 401 });
@@ -185,7 +176,7 @@ export async function DELETE(req: NextRequest) {
             const eventData = eventToDeleteSnapshot.data();
             if (!eventData || !eventData.start) throw new Error("Event data is incomplete.");
             
-            const eventStartDate = eventData.start; // This is an ISO string
+            const eventStartDate = eventData.start;
 
             const q = firestoreDb.collection("calendarEvents")
                                 .where('recurrenceGroupId', '==', recurrenceGroupId)
@@ -193,7 +184,6 @@ export async function DELETE(req: NextRequest) {
 
             const snapshot = await q.get();
             if(snapshot.empty) {
-                // If no future events are found, just delete the single one.
                 await firestoreDb.collection("calendarEvents").doc(eventId).delete();
                 return NextResponse.json({ message: `Deleted 1 event.` }, { status: 200 });
             }

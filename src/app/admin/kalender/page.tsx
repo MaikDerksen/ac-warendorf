@@ -19,7 +19,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useAuth } from '@/context/AuthContext';
 import type { CalendarEvent, EventCategory } from '@/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 
 const eventCategories: EventCategory[] = ['Training', 'Rennen', 'Sitzung', 'Feier', 'Arbeitseinsatz', 'Sonstiges'];
@@ -52,13 +52,11 @@ const eventFormSchema = z.object({
     message: "Das End-Datum der Wiederholung muss nach dem Start-Datum liegen.",
     path: ["recurrence.endDate"],
 }).refine(data => {
-    // For non-recurring events, check if end date/time is after start date/time
     if (!data.recurring) {
         const startDateTime = new Date(`${data.startDate}T${data.allDay ? '00:00' : data.startTime}`);
         const endDateTime = new Date(`${data.endDate}T${data.allDay ? '23:59' : data.endTime}`);
         return endDateTime >= startDateTime;
     }
-    // For recurring events, just check if end time is after start time on the same day
     if (data.recurring && !data.allDay) {
         const start = new Date(`1970-01-01T${data.startTime}`);
         const end = new Date(`1970-01-01T${data.endTime}`);
@@ -103,23 +101,28 @@ export default function AdminCalendarPage() {
   const { isSubmitting } = form.formState;
 
   const fetchEvents = async () => {
-    if (!isAdmin) return;
+    if (!isAdmin) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     try {
       const response = await fetch('/api/admin/calendar');
       if (!response.ok) throw new Error('Termine konnten nicht geladen werden.');
       const data = await response.json();
-      setEvents(data);
+      setEvents(Array.isArray(data) ? data : []);
     } catch (error: any) {
       toast({ title: "Fehler beim Laden", description: error.message, variant: "destructive" });
+      setEvents([]); // Clear events on error
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (isAdmin) fetchEvents();
-    else if (!authLoading) setIsLoading(false);
+    if (!authLoading) {
+      fetchEvents();
+    }
   }, [user, isAdmin, authLoading]);
 
   const handleEditClick = (event: CalendarEvent) => {
@@ -136,7 +139,7 @@ export default function AdminCalendarPage() {
       location: event.location || "",
       description: event.description || "",
       category: event.category,
-      recurring: false, // Cannot edit recurrence for a single event instance
+      recurring: !!event.recurrenceGroupId,
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -162,12 +165,12 @@ export default function AdminCalendarPage() {
     });
   };
   
-  const handleDelete = async (eventId: string, recurrenceGroupId?: string, allFuture?: boolean) => {
+  const handleDelete = async (eventId: string, recurrenceGroupId?: string, deleteAllFuture?: boolean) => {
     if (!isAdmin || !user) return;
     try {
         const idToken = await user.getIdToken();
         let url = `/api/admin/calendar?id=${eventId}`;
-        if (recurrenceGroupId && allFuture) {
+        if (recurrenceGroupId && deleteAllFuture) {
           url += `&recurrenceGroupId=${recurrenceGroupId}&deleteAllFuture=true`;
         }
 
@@ -194,8 +197,6 @@ export default function AdminCalendarPage() {
     
     const startDateTime = new Date(`${data.startDate}T${data.allDay ? '00:00:00' : data.startTime}`).toISOString();
     
-    // For recurring events, end date is the same as start date, only time differs.
-    // For non-recurring, use the specified end date.
     const finalEndDate = data.recurring ? data.startDate : data.endDate;
     const endDateTime = new Date(`${finalEndDate}T${data.allDay ? '23:59:59' : data.endTime}`).toISOString();
     
@@ -237,10 +238,71 @@ export default function AdminCalendarPage() {
 
       toast({ title: "Erfolg!", description: `Termin(e) wurde(n) ${isUpdating ? 'aktualisiert' : 'erstellt'}.` });
       handleCancelEdit();
-      fetchEvents(); // Refresh list
+      fetchEvents(); 
     } catch (error: any) {
       toast({ title: "Speicherfehler", description: error.message, variant: "destructive" });
     }
+  }
+
+  const renderEventList = () => {
+    if (isLoading) {
+      return <div className="flex items-center justify-center p-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /><span className="ml-2">Lade Termine...</span></div>;
+    }
+    if (events.length === 0) {
+      return <p className="text-muted-foreground">Keine Termine gefunden.</p>;
+    }
+    const upcomingEvents = events
+      .filter(event => event.end && isValid(new Date(event.end)) && new Date(event.end) >= new Date())
+      .sort((a,b) => (a.start && b.start) ? new Date(a.start).getTime() - new Date(b.start).getTime() : 0);
+
+    return (
+      <div className="space-y-4">
+        {upcomingEvents.map(event => {
+            const start = event.start ? parseISO(event.start) : null;
+            const end = event.end ? parseISO(event.end) : null;
+            if (!start || !end || !isValid(start) || !isValid(end)) {
+                console.warn(`Skipping invalid event:`, event);
+                return null;
+            }
+            return (
+            <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-semibold">{event.title} <span className="text-xs font-normal text-muted-foreground">({event.category})</span> {event.recurrenceGroupId && <Repeat className="inline h-3 w-3 text-muted-foreground"/>}</p>
+                    <p className="text-sm text-muted-foreground">
+                        {format(start, 'dd.MM.yyyy HH:mm')} - {format(end, 'dd.MM.yyyy HH:mm')}
+                    </p>
+                  </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="icon" onClick={() => handleEditClick(event)}><Edit className="h-4 w-4"/><span className="sr-only">Bearbeiten</span></Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild><Button variant="destructive" size="icon"><Trash2 className="h-4 w-4" /><span className="sr-only">Löschen</span></Button></AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Sind Sie sicher?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {event.recurrenceGroupId ? `Dies ist ein wiederkehrender Termin. Was möchten Sie löschen?` : `Der Termin "${event.title}" wird dauerhaft gelöscht.`}
+                      </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter className={event.recurrenceGroupId ? 'grid grid-cols-1 md:grid-cols-3 gap-2' : ''}>
+                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(event.id, undefined, false)}>
+                            {event.recurrenceGroupId ? "Nur diesen einen Termin löschen" : "Löschen"}
+                          </AlertDialogAction>
+                          {event.recurrenceGroupId && (
+                            <AlertDialogAction
+                              className="bg-destructive hover:bg-destructive/90 md:col-span-2"
+                              onClick={() => handleDelete(event.id, event.recurrenceGroupId, true)}>
+                                Diesen und alle zukünftigen Termine löschen
+                            </AlertDialogAction>
+                          )}
+                      </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          )})}
+      </div>
+    )
   }
 
   return (
@@ -263,7 +325,7 @@ export default function AdminCalendarPage() {
                   <FormField control={form.control} name="startDate" render={({ field }) => (<FormItem><FormLabel>Start-Datum*</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
                   {!allDay && <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormLabel>Start-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />}
                   
-                  { !isRecurring &&
+                  { !isRecurring && !editingEvent &&
                     <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem><FormLabel>End-Datum*</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
                   }
                   {!allDay && <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>End-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />}
@@ -363,51 +425,7 @@ export default function AdminCalendarPage() {
           <CardTitle className="flex items-center"><List className="mr-2"/>Aktuelle & Zukünftige Termine</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center p-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /><span className="ml-2">Lade Termine...</span></div>
-          ) : events.length === 0 ? (
-            <p className="text-muted-foreground">Keine Termine gefunden.</p>
-          ) : (
-            <div className="space-y-4">
-              {events.filter(event => new Date(event.end) >= new Date()).sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime()).map(event => (
-                <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg">
-                     <div>
-                        <p className="font-semibold">{event.title} <span className="text-xs font-normal text-muted-foreground">({event.category})</span> {event.recurrenceGroupId && <Repeat className="inline h-3 w-3 text-muted-foreground"/>}</p>
-                        <p className="text-sm text-muted-foreground">
-                            {format(parseISO(event.start), 'dd.MM.yyyy HH:mm')} - {format(parseISO(event.end), 'dd.MM.yyyy HH:mm')}
-                        </p>
-                     </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="icon" onClick={() => handleEditClick(event)}><Edit className="h-4 w-4"/><span className="sr-only">Bearbeiten</span></Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild><Button variant="destructive" size="icon"><Trash2 className="h-4 w-4" /><span className="sr-only">Löschen</span></Button></AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Sind Sie sicher?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            {event.recurrenceGroupId ? `Dies ist ein wiederkehrender Termin. Was möchten Sie löschen?` : `Der Termin "${event.title}" wird dauerhaft gelöscht.`}
-                          </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter className={event.recurrenceGroupId ? 'grid grid-cols-1 md:grid-cols-3 gap-2' : ''}>
-                              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(event.id, undefined, false)}>
-                                {event.recurrenceGroupId ? "Nur diesen einen Termin löschen" : "Löschen"}
-                              </AlertDialogAction>
-                              {event.recurrenceGroupId && (
-                                <AlertDialogAction
-                                  className="bg-destructive hover:bg-destructive/90 md:col-span-2"
-                                  onClick={() => handleDelete(event.id, event.recurrenceGroupId, true)}>
-                                    Diesen und alle zukünftigen Termine löschen
-                                </AlertDialogAction>
-                              )}
-                          </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          {renderEventList()}
         </CardContent>
       </Card>
     </div>
