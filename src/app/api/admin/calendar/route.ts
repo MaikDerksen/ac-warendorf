@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
   try {
     const rawData = await req.json();
 
-    if (rawData.recurrence && rawData.recurrence.days && rawData.recurrence.endDate) {
+    if (rawData.recurrence) {
         const batch = firestoreDb.batch();
         await createRecurringEvents(batch, firestoreDb, rawData, adminCheck.uid);
         await batch.commit();
@@ -179,16 +179,14 @@ export async function DELETE(req: NextRequest) {
                 throw new Error("The starting event's data is incomplete or has an invalid start date.");
             }
             
-            // Correctly parse the start date to a Date object for reliable comparison
-            const eventStartDate = parseISO(eventData.start);
+            const eventStartDateISO = eventData.start;
 
             const q = firestoreDb.collection("calendarEvents")
                                 .where('recurrenceGroupId', '==', recurrenceGroupId)
-                                .where('start', '>=', eventStartDate.toISOString());
+                                .where('start', '>=', eventStartDateISO);
 
             const snapshot = await q.get();
             if (snapshot.empty) {
-                // This can happen if the clicked event is the very last one. We still need to delete it.
                 await firestoreDb.collection("calendarEvents").doc(eventId).delete();
                 return NextResponse.json({ message: `Deleted 1 final event.` }, { status: 200 });
             }
@@ -202,7 +200,6 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ message: `Deleted ${snapshot.size} recurring events.` }, { status: 200 });
 
         } else {
-            // Simple case: delete only one event.
             await firestoreDb.collection("calendarEvents").doc(eventId).delete();
             return NextResponse.json({ message: 'Event deleted successfully' }, { status: 200 });
         }
@@ -211,3 +208,5 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ message: 'Error deleting event(s)', error: error.message }, { status: 500 });
     }
 }
+
+    
