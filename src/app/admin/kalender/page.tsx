@@ -42,20 +42,22 @@ const eventFormSchema = z.object({
     days: z.array(z.string()).optional(),
   }).optional(),
 }).refine(data => {
-    if (data.recurring) {
-        if (!data.recurrence?.endDate) return false;
+    if (data.recurring && data.recurrence?.endDate) {
         const start = new Date(data.startDate);
         const recurrenceEnd = new Date(data.recurrence.endDate);
-        return recurrenceEnd > start;
+        return recurrenceEnd >= start;
     }
     return true;
 }, {
     message: "Das End-Datum der Wiederholung muss nach dem Start-Datum liegen.",
     path: ["recurrence.endDate"],
 }).refine(data => {
-    const startDateTime = new Date(`${data.startDate}T${data.allDay ? '00:00' : data.startTime}`);
-    const endDateTime = new Date(`${data.endDate}T${data.allDay ? '23:59' : data.endTime}`);
-    return endDateTime >= startDateTime;
+    if (!data.recurring) {
+        const startDateTime = new Date(`${data.startDate}T${data.allDay ? '00:00' : data.startTime}`);
+        const endDateTime = new Date(`${data.endDate}T${data.allDay ? '23:59' : data.endTime}`);
+        return endDateTime >= startDateTime;
+    }
+    return true;
 }, {
     message: "Das Enddatum muss nach dem Startdatum liegen.",
     path: ["endDate"],
@@ -177,11 +179,18 @@ export default function AdminCalendarPage() {
     }
   };
 
+  const allDay = form.watch("allDay");
+  const isRecurring = form.watch("recurring");
+
   async function onSubmit(data: EventFormValues) {
     if (!user || !isAdmin) return;
+    
+    // For recurring events, end date/time is same as start date/time.
+    const finalEndDate = isRecurring ? data.startDate : data.endDate;
+    const finalEndTime = isRecurring ? data.endTime : data.endTime;
 
     const startDateTime = new Date(`${data.startDate}T${data.allDay ? '00:00:00' : data.startTime}`).toISOString();
-    const endDateTime = new Date(`${data.endDate}T${data.allDay ? '23:59:59' : data.endTime}`).toISOString();
+    const endDateTime = new Date(`${finalEndDate}T${data.allDay ? '23:59:59' : finalEndTime}`).toISOString();
 
     const payload: any = {
         title: data.title,
@@ -222,10 +231,6 @@ export default function AdminCalendarPage() {
       toast({ title: "Speicherfehler", description: error.message, variant: "destructive" });
     }
   }
-  
-  const allDay = form.watch("allDay");
-  const isRecurring = form.watch("recurring");
-
 
   return (
     <div className="space-y-6">
@@ -246,8 +251,15 @@ export default function AdminCalendarPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={form.control} name="startDate" render={({ field }) => (<FormItem><FormLabel>Start-Datum*</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
                   {!allDay && <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormLabel>Start-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />}
-                  <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem><FormLabel>End-Datum*</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                  {!allDay && <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>End-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />}
+                  
+                  { !isRecurring &&
+                    <>
+                      <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem><FormLabel>End-Datum*</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      {!allDay && <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>End-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />}
+                    </>
+                  }
+                   {isRecurring && !allDay && <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>End-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormDescription>Dauer des einzelnen Termins.</FormDescription><FormMessage /></FormItem>)} />}
+
               </div>
 
               <FormField control={form.control} name="allDay" render={({ field }) => (<FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>Ganztägiger Termin</FormLabel></div></FormItem>)} />
@@ -348,7 +360,7 @@ export default function AdminCalendarPage() {
             <p className="text-muted-foreground">Keine Termine gefunden.</p>
           ) : (
             <div className="space-y-4">
-              {events.filter(event => new Date(event.end) >= new Date()).map(event => (
+              {events.filter(event => new Date(event.end) >= new Date()).sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime()).map(event => (
                 <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg">
                      <div>
                         <p className="font-semibold">{event.title} <span className="text-xs font-normal text-muted-foreground">({event.category})</span> {event.recurrenceGroupId && <Repeat className="inline h-3 w-3 text-muted-foreground"/>}</p>
@@ -367,14 +379,14 @@ export default function AdminCalendarPage() {
                             {event.recurrenceGroupId ? `Dies ist ein wiederkehrender Termin. Was möchten Sie löschen?` : `Der Termin "${event.title}" wird dauerhaft gelöscht.`}
                           </AlertDialogDescription>
                           </AlertDialogHeader>
-                          <AlertDialogFooter className={event.recurrenceGroupId ? 'grid grid-cols-1 gap-2' : ''}>
+                          <AlertDialogFooter className={event.recurrenceGroupId ? 'grid grid-cols-1 md:grid-cols-3 gap-2' : ''}>
                               <AlertDialogCancel>Abbrechen</AlertDialogCancel>
                               <AlertDialogAction onClick={() => handleDelete(event.id, undefined, false)}>
                                 {event.recurrenceGroupId ? "Nur diesen einen Termin löschen" : "Löschen"}
                               </AlertDialogAction>
                               {event.recurrenceGroupId && (
                                 <AlertDialogAction
-                                  className="bg-destructive hover:bg-destructive/90"
+                                  className="bg-destructive hover:bg-destructive/90 md:col-span-2"
                                   onClick={() => handleDelete(event.id, event.recurrenceGroupId, true)}>
                                     Diesen und alle zukünftigen Termine löschen
                                 </AlertDialogAction>
@@ -392,3 +404,5 @@ export default function AdminCalendarPage() {
     </div>
   );
 }
+
+    
