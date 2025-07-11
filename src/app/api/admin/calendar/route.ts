@@ -29,6 +29,16 @@ const dayMap: { [key: string]: Day } = {
   saturday: 6,
 };
 
+// Finds the first occurrence of a desired day of the week on or after a given start date.
+function findFirstOccurrence(startDate: Date, desiredDay: Day): Date {
+    const startDay = startDate.getDay() as Day;
+    if (startDay === desiredDay) {
+        return startDate; // The start date is already the correct day of the week
+    }
+    return nextDay(startDate, desiredDay);
+}
+
+
 async function createRecurringEvents(batch: FirebaseFirestore.WriteBatch, firestore: FirebaseFirestore.Firestore, rawData: any, adminUid: string) {
     const { title, start, end, allDay, location, description, category, recurrence } = rawData;
     
@@ -37,7 +47,7 @@ async function createRecurringEvents(batch: FirebaseFirestore.WriteBatch, firest
     }
     
     const recurrenceGroupId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    const recurrenceEndDate = parseISO(recurrence.endDate); // Use parseISO for reliability
+    const recurrenceEndDate = parseISO(recurrence.endDate);
     
     const originalStartDate = parseISO(start);
     const originalEndDate = parseISO(end);
@@ -45,11 +55,13 @@ async function createRecurringEvents(batch: FirebaseFirestore.WriteBatch, firest
     
     const recurrenceDays: Day[] = recurrence.days.map((day: string) => dayMap[day]);
 
-    // Start iterating from the user-provided start date
-    let currentDate = originalStartDate;
+    // For each selected weekday, create its own series of events
+    for (const day of recurrenceDays) {
+        // Find the very first date for this specific weekday rule
+        let currentDate = findFirstOccurrence(originalStartDate, day);
 
-    while (isBefore(currentDate, recurrenceEndDate) || isSameDay(currentDate, recurrenceEndDate)) {
-        if (recurrenceDays.includes(currentDate.getDay() as Day)) {
+        // Now iterate weekly from this first occurrence
+        while (isBefore(currentDate, recurrenceEndDate) || isSameDay(currentDate, recurrenceEndDate)) {
             const newStart = currentDate;
             const newEnd = new Date(newStart.getTime() + duration);
             
@@ -63,9 +75,10 @@ async function createRecurringEvents(batch: FirebaseFirestore.WriteBatch, firest
             };
             const docRef = firestore.collection("calendarEvents").doc();
             batch.set(docRef, newEventData);
+
+            // Move to the next week for the next iteration
+            currentDate = add(currentDate, { weeks: 1 });
         }
-        // Move to the next day for the next iteration
-        currentDate = add(currentDate, { days: 1 });
     }
 }
 

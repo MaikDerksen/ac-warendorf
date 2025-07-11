@@ -52,14 +52,21 @@ const eventFormSchema = z.object({
     message: "Das End-Datum der Wiederholung muss nach dem Start-Datum liegen.",
     path: ["recurrence.endDate"],
 }).refine(data => {
+    // For non-recurring events, check if end date/time is after start date/time
     if (!data.recurring) {
         const startDateTime = new Date(`${data.startDate}T${data.allDay ? '00:00' : data.startTime}`);
         const endDateTime = new Date(`${data.endDate}T${data.allDay ? '23:59' : data.endTime}`);
         return endDateTime >= startDateTime;
     }
+    // For recurring events, just check if end time is after start time on the same day
+    if (data.recurring && !data.allDay) {
+        const start = new Date(`1970-01-01T${data.startTime}`);
+        const end = new Date(`1970-01-01T${data.endTime}`);
+        return end > start;
+    }
     return true;
 }, {
-    message: "Das Enddatum muss nach dem Startdatum liegen.",
+    message: "Das Enddatum/-zeit muss nach dem Startdatum/-zeit liegen.",
     path: ["endDate"],
 });
 
@@ -129,7 +136,7 @@ export default function AdminCalendarPage() {
       location: event.location || "",
       description: event.description || "",
       category: event.category,
-      recurring: false, // Cannot edit recurrence for a single event
+      recurring: false, // Cannot edit recurrence for a single event instance
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -185,13 +192,13 @@ export default function AdminCalendarPage() {
   async function onSubmit(data: EventFormValues) {
     if (!user || !isAdmin) return;
     
-    // For recurring events, end date/time is same as start date/time.
-    const finalEndDate = isRecurring ? data.startDate : data.endDate;
-    const finalEndTime = isRecurring ? data.endTime : data.endTime;
-
     const startDateTime = new Date(`${data.startDate}T${data.allDay ? '00:00:00' : data.startTime}`).toISOString();
-    const endDateTime = new Date(`${finalEndDate}T${data.allDay ? '23:59:59' : finalEndTime}`).toISOString();
-
+    
+    // For recurring events, end date is the same as start date, only time differs.
+    // For non-recurring, use the specified end date.
+    const finalEndDate = data.recurring ? data.startDate : data.endDate;
+    const endDateTime = new Date(`${finalEndDate}T${data.allDay ? '23:59:59' : data.endTime}`).toISOString();
+    
     const payload: any = {
         title: data.title,
         start: startDateTime,
@@ -203,6 +210,10 @@ export default function AdminCalendarPage() {
     };
     
     if (data.recurring && !editingEvent) {
+      if (!data.recurrence?.days || data.recurrence.days.length === 0) {
+        toast({ title: "Validierungsfehler", description: "Bitte wählen Sie mindestens einen Wochentag für wiederkehrende Termine.", variant: "destructive" });
+        return;
+      }
       payload.recurrence = data.recurrence;
     }
 
@@ -253,12 +264,9 @@ export default function AdminCalendarPage() {
                   {!allDay && <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormLabel>Start-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />}
                   
                   { !isRecurring &&
-                    <>
-                      <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem><FormLabel>End-Datum*</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                      {!allDay && <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>End-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />}
-                    </>
+                    <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem><FormLabel>End-Datum*</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
                   }
-                   {isRecurring && !allDay && <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>End-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormDescription>Dauer des einzelnen Termins.</FormDescription><FormMessage /></FormItem>)} />}
+                  {!allDay && <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>End-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />}
 
               </div>
 
@@ -327,6 +335,7 @@ export default function AdminCalendarPage() {
                                                 </Button>
                                             ))}
                                         </div>
+                                        <FormMessage />
                                     </FormItem>
                                 )}
                             />
