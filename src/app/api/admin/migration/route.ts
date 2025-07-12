@@ -46,17 +46,22 @@ export async function POST(req: NextRequest) {
     }
 
     const fileContent = await jsonFile.text();
-    const wpData = JSON.parse(fileContent);
+    const parsedData = JSON.parse(fileContent);
 
-    // Assuming the JSON structure has a "posts" array
-    if (!wpData.posts || !Array.isArray(wpData.posts)) {
-        return NextResponse.json({ message: 'Invalid JSON format: "posts" array not found.' }, { status: 400 });
+    let posts: WpPost[];
+    // Check if the parsed data is an array itself, otherwise look for a 'posts' property
+    if (Array.isArray(parsedData)) {
+      posts = parsedData;
+    } else if (parsedData.posts && Array.isArray(parsedData.posts)) {
+      posts = parsedData.posts;
+    } else {
+      return NextResponse.json({ message: 'Invalid JSON format: Expected an array of posts or an object with a "posts" array.' }, { status: 400 });
     }
 
-    const postsToImport: WpPost[] = wpData.posts.filter((post: WpPost) => post.post_status === 'publish');
+    const postsToImport: WpPost[] = posts.filter((post: WpPost) => post.post_status === 'publish');
     
     if (postsToImport.length === 0) {
-        return NextResponse.json({ message: 'No published posts found in the file to import.', importedCount: 0, totalCount: wpData.posts.length }, { status: 200 });
+        return NextResponse.json({ message: 'No published posts found in the file to import.', importedCount: 0, totalCount: posts.length }, { status: 200 });
     }
 
     const batch = firestoreDb.batch();
@@ -68,7 +73,6 @@ export async function POST(req: NextRequest) {
         if (!slug) continue; // Skip posts without a slug
 
         // To avoid duplicates, we can check if a post with this slug already exists.
-        // For a large number of posts, it might be better to just upsert/overwrite, but skipping is safer.
         const existingPostQuery = await newsCollectionRef.where('slug', '==', slug).limit(1).get();
         if (!existingPostQuery.empty) {
             console.log(`Skipping existing post with slug: ${slug}`);
