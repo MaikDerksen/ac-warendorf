@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Users, Newspaper, Shield, Settings, Car, FileText, Contact, Image as ImageIconLucide, Calendar, DatabaseZap } from 'lucide-react';
+import { Users, Newspaper, Shield, Settings, Car, FileText, Contact, Image as ImageIconLucide, Calendar } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const managementSections = [
@@ -17,7 +17,6 @@ export default function AdminDashboardPage() {
     { title: 'Aktivitäten Seite', icon: ImageIconLucide, href: '/admin/aktivitaeten-settings', description: 'Inhalte der "Aktivitäten" Seite bearbeiten.' },
     { title: 'Mitglied Werden Seite', icon: FileText, href: '/admin/mitglied-werden-settings', description: 'Inhalte der "Mitglied Werden" Seite (inkl. FAQs) bearbeiten.' },
     { title: 'Kontakt Seite', icon: Contact, href: '/admin/kontakt-settings', description: 'Kontaktinformationen der "Kontakt" Seite bearbeiten.' },
-    { title: 'WordPress Migration', icon: DatabaseZap, href: '/admin/migration', description: 'Daten aus einer WordPress JSON-Datei importieren.' },
   ];
 
   return (
