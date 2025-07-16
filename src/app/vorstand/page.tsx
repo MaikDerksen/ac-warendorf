@@ -8,6 +8,8 @@ import { UserCircle, Users } from 'lucide-react'; // Removed Mail as it's not di
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 
+export const revalidate = 60; // Revalidate at most every 60 seconds
+
 export default async function VorstandPage() {
   const allBoardMembers = await getAllBoardMembers();
 

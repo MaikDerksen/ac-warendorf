@@ -3,6 +3,7 @@ import { PageHeader } from '@/components/page-header';
 import { NewsCard } from '@/components/news-card';
 import { getAllNewsArticles } from '@/lib/data-loader'; // Now fetches from Firestore
 
+export const revalidate = 60; // Revalidate at most every 60 seconds
 
 export default async function NewsArchivPage() {
   const allArticles = await getAllNewsArticles(); // Now fetches from Firestore

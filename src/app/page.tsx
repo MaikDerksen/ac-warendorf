@@ -10,6 +10,8 @@ import type { BoardMember, SiteSettings } from '@/types';
 import { Mail, UserCircle } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
+export const revalidate = 60; // Revalidate at most every 60 seconds
+
 export default async function HomePage() {
   const allNews = await getAllNewsArticles();
   const latestNews = allNews.slice(0, 3);
@@ -165,4 +167,3 @@ export default async function HomePage() {
     </div>
   );
 }
-

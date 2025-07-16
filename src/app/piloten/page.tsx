@@ -8,6 +8,8 @@ import { User, Users } from 'lucide-react';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 
+export const revalidate = 60; // Revalidate at most every 60 seconds
+
 export default async function PilotenPage() {
   const allPilots = await getAllPilots(); // Fetches from Firestore
 

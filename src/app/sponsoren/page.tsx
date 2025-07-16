@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { getAllSponsors } from '@/lib/data-loader';
 import type { Sponsor } from '@/types';
 
+export const revalidate = 60; // Revalidate at most every 60 seconds
+
 export default async function SponsorenPage() {
   const sponsors = await getAllSponsors();
 
