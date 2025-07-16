@@ -177,27 +177,27 @@ export default function AdminAktivitaetenSettingsPage() {
       <Card>
         <CardHeader><CardTitle className="flex items-center"><Info className="mr-2 h-5 w-5 text-primary"/>Kart-Slalom Sektion</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <FormFieldLayout label="Titel der Sektion" name="kartSlalomSectionTitle" value={content.kartSlalomSectionTitle || ''} onChange={handleInputChange} />
-          <FormFieldLayout label="Einleitungstext (HTML erlaubt)" name="kartSlalomIntroParagraph" value={content.kartSlalomIntroParagraph || ''} onChange={handleInputChange} type="textarea" rows={3}/>
-          <FormFieldLayout label="Detailtext Absatz 1 (HTML erlaubt)" name="kartSlalomDetailParagraph1" value={content.kartSlalomDetailParagraph1 || ''} onChange={handleInputChange} type="textarea" rows={4}/>
-          <FormFieldLayout label="Detailtext Absatz 2 (HTML erlaubt)" name="kartSlalomDetailParagraph2" value={content.kartSlalomDetailParagraph2 || ''} onChange={handleInputChange} type="textarea" rows={4}/>
+          <FormFieldLayout label="Titel der Sektion" name="kartSlalomSectionTitle" value={content.kartSlalomSectionTitle} onChange={handleInputChange} />
+          <FormFieldLayout label="Einleitungstext (HTML erlaubt)" name="kartSlalomIntroParagraph" value={content.kartSlalomIntroParagraph} onChange={handleInputChange} type="textarea" rows={3}/>
+          <FormFieldLayout label="Detailtext Absatz 1 (HTML erlaubt)" name="kartSlalomDetailParagraph1" value={content.kartSlalomDetailParagraph1} onChange={handleInputChange} type="textarea" rows={4}/>
+          <FormFieldLayout label="Detailtext Absatz 2 (HTML erlaubt)" name="kartSlalomDetailParagraph2" value={content.kartSlalomDetailParagraph2} onChange={handleInputChange} type="textarea" rows={4}/>
         </CardContent>
       </Card>
       
       <Card>
         <CardHeader><CardTitle className="flex items-center"><YoutubeIcon className="mr-2 h-5 w-5 text-primary"/>YouTube Video Sektion</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <FormFieldLayout label="YouTube Video ID" name="youtubeEmbedId" value={content.youtubeEmbedId || ''} onChange={handleInputChange} placeholder="z.B. RCK5CPkfXbY" />
-          <FormFieldLayout label="Titel der YouTube Sektion (HTML erlaubt)" name="youtubeSectionTitle" value={content.youtubeSectionTitle || ''} onChange={handleInputChange} />
-          <FormFieldLayout label="Text unter YouTube Titel (HTML erlaubt)" name="youtubeSectionText" value={content.youtubeSectionText || ''} onChange={handleInputChange} type="textarea" rows={2}/>
+          <FormFieldLayout label="YouTube Video ID" name="youtubeEmbedId" value={content.youtubeEmbedId} onChange={handleInputChange} placeholder="z.B. RCK5CPkfXbY" />
+          <FormFieldLayout label="Titel der YouTube Sektion (HTML erlaubt)" name="youtubeSectionTitle" value={content.youtubeSectionTitle} onChange={handleInputChange} />
+          <FormFieldLayout label="Text unter YouTube Titel (HTML erlaubt)" name="youtubeSectionText" value={content.youtubeSectionText} onChange={handleInputChange} type="textarea" rows={2}/>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader><CardTitle className="flex items-center"><ListChecks className="mr-2 h-5 w-5 text-primary"/>Sektion Zukünftige Möglichkeiten</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <FormFieldLayout label="Titel der Sektion (HTML erlaubt)" name="futurePossibilitiesTitle" value={content.futurePossibilitiesTitle || ''} onChange={handleInputChange} />
-          <FormFieldLayout label="Einleitungstext (HTML erlaubt)" name="futurePossibilitiesIntro" value={content.futurePossibilitiesIntro || ''} onChange={handleInputChange} type="textarea" rows={3}/>
+          <FormFieldLayout label="Titel der Sektion (HTML erlaubt)" name="futurePossibilitiesTitle" value={content.futurePossibilitiesTitle} onChange={handleInputChange} />
+          <FormFieldLayout label="Einleitungstext (HTML erlaubt)" name="futurePossibilitiesIntro" value={content.futurePossibilitiesIntro} onChange={handleInputChange} type="textarea" rows={3}/>
           <div>
             <Label htmlFor="futurePossibilitiesItems">Listenpunkte (HTML erlaubt, ein Punkt pro Zeile)</Label>
             <Textarea
@@ -226,7 +226,7 @@ export default function AdminAktivitaetenSettingsPage() {
 interface FormFieldLayoutProps {
     label: string;
     name: keyof AktivitaetenPageContent;
-    value: string;
+    value: string | undefined;
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
     type?: 'text' | 'textarea';
     placeholder?: string;
@@ -236,11 +236,9 @@ const FormFieldLayout: React.FC<FormFieldLayoutProps> = ({ label, name, value, o
     <div className="space-y-1">
         <Label htmlFor={name}>{label}</Label>
         {type === 'textarea' ? (
-            <Textarea id={name} name={name} value={value} onChange={onChange} placeholder={placeholder} rows={rows} />
+            <Textarea id={name} name={name} value={value || ''} onChange={onChange} placeholder={placeholder} rows={rows} />
         ) : (
-            <Input id={name} name={name} type={type} value={value} onChange={onChange} placeholder={placeholder} />
+            <Input id={name} name={name} type={type} value={value || ''} onChange={onChange} placeholder={placeholder} />
         )}
     </div>
 );
-
-    

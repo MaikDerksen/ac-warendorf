@@ -120,8 +120,10 @@ export default function AdminCalendarPage() {
   };
 
   useEffect(() => {
-    if (!authLoading) {
+    if (!authLoading && user && isAdmin) {
       fetchEvents();
+    } else if (!authLoading) {
+      setIsLoading(false);
     }
   }, [user, isAdmin, authLoading]);
 
@@ -195,36 +197,43 @@ export default function AdminCalendarPage() {
   async function onSubmit(data: EventFormValues) {
     if (!user || !isAdmin) return;
     
-    // For single events, start and end are calculated from the form
-    const startDateTime = new Date(`${data.startDate}T${data.allDay ? '00:00:00' : data.startTime}`).toISOString();
-    
-    // For recurring events, the 'end' of an instance is based on its start date + duration, not a separate end date from the form.
-    let endDateTime;
+    let payload: any;
     if (data.recurring) {
-        const singleEventStart = new Date(`${data.startDate}T${data.allDay ? '00:00:00' : data.startTime}`);
-        const singleEventEnd = new Date(`${data.startDate}T${data.allDay ? '23:59:59' : data.endTime}`);
-        endDateTime = singleEventEnd.toISOString();
-    } else {
-        const singleEventEnd = new Date(`${data.endDate}T${data.allDay ? '23:59:59' : data.endTime}`);
-        endDateTime = singleEventEnd.toISOString();
-    }
-    
-    const payload: any = {
+      // For recurring events, we create a template for the backend.
+      // The start date and time define the first event's timing.
+      // The end time on the same day defines the duration.
+      const startDateTime = new Date(`${data.startDate}T${data.allDay ? '00:00:00' : data.startTime}`).toISOString();
+      const endDateTime = new Date(`${data.startDate}T${data.allDay ? '23:59:59' : data.endTime}`).toISOString();
+      
+      payload = {
         title: data.title,
         start: startDateTime,
         end: endDateTime,
         allDay: data.allDay,
-        location: data.location,
-        description: data.description,
+        location: data.location || '',
+        description: data.description || '',
         category: data.category,
-    };
-    
-    if (data.recurring && !editingEvent) {
+        recurrence: data.recurrence, // This signals to the backend it's a recurring event
+      };
+      
       if (!data.recurrence?.days || data.recurrence.days.length === 0) {
         toast({ title: "Validierungsfehler", description: "Bitte wählen Sie mindestens einen Wochentag für wiederkehrende Termine.", variant: "destructive" });
         return;
       }
-      payload.recurrence = data.recurrence;
+    } else {
+      // For single, non-recurring events
+      const startDateTime = new Date(`${data.startDate}T${data.allDay ? '00:00:00' : data.startTime}`).toISOString();
+      const endDateTime = new Date(`${data.endDate}T${data.allDay ? '23:59:59' : data.endTime}`).toISOString();
+      
+      payload = {
+        title: data.title,
+        start: startDateTime,
+        end: endDateTime,
+        allDay: data.allDay,
+        location: data.location || '',
+        description: data.description || '',
+        category: data.category,
+      };
     }
 
     const idToken = await user.getIdToken();
@@ -262,7 +271,7 @@ export default function AdminCalendarPage() {
     }
     const upcomingEvents = events
       .filter(event => event.end && isValid(parseISO(event.end)) && new Date(event.end) >= new Date())
-      .sort((a,b) => (a.start && b.start) ? new Date(a.start).getTime() - new Date(b.start).getTime() : 0);
+      .sort((a,b) => (a.start && b.start) ? parseISO(a.start).getTime() - parseISO(b.start).getTime() : 0);
 
     return (
       <div className="space-y-4">
@@ -328,24 +337,26 @@ export default function AdminCalendarPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Titel*</FormLabel><FormControl><Input placeholder="z.B. Monatliches Vereinstreffen" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Titel*</FormLabel><FormControl><Input placeholder="z.B. Monatliches Vereinstreffen" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>)} />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField control={form.control} name="startDate" render={({ field }) => (<FormItem><FormLabel>Start-Datum*</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                  {!allDay && <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormLabel>Start-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />}
+                  <FormField control={form.control} name="startDate" render={({ field }) => (<FormItem><FormLabel>Start-Datum*</FormLabel><FormControl><Input type="date" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>)} />
+                  {!allDay && <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormLabel>Start-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>)} />}
                   
-                  { !isRecurring && !editingEvent &&
-                    <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem><FormLabel>End-Datum*</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                  { !isRecurring &&
+                    <>
+                      <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem><FormLabel>End-Datum*</FormLabel><FormControl><Input type="date" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>)} />
+                      {!allDay && <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>End-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>)} />}
+                    </>
                   }
-                  { !isRecurring && !editingEvent && !allDay && <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>End-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />}
-                  {isRecurring && !allDay && <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>End-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />}
+                  {isRecurring && !allDay && <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>End-Uhrzeit*</FormLabel><FormControl><Input type="time" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>)} />}
 
               </div>
 
               <FormField control={form.control} name="allDay" render={({ field }) => (<FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>Ganztägiger Termin</FormLabel></div></FormItem>)} />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField control={form.control} name="location" render={({ field }) => (<FormItem><FormLabel>Ort (Optional)</FormLabel><FormControl><Input placeholder="z.B. Vereinsheim" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="location" render={({ field }) => (<FormItem><FormLabel>Ort (Optional)</FormLabel><FormControl><Input placeholder="z.B. Vereinsheim" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="category" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Kategorie</FormLabel>
@@ -359,7 +370,7 @@ export default function AdminCalendarPage() {
                   </FormItem>
                 )} />
               </div>
-              <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Beschreibung (Optional)</FormLabel><FormControl><Textarea placeholder="Weitere Details zum Termin..." {...field} rows={5}/></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Beschreibung (Optional)</FormLabel><FormControl><Textarea placeholder="Weitere Details zum Termin..." {...field} value={field.value || ''} rows={5}/></FormControl><FormMessage /></FormItem>)} />
               
               {!editingEvent && (
                 <>
@@ -370,7 +381,7 @@ export default function AdminCalendarPage() {
                     </CardHeader>
                     {isRecurring && (
                         <CardContent className="space-y-4 p-4 pt-0">
-                             <FormField control={form.control} name="recurrence.endDate" render={({ field }) => (<FormItem><FormLabel>Wiederholen bis einschließlich*</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                             <FormField control={form.control} name="recurrence.endDate" render={({ field }) => (<FormItem><FormLabel>Wiederholen bis einschließlich*</FormLabel><FormControl><Input type="date" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>)} />
                             <FormField control={form.control} name="recurrence.frequency" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Frequenz</FormLabel>
@@ -441,5 +452,3 @@ export default function AdminCalendarPage() {
     </div>
   );
 }
-
-    

@@ -108,14 +108,14 @@ export default function AdminKontaktSettingsPage() {
       <Card>
         <CardHeader><CardTitle className="flex items-center"><Contact className="mr-2"/>Kontakt-Seiten Texte</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-            <FormFieldLayout label="Seitentitel" name="pageTitle" value={content.pageTitle || ''} onChange={handleInputChange} />
-            <FormFieldLayout label="Seiten-Untertitel" name="pageSubtitle" value={content.pageSubtitle || ''} onChange={handleInputChange} type="textarea" rows={2}/>
-            <FormFieldLayout label="Titel des Kontaktformulars" name="formTitle" value={content.formTitle || ''} onChange={handleInputChange} />
-            <FormFieldLayout label="Titel 'Alternative Kontaktmöglichkeiten'" name="alternativeContactTitle" value={content.alternativeContactTitle || ''} onChange={handleInputChange} />
-            <FormFieldLayout label="Straße und Hausnummer (Postanschrift)" name="addressStreet" value={content.addressStreet || ''} onChange={handleInputChange} />
-            <FormFieldLayout label="PLZ und Stadt (Postanschrift)" name="addressCity" value={content.addressCity || ''} onChange={handleInputChange} />
-            <FormFieldLayout label="Beispiel Telefonnummer" name="examplePhoneNumber" value={content.examplePhoneNumber || ''} onChange={handleInputChange} />
-            <FormFieldLayout label="Datenschutzhinweis (HTML erlaubt)" name="dataPrivacyNoteHtml" value={content.dataPrivacyNoteHtml || ''} onChange={handleInputChange} type="textarea" rows={3}/>
+            <FormFieldLayout label="Seitentitel" name="pageTitle" value={content.pageTitle} onChange={handleInputChange} />
+            <FormFieldLayout label="Seiten-Untertitel" name="pageSubtitle" value={content.pageSubtitle} onChange={handleInputChange} type="textarea" rows={2}/>
+            <FormFieldLayout label="Titel des Kontaktformulars" name="formTitle" value={content.formTitle} onChange={handleInputChange} />
+            <FormFieldLayout label="Titel 'Alternative Kontaktmöglichkeiten'" name="alternativeContactTitle" value={content.alternativeContactTitle} onChange={handleInputChange} />
+            <FormFieldLayout label="Straße und Hausnummer (Postanschrift)" name="addressStreet" value={content.addressStreet} onChange={handleInputChange} />
+            <FormFieldLayout label="PLZ und Stadt (Postanschrift)" name="addressCity" value={content.addressCity} onChange={handleInputChange} />
+            <FormFieldLayout label="Beispiel Telefonnummer" name="examplePhoneNumber" value={content.examplePhoneNumber} onChange={handleInputChange} />
+            <FormFieldLayout label="Datenschutzhinweis (HTML erlaubt)" name="dataPrivacyNoteHtml" value={content.dataPrivacyNoteHtml} onChange={handleInputChange} type="textarea" rows={3}/>
         </CardContent>
       </Card>
        
@@ -133,7 +133,7 @@ export default function AdminKontaktSettingsPage() {
 interface FormFieldLayoutProps {
     label: string;
     name: keyof KontaktPageContent;
-    value: string;
+    value: string | undefined;
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
     type?: 'text' | 'textarea';
     placeholder?: string;
@@ -149,5 +149,3 @@ const FormFieldLayout: React.FC<FormFieldLayoutProps> = ({ label, name, value, o
         )}
     </div>
 );
-
-    

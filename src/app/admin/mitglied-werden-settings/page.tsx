@@ -174,23 +174,23 @@ export default function AdminMitgliedWerdenSettingsPage() {
       <Card>
         <CardHeader><CardTitle className="flex items-center"><FileText className="mr-2"/>Seiten-Texte</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-            <FormFieldLayout label="Seitentitel" name="pageTitle" value={content.pageTitle || ''} onChange={handleInputChange} />
-            <FormFieldLayout label="Seiten-Untertitel" name="pageSubtitle" value={content.pageSubtitle || ''} onChange={handleInputChange} type="textarea" rows={2}/>
-            <FormFieldLayout label="Titel FAQ Sektion" name="faqSectionTitle" value={content.faqSectionTitle || ''} onChange={handleInputChange} />
-            <FormFieldLayout label="Titel 'Was ist Kartslalom?' Sektion" name="whatIsKartSlalomTitle" value={content.whatIsKartSlalomTitle || ''} onChange={handleInputChange} />
-            <FormFieldLayout label="'Was ist Kartslalom?' Text (HTML erlaubt)" name="whatIsKartSlalomText" value={content.whatIsKartSlalomText || ''} onChange={handleInputChange} type="textarea" rows={5}/>
-            <FormFieldLayout label="Wikipedia Link Text" name="wikipediaLinkText" value={content.wikipediaLinkText || ''} onChange={handleInputChange} />
-            <FormFieldLayout label="Wikipedia Link URL" name="wikipediaLinkUrl" value={content.wikipediaLinkUrl || ''} onChange={handleInputChange} />
+            <FormFieldLayout label="Seitentitel" name="pageTitle" value={content.pageTitle} onChange={handleInputChange} />
+            <FormFieldLayout label="Seiten-Untertitel" name="pageSubtitle" value={content.pageSubtitle} onChange={handleInputChange} type="textarea" rows={2}/>
+            <FormFieldLayout label="Titel FAQ Sektion" name="faqSectionTitle" value={content.faqSectionTitle} onChange={handleInputChange} />
+            <FormFieldLayout label="Titel 'Was ist Kartslalom?' Sektion" name="whatIsKartSlalomTitle" value={content.whatIsKartSlalomTitle} onChange={handleInputChange} />
+            <FormFieldLayout label="'Was ist Kartslalom?' Text (HTML erlaubt)" name="whatIsKartSlalomText" value={content.whatIsKartSlalomText} onChange={handleInputChange} type="textarea" rows={5}/>
+            <FormFieldLayout label="Wikipedia Link Text" name="wikipediaLinkText" value={content.wikipediaLinkText} onChange={handleInputChange} />
+            <FormFieldLayout label="Wikipedia Link URL" name="wikipediaLinkUrl" value={content.wikipediaLinkUrl} onChange={handleInputChange} />
         </CardContent>
       </Card>
       
       <Card>
         <CardHeader><CardTitle className="flex items-center"><ImageIconLucide className="mr-2"/>Seitenleisten-Inhalt</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-            <FormFieldLayout label="Titel der Seitenleiste" name="sidebarTitle" value={content.sidebarTitle || ''} onChange={handleInputChange} />
-            <FormFieldLayout label="Text der Seitenleiste (HTML erlaubt)" name="sidebarText" value={content.sidebarText || ''} onChange={handleInputChange} type="textarea" rows={3}/>
-            <FormFieldLayout label="Button Text Seitenleiste" name="sidebarButtonText" value={content.sidebarButtonText || ''} onChange={handleInputChange} />
-            <FormFieldLayout label="Button Link Seitenleiste" name="sidebarButtonLink" value={content.sidebarButtonLink || ''} onChange={handleInputChange} />
+            <FormFieldLayout label="Titel der Seitenleiste" name="sidebarTitle" value={content.sidebarTitle} onChange={handleInputChange} />
+            <FormFieldLayout label="Text der Seitenleiste (HTML erlaubt)" name="sidebarText" value={content.sidebarText} onChange={handleInputChange} type="textarea" rows={3}/>
+            <FormFieldLayout label="Button Text Seitenleiste" name="sidebarButtonText" value={content.sidebarButtonText} onChange={handleInputChange} />
+            <FormFieldLayout label="Button Link Seitenleiste" name="sidebarButtonLink" value={content.sidebarButtonLink} onChange={handleInputChange} />
             <div>
                 <Label htmlFor="imageFile-mitglied">Bild der Seitenleiste</Label>
                 {content.imageUrl && !imagePreview && (
@@ -251,7 +251,7 @@ function isValidJson(str: string) {
 interface FormFieldLayoutProps {
     label: string;
     name: keyof MitgliedWerdenPageContent; // This is fine, as these are for the 'content' state object
-    value: string;
+    value: string | undefined;
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
     type?: 'text' | 'textarea';
     placeholder?: string;
@@ -267,4 +267,3 @@ const FormFieldLayout: React.FC<FormFieldLayoutProps> = ({ label, name, value, o
         )}
     </div>
 );
-    
