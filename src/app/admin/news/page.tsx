@@ -8,9 +8,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, FilePlus, Trash2, Edit, Loader2, List } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -18,6 +17,7 @@ import { useAuth } from '@/context/AuthContext';
 import type { NewsArticle } from '@/types';
 import Image from 'next/image';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { RichTextEditor } from '@/components/rich-text-editor';
 
 const newsFormSchema = z.object({
   title: z.string().min(5, { message: "Titel muss mindestens 5 Zeichen haben." }),
@@ -163,8 +163,22 @@ export default function AdminNewsPage() {
               <FormField control={form.control} name="slug" render={({ field }) => (<FormItem><FormLabel>Slug* (für URL)</FormLabel><FormControl><Input placeholder="spannender-artikeltitel" {...field} value={field.value || ''} disabled={!!editingArticle} /></FormControl><FormDescription>Eindeutig, nur Kleinbuchstaben, Zahlen, Bindestriche. Kann nach Erstellung nicht mehr geändert werden.</FormDescription><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="date" render={({ field }) => (<FormItem><FormLabel>Datum* (YYYY-MM-DD)</FormLabel><FormControl><Input type="date" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="categories" render={({ field }) => (<FormItem><FormLabel>Kategorien (getrennt durch | )</FormLabel><FormControl><Input placeholder="Kart-Slalom|Vereinsleben" {...field} value={field.value || ''} /></FormControl><FormDescription>Mehrere Kategorien mit "|" trennen.</FormDescription><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="excerpt" render={({ field }) => (<FormItem><FormLabel>Kurzbeschreibung*</FormLabel><FormControl><Textarea placeholder="Eine kurze Zusammenfassung..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="content" render={({ field }) => (<FormItem><FormLabel>Inhalt* (HTML erlaubt)</FormLabel><FormControl><Textarea placeholder="<p>Der vollständige Artikelinhalt...</p>" {...field} value={field.value || ''} rows={10}/></FormControl><FormDescription>Sie können HTML-Tags für Formatierungen verwenden.</FormDescription><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="excerpt" render={({ field }) => (<FormItem><FormLabel>Kurzbeschreibung*</FormLabel><FormControl><Input placeholder="Eine kurze Zusammenfassung..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>)} />
+              
+              <Controller
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Inhalt*</FormLabel>
+                      <FormControl>
+                         <RichTextEditor value={field.value} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
               <FormField control={form.control} name="heroImageFile" render={({ field: { onChange, onBlur, name, ref } }) => (<FormItem><FormLabel>Titelbild {editingArticle ? 'ersetzen' : 'hochladen'} (Optional)</FormLabel><FormControl><Input id="heroImageFile" type="file" accept="image/jpeg,image/png,image/gif" onChange={(e) => onChange(e.target.files)} onBlur={onBlur} name={name} ref={ref} /></FormControl><FormDescription>{editingArticle ? 'Lassen Sie das Feld frei, um das aktuelle Bild beizubehalten.' : 'Wählen Sie eine Bilddatei von Ihrem Computer.'}</FormDescription><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="dataAiHint" render={({ field }) => (<FormItem><FormLabel>Bild KI-Hinweis (Optional)</FormLabel><FormControl><Input placeholder="z.B. kart race" {...field} value={field.value || ''} /></FormControl><FormDescription>1-2 Stichworte für KI-Bildgenerierung, falls kein Bild angegeben.</FormDescription><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="youtubeEmbed" render={({ field }) => (<FormItem><FormLabel>YouTube Video ID (Optional)</FormLabel><FormControl><Input placeholder="z.B. dQw4w9WgXcQ" {...field} value={field.value || ''} /></FormControl><FormDescription>Nur die ID des Videos, nicht die volle URL.</FormDescription><FormMessage /></FormItem>)} />
