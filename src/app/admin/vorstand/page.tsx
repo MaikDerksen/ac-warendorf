@@ -75,7 +75,7 @@ export default function AdminVorstandPage() {
     setEditingMember(member);
     form.reset({
       name: member.name,
-      roles: member.roles.length > 0 ? member.roles : [{ role: "", term: "" }],
+      roles: member.roles && member.roles.length > 0 ? member.roles : [{ role: "", term: "" }],
       email: member.email,
       description: member.description || "",
       order: member.order || 99,
@@ -197,7 +197,7 @@ export default function AdminVorstandPage() {
                           <FormItem>
                             <FormLabel>Amtszeit {index + 1} (Optional)</FormLabel>
                             <FormControl>
-                              <Input placeholder="z.B. 2023-2025" {...field} />
+                              <Input placeholder="z.B. 2023-2025" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -231,10 +231,10 @@ export default function AdminVorstandPage() {
                 
                 <FormField control={form.control} name="order" render={({ field }) => (<FormItem><FormLabel>Anzeigereihenfolge</FormLabel><FormControl><Input type="number" {...field} value={field.value || 0} /></FormControl><FormDescription>Eine niedrigere Zahl bedeutet eine frühere Anzeige (z.B. 1 für 1. Vorsitzender).</FormDescription><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Beschreibung (Optional)</FormLabel><FormControl><Textarea placeholder="Zusätzliche Informationen..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>)} />
-                <Controller
+                <FormField 
                     control={form.control}
                     name="imageFile"
-                    render={({ field: { onChange, onBlur, name, ref } }) => (
+                    render={({ field: { onChange, onBlur, name, ref }}) => (
                         <FormItem>
                             <FormLabel>Bild {editingMember ? 'ersetzen' : 'hochladen'} (Optional)</FormLabel>
                             <FormControl>
@@ -273,7 +273,11 @@ export default function AdminVorstandPage() {
                      <Image src={member.imageUrl || "https://placehold.co/80x80.png"} alt={member.name} width={80} height={80} className="rounded-md object-cover" data-ai-hint="person photo"/>
                      <div>
                         <p className="font-semibold">{member.name} <span className="text-xs text-muted-foreground">(Order: {member.order})</span></p>
-                        <p className="text-sm text-muted-foreground">{member.roles.map(r => r.role).join(', ')}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {Array.isArray(member.roles) && member.roles.length > 0 
+                            ? member.roles.map(r => r.role).join(', ') 
+                            : 'Keine Rolle zugewiesen'}
+                        </p>
                      </div>
                   </div>
                   <div className="flex gap-2">
@@ -298,3 +302,5 @@ export default function AdminVorstandPage() {
     </div>
   );
 }
+
+    
