@@ -47,7 +47,7 @@ export default async function HomePage() {
 
         <div className="flex-grow text-center sm:text-left">
           <h3 className="text-xl font-headline font-semibold text-primary-foreground-alt mb-1">{person.name}</h3>
-          <p className="text-sm text-muted-foreground mb-2">{person.role}</p>
+          <p className="text-sm text-muted-foreground mb-2">{person.roles && person.roles.length > 0 ? person.roles[0].role : 'Mitglied'}</p>
           {person.slug ? (
             <div className="text-sm text-primary-foreground-alt hover:underline flex items-center justify-center sm:justify-start cursor-pointer">
               <Mail className="h-4 w-4 mr-2" />

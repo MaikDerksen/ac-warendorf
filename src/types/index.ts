@@ -16,11 +16,15 @@ export interface NewsArticle {
   updatedAt?: any;
 }
 
+export interface BoardMemberRole {
+  role: string;
+  term?: string;
+}
+
 export interface BoardMember {
   id: string; 
   name: string;
-  role: string;
-  term?: string;
+  roles: BoardMemberRole[];
   email: string;
   imageUrl?: string; 
   slug?: string; 

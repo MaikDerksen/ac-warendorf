@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { adminApp } from '@/lib/firebaseAdminConfig';
 import { verifyAdmin } from '@/lib/adminAuth';
 import { FieldValue } from 'firebase-admin/firestore';
-import type { BoardMember } from '@/types';
+import type { BoardMember, BoardMemberRole } from '@/types';
 
 export const config = { api: { bodyParser: false } };
 
@@ -48,12 +48,26 @@ async function handleRequest(req: NextRequest, isUpdate: boolean) {
         if (!memberId) return NextResponse.json({ message: 'Member ID is required' }, { status: 400 });
 
         const memberRef = adminApp.firestore().collection("boardMembers").doc(memberId);
+        
+        const rolesString = formData.get('roles') as string | null;
+        let roles: BoardMemberRole[] = [];
+        if (rolesString) {
+            try {
+                roles = JSON.parse(rolesString);
+                if (!Array.isArray(roles) || roles.length === 0) {
+                    return NextResponse.json({ message: 'Invalid or empty roles array' }, { status: 400 });
+                }
+            } catch (e) {
+                return NextResponse.json({ message: 'Invalid JSON format for roles' }, { status: 400 });
+            }
+        } else {
+            return NextResponse.json({ message: 'Roles are required' }, { status: 400 });
+        }
 
         const memberData: any = {
             name: formData.get('name') as string,
-            role: formData.get('role') as string,
             email: formData.get('email') as string,
-            term: (formData.get('term') as string) || '',
+            roles: roles,
             description: (formData.get('description') as string) || '',
             order: Number(formData.get('order') as string) || 99,
             slug: memberId, // Use the ID as slug

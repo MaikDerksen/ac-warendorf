@@ -31,6 +31,8 @@ export default async function BoardMemberProfilePage({ params }: BoardMemberProf
     notFound();
   }
 
+  const primaryRole = member.roles.length > 0 ? member.roles[0].role : 'Vorstandsmitglied';
+
   return (
     <div className="max-w-4xl mx-auto space-y-12">
       <PageHeader title={member.name} />
@@ -60,7 +62,7 @@ export default async function BoardMemberProfilePage({ params }: BoardMemberProf
             </CardHeader>
             <CardContent className="p-4 text-center">
               <h2 className="text-2xl font-headline text-primary-foreground-alt">{member.name}</h2>
-              <p className="text-sm text-muted-foreground">{member.role}</p>
+              <p className="text-sm text-muted-foreground">{primaryRole}</p>
             </CardContent>
           </Card>
            <Button asChild variant="outline" className="w-full">
@@ -74,20 +76,29 @@ export default async function BoardMemberProfilePage({ params }: BoardMemberProf
               <Briefcase className="h-6 w-6 text-primary-foreground-alt" />
               <CardTitle className="text-xl font-headline">Amt & Kontakt</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-foreground">
+            <CardContent className="space-y-4 text-foreground">
               <div>
-                <h3 className="text-sm font-semibold text-muted-foreground">Funktion im Verein</h3>
-                <p>{member.role}</p>
+                <h3 className="text-sm font-semibold text-muted-foreground">Funktionen im Verein</h3>
+                {member.roles && member.roles.length > 0 ? (
+                  <ul className="list-none space-y-2 mt-1">
+                    {member.roles.map((r, index) => (
+                      <li key={index} className="flex flex-col sm:flex-row justify-between sm:items-center p-2 bg-secondary/50 rounded-md">
+                        <span className="font-medium">{r.role}</span>
+                        {r.term && (
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <CalendarDays className="h-4 w-4 mr-2" />
+                            <span>{r.term}</span>
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>Keine Rollen angegeben.</p>
+                )}
               </div>
-              {member.term && (
-                <div>
-                  <h3 className="text-sm font-semibold text-muted-foreground flex items-center">
-                    <CalendarDays className="h-4 w-4 mr-2" /> Amtszeit
-                  </h3>
-                  <p>{member.term}</p>
-                </div>
-              )}
-              <div>
+              
+              <div className="pt-3 border-t">
                 <h3 className="text-sm font-semibold text-muted-foreground flex items-center">
                   <Mail className="h-4 w-4 mr-2" /> E-Mail
                 </h3>

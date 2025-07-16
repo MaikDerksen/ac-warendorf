@@ -8,8 +8,7 @@ import type { KontaktPageContent } from '@/types';
 
 export default async function KontaktPage() {
   const boardMembers = await getAllBoardMembers();
-  const chairman = boardMembers.find(m => m.role === "1. Vorsitzender"); // Assuming role is exact
-  const content: KontaktPageContent = await getKontaktPageContent();
+  const chairman = boardMembers.find(m => m.roles.some(r => r.role === "1. Vorsitzender"));
 
   return (
     <div className="space-y-12">
@@ -66,4 +65,3 @@ export default async function KontaktPage() {
     </div>
   );
 }
-

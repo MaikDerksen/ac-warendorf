@@ -68,7 +68,7 @@ export default async function VorstandPage() {
                           member.name
                         )}
                       </h3>
-                      <p className="text-sm text-muted-foreground mb-2">{member.role}</p>
+                      <p className="text-sm text-muted-foreground mb-2">{member.roles && member.roles.length > 0 ? member.roles.map(r => r.role).join(', ') : 'Mitglied'}</p>
                     </div>
                     {member.slug && (
                       <Button variant="link" size="sm" asChild className="mt-auto text-xs text-primary-foreground-alt">
