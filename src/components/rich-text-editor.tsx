@@ -13,7 +13,7 @@ const Toolbar = ({ editor }: { editor: Editor | null }) => {
   }
 
   return (
-    <div className="border border-input rounded-t-md p-2 flex items-center space-x-1">
+    <div className="border border-input bg-transparent rounded-t-md p-2 flex items-center space-x-1">
       <Toggle
         size="sm"
         pressed={editor.isActive('bold')}
@@ -62,10 +62,14 @@ export const RichTextEditor = ({ value, onChange }: RichTextEditorProps) => {
   const editor = useEditor({
     extensions: [
         StarterKit.configure({
-            paragraph: {
-                // Allow using shift-enter for a soft break, and double-enter for a new paragraph
+            bulletList: {
                 HTMLAttributes: {
-                    class: 'min-h-[1rem]',
+                    class: 'list-disc pl-5', // Add Tailwind classes for bullet points
+                },
+            },
+            orderedList: {
+                HTMLAttributes: {
+                    class: 'list-decimal pl-5', // Add Tailwind classes for numbered lists
                 },
             },
         }),
@@ -73,13 +77,22 @@ export const RichTextEditor = ({ value, onChange }: RichTextEditorProps) => {
     content: value,
     editorProps: {
       attributes: {
-        class: 'prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none',
+        class: 'prose dark:prose-invert max-w-none prose-sm sm:prose-base focus:outline-none p-4',
       },
     },
     onUpdate({ editor }) {
       onChange(editor.getHTML());
     },
   });
+
+  // Effect to update editor content when the `value` prop changes from the outside
+  // This is crucial for loading existing article data into the editor.
+  React.useEffect(() => {
+    if (editor && value !== editor.getHTML()) {
+      editor.commands.setContent(value, false);
+    }
+  }, [value, editor]);
+
 
   return (
     <div className="flex flex-col">
