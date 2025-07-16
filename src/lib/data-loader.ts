@@ -5,7 +5,7 @@
 import fs from 'fs';
 import path from 'path';
 import Papa from 'papaparse';
-import type { NewsArticle, BoardMember, Pilot, FaqItem, Sponsor, SiteSettings, AktivitaetenPageContent, MitgliedWerdenPageContent, KontaktPageContent, CalendarEvent } from '@/types';
+import type { NewsArticle, BoardMember, Pilot, FaqItem, Sponsor, SiteSettings, AktivitaetenPageContent, MitgliedWerdenPageContent, KontaktPageContent, CalendarEvent, BoardMemberRole } from '@/types';
 import { adminApp } from '@/lib/firebaseAdminConfig'; 
 import { FieldValue } from 'firebase-admin/firestore';
 
@@ -145,7 +145,6 @@ export async function getAllBoardMembers(): Promise<BoardMember[]> {
   const firestoreDb = adminApp.firestore();
   try {
     const membersCollectionRef = firestoreDb.collection("boardMembers");
-    // Primary sort by 'order' (user-defined for importance), then by 'name'
     const q = membersCollectionRef.orderBy("order", "asc").orderBy("name", "asc");
     const querySnapshot = await q.get();
     
@@ -155,13 +154,12 @@ export async function getAllBoardMembers(): Promise<BoardMember[]> {
       members.push({
         id: doc.id, 
         name: sanitizeString(data.name),
-        role: sanitizeString(data.role),
-        term: data.term ? sanitizeString(data.term) : undefined,
+        roles: Array.isArray(data.roles) ? data.roles : [],
         email: sanitizeString(data.email), 
         imageUrl: data.imageUrl ? sanitizeString(data.imageUrl) : PLACEHOLDER_IMAGE_SQUARE,
         slug: data.slug ? sanitizeString(data.slug) : doc.id, 
         description: data.description ? data.description : undefined,
-        order: data.order !== undefined ? Number(data.order) : 99, // Default high order if not set
+        order: data.order !== undefined ? Number(data.order) : 99, 
         createdAt: data.createdAt,
         createdBy: data.createdBy ? sanitizeString(data.createdBy) : undefined,
       } as BoardMember);
@@ -172,6 +170,23 @@ export async function getAllBoardMembers(): Promise<BoardMember[]> {
     return [];
   }
 }
+
+function mapDataToBoardMember(doc: FirebaseFirestore.DocumentSnapshot): BoardMember {
+    const data = doc.data()!;
+    return {
+        id: doc.id,
+        name: sanitizeString(data.name),
+        roles: Array.isArray(data.roles) ? data.roles : [{ role: 'Mitglied', term: '' }],
+        email: sanitizeString(data.email),
+        imageUrl: data.imageUrl ? sanitizeString(data.imageUrl) : PLACEHOLDER_IMAGE_SQUARE,
+        slug: data.slug ? sanitizeString(data.slug) : doc.id,
+        description: data.description ? data.description : undefined,
+        order: data.order !== undefined ? Number(data.order) : 99,
+        createdAt: data.createdAt,
+        createdBy: data.createdBy ? sanitizeString(data.createdBy) : undefined,
+    };
+}
+
 
 export async function getBoardMemberBySlug(slug: string): Promise<BoardMember | undefined> {
   if (!adminApp) {
@@ -185,44 +200,20 @@ export async function getBoardMemberBySlug(slug: string): Promise<BoardMember | 
     const q = membersCollectionRef.where("slug", "==", sanitizedSlug).limit(1);
     const querySnapshot = await q.get();
 
-    if (querySnapshot.empty) {
-      const docById = await membersCollectionRef.doc(sanitizedSlug).get();
-      if (docById.exists) {
-        const data = docById.data()!;
-         return {
-          id: docById.id,
-          name: sanitizeString(data.name),
-          role: sanitizeString(data.role),
-          term: data.term ? sanitizeString(data.term) : undefined,
-          email: sanitizeString(data.email),
-          imageUrl: data.imageUrl ? sanitizeString(data.imageUrl) : PLACEHOLDER_IMAGE_SQUARE,
-          slug: data.slug ? sanitizeString(data.slug) : docById.id,
-          description: data.description ? data.description : undefined,
-          order: data.order !== undefined ? Number(data.order) : 99,
-          createdAt: data.createdAt,
-          createdBy: data.createdBy ? sanitizeString(data.createdBy) : undefined,
-        } as BoardMember;
-      }
-      console.log(`No board member found with slug or ID: ${sanitizedSlug}`);
-      return undefined;
+    if (!querySnapshot.empty) {
+        const docSnap = querySnapshot.docs[0];
+        return mapDataToBoardMember(docSnap);
+    }
+    
+    // Fallback to check by document ID if slug doesn't match
+    const docById = await membersCollectionRef.doc(sanitizedSlug).get();
+    if (docById.exists) {
+        return mapDataToBoardMember(docById);
     }
 
-    const docSnap = querySnapshot.docs[0];
-    const data = docSnap.data();
-    
-    return {
-      id: docSnap.id,
-      name: sanitizeString(data.name),
-      role: sanitizeString(data.role),
-      term: data.term ? sanitizeString(data.term) : undefined,
-      email: sanitizeString(data.email),
-      imageUrl: data.imageUrl ? sanitizeString(data.imageUrl) : PLACEHOLDER_IMAGE_SQUARE,
-      slug: data.slug ? sanitizeString(data.slug) : docSnap.id,
-      description: data.description ? data.description : undefined,
-      order: data.order !== undefined ? Number(data.order) : 99,
-      createdAt: data.createdAt,
-      createdBy: data.createdBy ? sanitizeString(data.createdBy) : undefined,
-    } as BoardMember;
+    console.log(`No board member found with slug or ID: ${sanitizedSlug}`);
+    return undefined;
+
   } catch (error) {
     console.error(`Error fetching board member by slug/ID ${sanitizedSlug} from Firestore (Admin SDK):`, error);
     return undefined;

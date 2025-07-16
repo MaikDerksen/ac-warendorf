@@ -31,7 +31,7 @@ export default async function BoardMemberProfilePage({ params }: BoardMemberProf
     notFound();
   }
 
-  const primaryRole = member.roles.length > 0 ? member.roles[0].role : 'Vorstandsmitglied';
+  const primaryRole = member.roles && member.roles.length > 0 ? member.roles[0].role : 'Vorstandsmitglied';
 
   return (
     <div className="max-w-4xl mx-auto space-y-12">
