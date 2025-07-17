@@ -17,8 +17,8 @@ interface ProfileCardProps {
 export function ProfileCard({ name, imageUrl, slug, slugPrefix, details }: ProfileCardProps) {
   const linkHref = (slug && slugPrefix) ? `${slugPrefix}${slug}` : undefined;
 
-  const content = (
-    <Card className="overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ease-out flex flex-col h-full rounded-lg group-hover:bg-accent/50">
+  const cardContent = (
+    <div className="overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ease-out flex flex-col h-full rounded-lg group-hover:bg-accent/50">
       <div className="relative w-full aspect-square bg-muted">
         {imageUrl ? (
           <Image
@@ -41,22 +41,19 @@ export function ProfileCard({ name, imageUrl, slug, slugPrefix, details }: Profi
 
       <div className="p-4 text-center flex-grow flex flex-col justify-between">
         <div>
-          <h3 className="font-semibold text-lg text-foreground mb-1 group-hover:text-primary-foreground-alt group-hover:underline">
+          <h3 className="font-semibold text-lg text-foreground mb-1 group-hover:text-primary-foreground-alt">
             {name}
           </h3>
           {details && <p className="text-sm text-muted-foreground mb-2">{details}</p>}
         </div>
         {linkHref && (
           <Button variant="link" size="sm" asChild className="mt-auto text-xs text-primary-foreground-alt">
-            {/* The button is inside the main link, so it doesn't need its own Link component.
-                The `div` prevents it from inheriting the link behavior which would cause nesting. */}
             <div>Profil ansehen</div>
           </Button>
         )}
       </div>
-    </Card>
+    </div>
   );
 
-  // The entire card is a single link. The content inside should not have its own links.
-  return linkHref ? <Link href={linkHref} className="block h-full group">{content}</Link> : <div className="h-full">{content}</div>;
+  return linkHref ? <Link href={linkHref} className="block h-full group"><Card className="h-full">{cardContent}</Card></Link> : <Card className="h-full">{cardContent}</Card>;
 }

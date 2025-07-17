@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Trophy, Info } from 'lucide-react';
+import { User, Trophy, Info, UserCircle } from 'lucide-react';
 
 interface PilotProfilePageProps {
   params: {
@@ -52,7 +52,7 @@ export default async function PilotProfilePage({ params }: PilotProfilePageProps
                   />
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <User className="h-32 w-32 text-primary-foreground-alt opacity-60" />
+                    <UserCircle className="h-32 w-32 text-primary-foreground-alt opacity-60" />
                   </div>
                 )}
               </div>
