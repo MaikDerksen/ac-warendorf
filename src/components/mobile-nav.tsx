@@ -3,13 +3,16 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Menu } from 'lucide-react'; // X and ChevronDown are not directly needed here
+import { Menu } from 'lucide-react'; 
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
-  SheetClose, // To close sheet on item click
+  SheetClose, 
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
 } from "@/components/ui/sheet";
 import {
   Accordion,
@@ -44,16 +47,16 @@ export function MobileNav({ navLinks }: MobileNavProps) {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[300px] sm:w-[340px] bg-card p-0">
-        <div className="p-4 border-b">
-          <h3 className="text-lg font-medium font-headline text-primary">Navigation</h3>
-        </div>
-        <nav className="flex flex-col space-y-0 p-2"> {/* Reduced space-y for tighter packing */}
+        <SheetHeader className="p-4 border-b">
+          <SheetTitle className="text-lg font-medium font-headline text-primary">Navigation</SheetTitle>
+          <SheetDescription className="sr-only">Hauptnavigation für die mobile Ansicht.</SheetDescription>
+        </SheetHeader>
+        <nav className="flex flex-col space-y-0 p-2">
           {navLinks.map((link) => (
             'dropdown' in link ? (
               <Accordion type="single" collapsible className="w-full" key={link.label}>
                 <AccordionItem value={link.label} className="border-b-0">
                   <AccordionTrigger className="px-2 py-3 text-base font-medium rounded-md hover:bg-muted hover:no-underline data-[state=open]:bg-muted">
-                    {/* AccordionTrigger includes its own Chevron */}
                     <span>{link.label}</span>
                   </AccordionTrigger>
                   <AccordionContent className="pl-4 pt-1 pb-1">
