@@ -34,10 +34,10 @@ export default async function SponsorenPage() {
         <CardHeader>
           <CardTitle className="text-xl font-headline text-primary-foreground-alt">Unsere Partner</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-stretch text-center">
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch text-center">
           {sponsors.length > 0 ? sponsors.map((sponsor: Sponsor) => (
             <div key={sponsor.id} className="flex flex-col items-center justify-between p-4 border rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <div className="relative w-full h-20 mb-3">
+              <div className="relative w-full h-24 mb-4">
                 <Image 
                   src={sponsor.logoUrl} 
                   alt={`${sponsor.name} Logo`} 
