@@ -44,7 +44,7 @@ export default async function PilotProfilePage({ params }: PilotProfilePageProps
                   <Image
                     src={pilot.imageUrl}
                     alt={pilot.name}
-                    fill // Next 13+ style
+                    fill
                     style={{ objectFit: 'cover' }}
                     priority
                     sizes="(max-width: 767px) 90vw, 30vw"

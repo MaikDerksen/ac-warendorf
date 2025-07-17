@@ -8,6 +8,7 @@ import type { KontaktPageContent } from '@/types';
 
 export default async function KontaktPage() {
   const boardMembers = await getAllBoardMembers();
+  const content: KontaktPageContent = await getKontaktPageContent();
   const chairman = boardMembers.find(m => m.roles.some(r => r.role === "1. Vorsitzender"));
 
   return (

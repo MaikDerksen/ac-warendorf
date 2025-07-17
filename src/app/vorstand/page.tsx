@@ -43,13 +43,12 @@ export default async function VorstandPage() {
                         fill
                         style={{ objectFit: 'cover' }}
                         data-ai-hint="person photo"
-                        className="rounded-t-lg" 
                         sizes="(max-width: 639px) 90vw, (max-width: 767px) 45vw, 30vw"
                         quality={90}
                         priority={index < 3} 
                       />
                     ) : (
-                      <div className="w-full h-full bg-muted flex items-center justify-center rounded-t-lg">
+                      <div className="w-full h-full bg-muted flex items-center justify-center">
                         <UserCircle className="h-32 w-32 text-primary-foreground-alt opacity-60" />
                       </div>
                     )}

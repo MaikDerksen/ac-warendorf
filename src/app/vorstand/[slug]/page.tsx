@@ -50,11 +50,10 @@ export default async function BoardMemberProfilePage({ params }: BoardMemberProf
                     style={{ objectFit: 'cover' }}
                     priority
                     sizes="(max-width: 767px) 90vw, 30vw"
-                    className="rounded-lg" // Ensure consistency if images are not square
                     data-ai-hint="board member photo"
                   />
                 ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center rounded-lg">
+                  <div className="w-full h-full bg-muted flex items-center justify-center">
                     <UserCircle className="h-32 w-32 text-primary-foreground-alt opacity-60" />
                   </div>
                 )}

@@ -40,7 +40,7 @@ export default async function PilotenPage() {
                       <Image
                         src={pilot.imageUrl}
                         alt={pilot.name}
-                        fill // Next 13+ style
+                        fill
                         style={{ objectFit: 'cover' }}
                         data-ai-hint="pilot photo"
                         sizes="(max-width: 639px) 90vw, (max-width: 767px) 45vw, 30vw"
