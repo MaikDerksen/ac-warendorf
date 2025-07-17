@@ -4,9 +4,8 @@ import { getAllPilots } from '@/lib/data-loader'; // Now fetches from Firestore
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { User, Users } from 'lucide-react';
-import Image from 'next/image';
-import { Separator } from '@/components/ui/separator';
+import { Users } from 'lucide-react';
+import { ProfileCard } from '@/components/profile-card';
 
 export const revalidate = 60; // Revalidate at most every 60 seconds
 
@@ -30,43 +29,15 @@ export default async function PilotenPage() {
         <CardContent>
           {allPilots.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {allPilots.map((pilot, index) => (
-                <Card
-                  key={pilot.id} // Use Firestore ID
-                  className="overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ease-out flex flex-col rounded-lg"
-                >
-                  <div className="relative w-full aspect-square">
-                    {pilot.imageUrl ? (
-                      <Image
-                        src={pilot.imageUrl}
-                        alt={pilot.name}
-                        fill
-                        style={{ objectFit: 'cover' }}
-                        data-ai-hint="pilot photo"
-                        sizes="(max-width: 639px) 90vw, (max-width: 767px) 45vw, 30vw"
-                        quality={90}
-                        priority={index < 3}
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-muted flex items-center justify-center">
-                        <User className="h-32 w-32 text-primary-foreground-alt opacity-60" />
-                      </div>
-                    )}
-                  </div>
-
-                  <Separator className="my-0 flex-shrink-0" />
-
-                  <div className="p-4 text-center">
-                    <p className="font-semibold text-lg text-foreground mb-2">{pilot.name}</p>
-                    {pilot.profileSlug ? (
-                      <Button variant="link" size="sm" asChild className="mt-1 text-xs text-primary-foreground-alt">
-                        <Link href={`/piloten/${pilot.profileSlug}`}>Profil ansehen</Link>
-                      </Button>
-                    ) : (
-                      <span className="text-xs text-muted-foreground mt-1">(Kein Profil)</span>
-                    )}
-                  </div>
-                </Card>
+              {allPilots.map((pilot) => (
+                <ProfileCard 
+                  key={pilot.id}
+                  name={pilot.name}
+                  imageUrl={pilot.imageUrl}
+                  slug={pilot.profileSlug}
+                  slugPrefix="/piloten/"
+                  details="Pilot/in"
+                />
               ))}
             </div>
           ) : (

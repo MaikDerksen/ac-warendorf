@@ -4,9 +4,8 @@ import { getAllBoardMembers } from '@/lib/data-loader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { UserCircle, Users } from 'lucide-react'; // Removed Mail as it's not directly used here
-import Image from 'next/image';
-import { Separator } from '@/components/ui/separator';
+import { Users } from 'lucide-react';
+import { ProfileCard } from '@/components/profile-card';
 
 export const revalidate = 60; // Revalidate at most every 60 seconds
 
@@ -30,52 +29,15 @@ export default async function VorstandPage() {
         <CardContent>
           {allBoardMembers.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {allBoardMembers.map((member, index) => (
-                <Card
+              {allBoardMembers.map((member) => (
+                <ProfileCard 
                   key={member.id}
-                  className="overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ease-out flex flex-col rounded-lg"
-                >
-                  <div className="relative w-full aspect-square">
-                    {member.imageUrl ? (
-                      <Image
-                        src={member.imageUrl}
-                        alt={member.name}
-                        fill
-                        style={{ objectFit: 'cover' }}
-                        data-ai-hint="person photo"
-                        sizes="(max-width: 639px) 90vw, (max-width: 767px) 45vw, 30vw"
-                        quality={90}
-                        priority={index < 3} 
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-muted flex items-center justify-center">
-                        <UserCircle className="h-32 w-32 text-primary-foreground-alt opacity-60" />
-                      </div>
-                    )}
-                  </div>
-
-                  <Separator className="my-0 flex-shrink-0" />
-
-                  <div className="p-4 text-center flex-grow flex flex-col justify-between">
-                    <div>
-                      <h3 className="font-semibold text-lg text-foreground mb-1">
-                        {member.slug ? (
-                           <Link href={`/vorstand/${member.slug}`} className="hover:text-primary-foreground-alt hover:underline">
-                            {member.name}
-                          </Link>
-                        ) : (
-                          member.name
-                        )}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-2">{member.roles && member.roles.length > 0 ? member.roles.map(r => r.role).join(', ') : 'Mitglied'}</p>
-                    </div>
-                    {member.slug && (
-                      <Button variant="link" size="sm" asChild className="mt-auto text-xs text-primary-foreground-alt">
-                        <Link href={`/vorstand/${member.slug}`}>Profil ansehen</Link>
-                      </Button>
-                    )}
-                  </div>
-                </Card>
+                  name={member.name}
+                  imageUrl={member.imageUrl}
+                  slug={member.slug}
+                  slugPrefix="/vorstand/"
+                  details={Array.isArray(member.roles) && member.roles.length > 0 ? member.roles.map(r => r.role).join(', ') : 'Mitglied'}
+                />
               ))}
             </div>
           ) : (

@@ -9,6 +9,7 @@ import { getAllNewsArticles, getAllBoardMembers, getSiteSettings } from '@/lib/d
 import type { BoardMember, SiteSettings } from '@/types';
 import { Mail, UserCircle } from 'lucide-react';
 import { Logo } from '@/components/logo';
+import { ProfileCard } from '@/components/profile-card';
 
 export const revalidate = 60; // Revalidate at most every 60 seconds
 
@@ -21,64 +22,6 @@ export default async function HomePage() {
 
   // Display the first 4 board members based on the default sorting (order, then name)
   const contactPersons = allBoardMembers.slice(0, 4);
-
-  const renderContactPersonCard = (person: BoardMember) => {
-    const cardContent = (
-      <Card className="shadow-md hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ease-out w-full h-full flex flex-col sm:flex-row items-center p-4">
-        <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 mb-4 sm:mb-0">
-          {person.imageUrl ? (
-            <Image
-              src={person.imageUrl}
-              alt={person.name}
-              fill
-              style={{ objectFit: 'cover' }}
-              className="rounded-lg"
-              data-ai-hint="person photo"
-              sizes="(max-width: 640px) 24vw, (max-width: 768px) 28vw, 112px"
-            />
-          ) : (
-            <UserCircle className="w-full h-full text-primary-foreground-alt opacity-60 rounded-lg" />
-          )}
-        </div>
-        
-        <div className="hidden sm:flex flex-shrink-0 items-center justify-center px-4">
-          <div className="h-16 w-px bg-border"></div>
-        </div>
-
-        <div className="flex-grow text-center sm:text-left">
-          <h3 className="text-xl font-headline font-semibold text-primary-foreground-alt mb-1">{person.name}</h3>
-          <p className="text-sm text-muted-foreground mb-2">{person.roles && person.roles.length > 0 ? person.roles[0].role : 'Mitglied'}</p>
-          {person.slug ? (
-            <div className="text-sm text-primary-foreground-alt hover:underline flex items-center justify-center sm:justify-start cursor-pointer">
-              <Mail className="h-4 w-4 mr-2" />
-              {person.email.replace('[at]', '@')} (Profil)
-            </div>
-          ) : (
-            <a
-              href={`mailto:${person.email.replace('[at]', '@')}`}
-              className="text-sm text-primary-foreground-alt hover:underline flex items-center justify-center sm:justify-start"
-            >
-              <Mail className="h-4 w-4 mr-2" />
-              {person.email.replace('[at]', '@')}
-            </a>
-          )}
-        </div>
-      </Card>
-    );
-
-    if (person.slug) {
-      return (
-        <Link key={person.id} href={`/vorstand/${person.slug}`} className="block h-full group">
-          {cardContent}
-        </Link>
-      );
-    }
-    return (
-      <div key={person.id} className="h-full">
-        {cardContent}
-      </div>
-    );
-  };
 
   return (
     <div className="space-y-16">
@@ -137,8 +80,17 @@ export default async function HomePage() {
       {contactPersons.length > 0 && (
         <section>
           <PageHeader title="Ihre Ansprechpartner" />
-          <div className="grid md:grid-cols-2 gap-6">
-            {contactPersons.map((person) => renderContactPersonCard(person))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {contactPersons.map((person) => (
+                <ProfileCard 
+                    key={person.id}
+                    name={person.name}
+                    imageUrl={person.imageUrl}
+                    slug={person.slug}
+                    slugPrefix="/vorstand/"
+                    details={person.roles.map(r => r.role).join(', ')}
+                />
+            ))}
           </div>
           <div className="mt-8 text-center">
             <Button asChild variant="outline">
