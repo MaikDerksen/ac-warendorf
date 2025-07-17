@@ -1,10 +1,11 @@
 
+
 import { getNewsArticleBySlug, getAllNewsArticles } from '@/lib/data-loader';
 import type { NewsArticle } from '@/types';
 import { PageHeader } from '@/components/page-header';
 import Image from 'next/image';
 import { YouTubeEmbed } from '@/components/youtube-embed';
-import { CalendarDays, Tag } from 'lucide-react';
+import { CalendarDays, Tag, Newspaper } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -55,15 +56,21 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
       </div>
 
       {article.heroImageUrl && !article.youtubeEmbed && (
-        <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg mb-8">
+        <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg mb-8 bg-muted">
           <Image
             src={article.heroImageUrl}
             alt={article.title}
-            fill // Changed from layout="fill" objectFit="cover" for Next 13+
-            style={{ objectFit: 'cover' }} // Alternative for objectFit
+            fill
+            style={{ objectFit: 'cover' }}
             priority
             data-ai-hint={article.dataAiHint || "news detail image"}
           />
+        </div>
+      )}
+
+      {!article.heroImageUrl && !article.youtubeEmbed && (
+         <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg mb-8 bg-muted flex items-center justify-center">
+            <Newspaper className="h-32 w-32 text-primary-foreground-alt opacity-20" />
         </div>
       )}
 

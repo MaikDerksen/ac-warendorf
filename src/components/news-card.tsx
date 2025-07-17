@@ -3,7 +3,7 @@ import Image from 'next/image';
 import type { NewsArticle } from '@/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, Tag } from 'lucide-react';
+import { CalendarDays, Newspaper, Tag } from 'lucide-react';
 
 interface NewsCardProps {
   article: NewsArticle;
@@ -19,17 +19,21 @@ export function NewsCard({ article }: NewsCardProps) {
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ease-out">
       <CardHeader className="p-0">
-        {article.heroImageUrl && (
-          <Link href={`/news/${article.slug}`} className="block aspect-video relative">
-            <Image
-              src={article.heroImageUrl}
-              alt={article.title}
-              layout="fill"
-              objectFit="cover"
-              data-ai-hint={article.dataAiHint || "news article image"}
-            />
-          </Link>
-        )}
+        <Link href={`/news/${article.slug}`} className="block aspect-video relative">
+            {article.heroImageUrl ? (
+                <Image
+                  src={article.heroImageUrl}
+                  alt={article.title}
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  data-ai-hint={article.dataAiHint || "news article image"}
+                />
+            ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <Newspaper className="h-24 w-24 text-primary-foreground-alt opacity-20" />
+                </div>
+            )}
+        </Link>
       </CardHeader>
       <CardContent className="p-6 flex-grow">
         <CardTitle className="text-xl mb-2 font-headline">

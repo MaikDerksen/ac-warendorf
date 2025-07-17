@@ -29,8 +29,8 @@ function sanitizeString(str: string | undefined | null): string {
 // --- Site Settings (Images Only, contacts are dynamic) ---
 export async function getSiteSettings(): Promise<SiteSettings> {
   const defaultSettings: SiteSettings = {
-    logoUrl: PLACEHOLDER_LOGO_SMALL, 
-    homepageHeroImageUrl: PLACEHOLDER_IMAGE_LARGE,
+    logoUrl: undefined, 
+    homepageHeroImageUrl: '/images/general/kart_in_dry.jpg',
   };
 
   if (!adminApp) {
@@ -82,7 +82,7 @@ export async function getAllNewsArticles(): Promise<NewsArticle[]> {
         categories: Array.isArray(data.categories) ? data.categories.map(c => sanitizeString(c as string)) : [],
         excerpt: sanitizeString(data.excerpt),
         content: data.content, // Keep as is, might contain HTML
-        heroImageUrl: data.heroImageUrl ? sanitizeString(data.heroImageUrl) : PLACEHOLDER_IMAGE_MEDIUM,
+        heroImageUrl: data.heroImageUrl ? sanitizeString(data.heroImageUrl) : undefined,
         dataAiHint: data.dataAiHint ? sanitizeString(data.dataAiHint) : undefined,
         youtubeEmbed: data.youtubeEmbed ? sanitizeString(data.youtubeEmbed) : undefined,
         createdAt: data.createdAt, 
@@ -124,7 +124,7 @@ export async function getNewsArticleBySlug(slug: string): Promise<NewsArticle | 
       categories: Array.isArray(data.categories) ? data.categories.map(c => sanitizeString(c as string)) : [],
       excerpt: sanitizeString(data.excerpt),
       content: data.content,
-      heroImageUrl: data.heroImageUrl ? sanitizeString(data.heroImageUrl) : PLACEHOLDER_IMAGE_LARGE,
+      heroImageUrl: data.heroImageUrl ? sanitizeString(data.heroImageUrl) : undefined,
       dataAiHint: data.dataAiHint ? sanitizeString(data.dataAiHint) : undefined,
       youtubeEmbed: data.youtubeEmbed ? sanitizeString(data.youtubeEmbed) : undefined,
       createdAt: data.createdAt,
