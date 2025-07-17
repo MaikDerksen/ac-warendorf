@@ -3,48 +3,58 @@ import { type NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
 export async function POST(req: NextRequest) {
-  // Read credentials from environment variables, matching your tested script
+  // Read credentials from environment variables
   const {
     EMAIL_USER,
     EMAIL_PASS,
     SMTP_HOST = 'smtp.strato.de',
     SMTP_PORT = 465,
     SMTP_SECURE = 'true', // env vars are strings
-    MAIL_TO_ADDRESS,
+    MAIL_TO_ADDRESS, // Default recipient
+    MAIL_TO_ADDRESS_SCHUTZKONZEPT, // Special recipient for Schutzkonzept
   } = process.env;
 
-  // Check for the new environment variable names
   if (!EMAIL_USER || !EMAIL_PASS) {
     console.error('❌ EMAIL_USER and EMAIL_PASS must be set in your environment variables.');
     return NextResponse.json({ message: 'Server is not configured to send emails. Administrator needs to set EMAIL_USER and EMAIL_PASS.' }, { status: 500 });
   }
-
-  const mailTo = MAIL_TO_ADDRESS || 'vorstand@ac-warendorf.de';
-
+  
   try {
     const { email, name, subject, message, formType } = await req.json();
 
     if (!email || !name || !subject || !message) {
       return NextResponse.json({ message: 'Missing required fields.' }, { status: 400 });
     }
+    
+    // Determine the recipient based on the formType
+    let mailTo;
+    if (formType === "Schutzkonzept-Kontakt" && MAIL_TO_ADDRESS_SCHUTZKONZEPT) {
+      mailTo = MAIL_TO_ADDRESS_SCHUTZKONZEPT;
+    } else {
+      mailTo = MAIL_TO_ADDRESS || 'vorstand@ac-warendorf.de';
+    }
 
-    // Create a transporter object using the exact same settings as your script
+    if (!mailTo) {
+         console.error('❌ No recipient email address is configured.');
+         return NextResponse.json({ message: 'Server is not configured with a recipient email address.' }, { status: 500 });
+    }
+
     const transporter = nodemailer.createTransport({
       host: SMTP_HOST,
       port: Number(SMTP_PORT),
-      secure: SMTP_SECURE === 'true', // true for 465, false for other ports
+      secure: SMTP_SECURE === 'true',
       auth: {
         user: EMAIL_USER,
         pass: EMAIL_PASS,
       },
-      logger: true, // Enable logging for debugging
-      debug: true,  // Enable debug output
+      logger: false,
+      debug: false,
     });
 
     const mailOptions = {
-      from: `"${name} via Website" <${EMAIL_USER}>`, // Use your authenticated email as the sender
-      replyTo: email, // Set the user's email as the reply-to address
-      to: mailTo, // The recipient address from .env or default
+      from: `"${name} via Website" <${EMAIL_USER}>`,
+      replyTo: email,
+      to: mailTo, 
       subject: `Neue Anfrage (${formType}): ${subject}`,
       text: `
         Neue Anfrage über das Formular "${formType}" auf der Website:
@@ -68,13 +78,12 @@ export async function POST(req: NextRequest) {
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ Message sent: ${info.messageId}`);
+    console.log(`✅ Message sent to ${mailTo}: ${info.messageId}`);
     
     return NextResponse.json({ message: 'Email sent successfully!' }, { status: 200 });
 
   } catch (error: any) {
     console.error('❌ Failed to send email:', error);
-    // Send a more detailed error message to the client for easier debugging
     return NextResponse.json({ message: `Failed to send email. Server error: ${error.message}` }, { status: 500 });
   }
 }
