@@ -16,7 +16,7 @@ export default async function SponsorenPage() {
     <div className="space-y-8">
       <PageHeader title="Unsere Sponsoren" subtitle="Wir danken unseren Unterstützern!" />
       
-      <Card className="shadow-lg bg-secondary">
+      <Card className="shadow-lg bg-secondary dark:bg-card">
         <CardHeader>
           <CardTitle className="text-2xl font-headline text-secondary-foreground">Ein herzliches Dankeschön!</CardTitle>
         </CardHeader>
@@ -32,7 +32,7 @@ export default async function SponsorenPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-xl font-headline text-black dark:text-primary-foreground">Unsere Partner</CardTitle>
+          <CardTitle className="text-xl font-headline">Unsere Partner</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch text-center">
           {sponsors.length > 0 ? sponsors.map((sponsor: Sponsor) => (
@@ -63,9 +63,9 @@ export default async function SponsorenPage() {
         </CardContent>
       </Card>
       
-      <Card className="shadow-lg bg-secondary">
+      <Card className="shadow-lg bg-secondary dark:bg-card">
         <CardHeader>
-          <CardTitle className="text-xl font-headline text-black dark:text-primary-foreground">Werden auch Sie Sponsor!</CardTitle>
+          <CardTitle className="text-xl font-headline">Werden auch Sie Sponsor!</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-secondary-foreground">
