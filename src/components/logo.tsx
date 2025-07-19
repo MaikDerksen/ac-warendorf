@@ -9,7 +9,7 @@ interface LogoProps {
 
 const PLACEHOLDER_LOGO_SMALL = "https://placehold.co/80x80.png";
 
-export function Logo({ logoUrl, secondaryTextColor = "text-foreground/80" }: LogoProps) {
+export function Logo({ logoUrl, secondaryTextColor = "text-muted-foreground" }: LogoProps) {
   const displayLogoUrl = logoUrl || PLACEHOLDER_LOGO_SMALL;
 
   return (
@@ -25,7 +25,7 @@ export function Logo({ logoUrl, secondaryTextColor = "text-foreground/80" }: Log
         />
       </div>
       <div className="flex flex-col">
-        <span className="font-headline text-xl sm:text-2xl font-bold leading-tight">AC Warendorf</span>
+        <span className="font-headline text-xl sm:text-2xl font-bold leading-tight text-foreground dark:text-primary">AC Warendorf</span>
         <span className={`text-xs sm:text-sm ${secondaryTextColor} leading-tight`}>Automobilclub e.V.</span>
       </div>
     </Link>

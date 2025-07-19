@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -65,15 +66,15 @@ export function Navbar() {
 
 
   return (
-    <header className="bg-card shadow-md sticky top-0 z-50">
+    <header className="bg-primary text-primary-foreground sticky top-0 z-50 shadow-md">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <Logo logoUrl={logoUrl} />
+        <Logo logoUrl={logoUrl} secondaryTextColor="text-gray-200" />
         <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
           {navLinks.map((link) =>
             link.dropdown ? (
               <DropdownMenu key={link.label}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-sm lg:text-base font-medium">
+                  <Button variant="ghost" className="text-sm lg:text-base font-medium text-primary-foreground hover:bg-primary/80">
                     {link.label}
                     <ChevronDown className="ml-1 h-4 w-4" />
                   </Button>
@@ -87,7 +88,7 @@ export function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button key={link.href} variant="ghost" asChild className="text-sm lg:text-base font-medium">
+              <Button key={link.href} variant="ghost" asChild className="text-sm lg:text-base font-medium text-primary-foreground hover:bg-primary/80">
                 <Link href={link.href}>{link.label}</Link>
               </Button>
             )
