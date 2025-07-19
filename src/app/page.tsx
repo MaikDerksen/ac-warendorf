@@ -36,7 +36,7 @@ export default async function HomePage() {
           <div className="flex justify-center mb-8">
             <Logo 
               logoUrl={siteSettings.logoUrl} 
-              primaryTextColor="text-primary" 
+              primaryTextColor="text-yellow-400" 
               secondaryTextColor="text-gray-300" 
             />
           </div>
@@ -112,7 +112,7 @@ export default async function HomePage() {
             Der AC Warendorf e.V. im ADAC fördert den Motorsportnachwuchs und bietet eine Plattform für Motorsportbegeisterte jeden Alters. Erfahren Sie mehr über unsere Aktivitäten und wie Sie Teil unserer Gemeinschaft werden können.
           </p>
           <div className="space-x-4">
-            <Button size="lg" asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button size="lg" asChild variant="link" className="text-black dark:text-white">
               <Link href="/aktivitaeten">Unsere Aktivitäten</Link>
             </Button>
             <Button size="lg" variant="outline" asChild>

@@ -18,7 +18,7 @@ export default async function SponsorenPage() {
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline text-primary-foreground-alt">Ein herzliches Dankeschön!</CardTitle>
+          <CardTitle className="text-2xl font-headline text-black dark:text-primary-foreground">Ein herzliches Dankeschön!</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-lg text-foreground">
@@ -32,7 +32,7 @@ export default async function SponsorenPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-xl font-headline text-primary-foreground-alt">Unsere Partner</CardTitle>
+          <CardTitle className="text-xl font-headline text-black dark:text-primary-foreground">Unsere Partner</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch text-center">
           {sponsors.length > 0 ? sponsors.map((sponsor: Sponsor) => (
@@ -51,7 +51,7 @@ export default async function SponsorenPage() {
                 <p className="text-sm font-medium text-foreground">{sponsor.name}</p>
                 <p className="text-xs text-muted-foreground mb-2">{sponsor.level}</p>
                 {sponsor.websiteUrl && (
-                  <Button variant="link" size="sm" asChild className="text-xs p-0 h-auto">
+                  <Button variant="link" size="sm" asChild className="text-xs p-0 h-auto text-primary-foreground-alt">
                     <a href={sponsor.websiteUrl} target="_blank" rel="noopener noreferrer">Webseite besuchen</a>
                   </Button>
                 )}
@@ -65,14 +65,14 @@ export default async function SponsorenPage() {
       
       <Card className="shadow-lg bg-secondary">
         <CardHeader>
-          <CardTitle className="text-xl font-headline text-primary-foreground-alt">Werden auch Sie Sponsor!</CardTitle>
+          <CardTitle className="text-xl font-headline text-black dark:text-primary-foreground">Werden auch Sie Sponsor!</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-foreground">
+          <p className="text-secondary-foreground">
             Möchten Sie den lokalen Motorsport fördern und Ihr Unternehmen in einem dynamischen Umfeld präsentieren? 
             Wir bieten verschiedene Sponsoring-Möglichkeiten und freuen uns über Ihr Interesse.
           </p>
-          <Button asChild>
+          <Button asChild variant="outline">
             <Link href="/kontakt">Jetzt Kontakt aufnehmen</Link>
           </Button>
         </CardContent>

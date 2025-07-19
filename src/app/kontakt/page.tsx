@@ -21,15 +21,15 @@ export default async function KontaktPage() {
       <div className="grid md:grid-cols-2 gap-12 items-start">
         <ContactForm formTitle={content.formTitle} />
 
-        <Card className="shadow-lg">
+        <Card className="shadow-lg bg-secondary text-secondary-foreground dark:bg-card dark:text-card-foreground">
           <CardHeader>
             <CardTitle className="text-2xl font-headline" dangerouslySetInnerHTML={{ __html: content.alternativeContactTitle || "Alternative Kontaktmöglichkeiten"}} />
           </CardHeader>
           <CardContent className="space-y-6">
             {chairman && (
               <div>
-                <h3 className="text-lg font-semibold text-foreground mb-1">1. Vorsitzender</h3>
-                <p className="text-muted-foreground">{chairman.name}</p>
+                <h3 className="text-lg font-semibold mb-1">1. Vorsitzender</h3>
+                <p className="text-muted-foreground dark:text-secondary-foreground">{chairman.name}</p>
                 <a href={`mailto:${chairman.email.replace('[at]', '@')}`} className="text-primary-foreground-alt hover:underline flex items-center mt-1">
                   <Mail className="h-4 w-4 mr-2" />
                   {chairman.email.replace('[at]', '@')}
@@ -38,10 +38,10 @@ export default async function KontaktPage() {
             )}
             
             <div>
-              <h3 className="text-lg font-semibold text-foreground mb-1">Postanschrift</h3>
-              <p className="text-muted-foreground flex items-start">
+              <h3 className="text-lg font-semibold mb-1">Postanschrift</h3>
+              <p className="flex items-start">
                 <MapPin className="h-5 w-5 mr-2 mt-1 flex-shrink-0 text-primary-foreground-alt" />
-                <span>
+                <span className="text-muted-foreground dark:text-secondary-foreground">
                   Automobilclub Warendorf e.V. im ADAC<br />
                   {content.addressStreet || "Musterstraße 1"}<br />
                   {content.addressCity || "48231 Warendorf"}
@@ -50,15 +50,15 @@ export default async function KontaktPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-foreground mb-1">Telefon (Beispiel)</h3>
-              <p className="text-muted-foreground flex items-center">
+              <h3 className="text-lg font-semibold mb-1">Telefon (Beispiel)</h3>
+              <p className="flex items-center">
                 <Phone className="h-4 w-4 mr-2 text-primary-foreground-alt" />
-                <span>{content.examplePhoneNumber || "+49 123 4567890 (Vorstand, falls angegeben)"}</span>
+                <span className="text-muted-foreground dark:text-secondary-foreground">{content.examplePhoneNumber || "+49 123 4567890 (Vorstand, falls angegeben)"}</span>
               </p>
             </div>
             
             {content.dataPrivacyNoteHtml && (
-                <p className="text-sm text-muted-foreground pt-4 border-t" dangerouslySetInnerHTML={{ __html: content.dataPrivacyNoteHtml.replace('text-primary', 'text-primary-foreground-alt') }} />
+                <p className="text-sm text-muted-foreground dark:text-secondary-foreground pt-4 border-t" dangerouslySetInnerHTML={{ __html: content.dataPrivacyNoteHtml.replace('text-primary', 'text-primary-foreground-alt') }} />
             )}
           </CardContent>
         </Card>
