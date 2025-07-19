@@ -15,7 +15,7 @@ export default async function AktivitaetenPage() {
     <div className="space-y-8">
       <PageHeader title="Aktivitäten im AC Warendorf" />
 
-      <Card className="shadow-lg overflow-hidden bg-secondary">
+      <Card className="shadow-lg overflow-hidden bg-secondary dark:bg-card">
         <CardHeader>
           <CardTitle className="text-2xl font-headline" dangerouslySetInnerHTML={{ __html: content.kartSlalomSectionTitle || "Kart-Slalom: Unsere Hauptaktivität" }} />
         </CardHeader>
@@ -35,7 +35,7 @@ export default async function AktivitaetenPage() {
             <div className="space-y-3">
               {content.kartSlalomDetailParagraph1 && <p className="text-secondary-foreground" dangerouslySetInnerHTML={{ __html: content.kartSlalomDetailParagraph1 }} />}
               {content.kartSlalomDetailParagraph2 && <p className="text-secondary-foreground" dangerouslySetInnerHTML={{ __html: content.kartSlalomDetailParagraph2 }} />}
-              <Button asChild variant="link" className="text-black dark:text-white px-0">
+              <Button asChild variant="link" className="text-primary-foreground-alt px-0">
                 <Link href="/kontakt/mitglied-werden">Mehr zum Kart-Slalom und Mitgliedschaft erfahren</Link>
               </Button>
             </div>
@@ -45,13 +45,13 @@ export default async function AktivitaetenPage() {
 
       {content.youtubeEmbedId && (
         <section className="py-6">
-          {content.youtubeSectionTitle && <h2 className="text-2xl font-headline font-semibold text-primary-foreground-alt mb-4 text-center" dangerouslySetInnerHTML={{ __html: content.youtubeSectionTitle }} />}
+          {content.youtubeSectionTitle && <h2 className="text-2xl font-headline font-semibold text-foreground mb-4 text-center" dangerouslySetInnerHTML={{ __html: content.youtubeSectionTitle }} />}
           {content.youtubeSectionText && <p className="text-center text-muted-foreground mb-6" dangerouslySetInnerHTML={{ __html: content.youtubeSectionText }} />}
           <YouTubeEmbed embedId={content.youtubeEmbedId} title={content.kartSlalomSectionTitle || "Kart-Slalom Video"} />
         </section>
       )}
       
-      <Card className="shadow-lg bg-secondary">
+      <Card className="shadow-lg bg-secondary dark:bg-card">
         <CardHeader>
           <CardTitle className="text-2xl font-headline" dangerouslySetInnerHTML={{ __html: content.futurePossibilitiesTitle || "Zukünftige Möglichkeiten"}} />
         </CardHeader>
