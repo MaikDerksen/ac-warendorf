@@ -35,7 +35,7 @@ export function NewsCard({ article }: NewsCardProps) {
             )}
         </Link>
       </CardHeader>
-      <CardContent className="p-6 flex-grow">
+      <CardContent className="p-6 flex-grow bg-secondary dark:bg-card">
         <CardTitle className="text-xl mb-2 font-headline">
           <Link href={`/news/${article.slug}`} className="hover:text-primary transition-colors">
             {article.title}
@@ -53,7 +53,7 @@ export function NewsCard({ article }: NewsCardProps) {
           </div>
         )}
       </CardContent>
-      <CardFooter className="p-6 pt-0">
+      <CardFooter className="p-6 pt-0 bg-secondary dark:bg-card">
         <Button asChild variant="outline" className="w-full hover:bg-accent hover:text-accent-foreground">
           <Link href={`/news/${article.slug}`}>Weiterlesen</Link>
         </Button>

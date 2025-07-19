@@ -18,7 +18,7 @@ export function ProfileCard({ name, imageUrl, slug, slugPrefix, details }: Profi
   const linkHref = (slug && slugPrefix) ? `${slugPrefix}${slug}` : undefined;
 
   const cardContent = (
-    <div className="overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ease-out flex flex-col h-full rounded-lg group-hover:bg-accent/50">
+    <div className="overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ease-out flex flex-col h-full rounded-lg group">
       <div className="relative w-full aspect-square bg-muted">
         {imageUrl ? (
           <Image
@@ -37,9 +37,7 @@ export function ProfileCard({ name, imageUrl, slug, slugPrefix, details }: Profi
         )}
       </div>
 
-      <Separator className="my-0 flex-shrink-0" />
-
-      <div className="p-4 text-center flex-grow flex flex-col justify-between">
+      <div className="p-4 text-center flex-grow flex flex-col justify-between bg-secondary dark:bg-card">
         <div>
           <h3 className="font-semibold text-lg text-foreground mb-1 group-hover:text-primary-foreground-alt">
             {name}
@@ -48,7 +46,7 @@ export function ProfileCard({ name, imageUrl, slug, slugPrefix, details }: Profi
         </div>
         {linkHref && (
           <Button variant="link" size="sm" asChild className="mt-auto text-xs text-primary-foreground-alt">
-            <div>Profil ansehen</div>
+            <Link href={linkHref}>Profil ansehen</Link>
           </Button>
         )}
       </div>
