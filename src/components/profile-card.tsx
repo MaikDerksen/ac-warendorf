@@ -37,21 +37,24 @@ export function ProfileCard({ name, imageUrl, slug, slugPrefix, details }: Profi
         )}
       </div>
 
-      <div className="p-4 text-center flex-grow flex flex-col justify-between bg-card dark:bg-card">
+      <div className="p-4 text-center flex-grow flex flex-col justify-between bg-secondary dark:bg-card">
         <div>
-          <h3 className="font-semibold text-lg text-foreground mb-1 group-hover:text-primary">
+          <h3 className="font-semibold text-lg text-secondary-foreground dark:text-foreground mb-1 group-hover:text-primary-foreground dark:group-hover:text-primary">
             {name}
           </h3>
-          {details && <p className="text-sm text-muted-foreground mb-2">{details}</p>}
+          {details && <p className="text-sm text-secondary-foreground/80 dark:text-muted-foreground mb-2">{details}</p>}
         </div>
-        {linkHref && (
-           <p className="text-xs text-primary mt-auto group-hover:underline">
-             Profil ansehen
-           </p>
-        )}
       </div>
     </div>
   );
 
-  return linkHref ? <Link href={linkHref} className="block h-full group"><Card className="h-full">{cardContent}</Card></Link> : <Card className="h-full">{cardContent}</Card>;
+  const CardWrapper = ({ children }: { children: React.ReactNode }) => (
+    linkHref ? <Link href={linkHref} className="block h-full group"><Card className="h-full">{children}</Card></Link> : <Card className="h-full">{children}</Card>
+  );
+
+  return (
+    <CardWrapper>
+      {cardContent}
+    </CardWrapper>
+  );
 }

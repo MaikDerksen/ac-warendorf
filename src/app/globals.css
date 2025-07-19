@@ -17,8 +17,8 @@
     --primary: 48 100% 50%; /* Yellow #FFCC00 */
     --primary-foreground: 0 0% 9%; /* Black text on yellow */
     
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
+    --secondary: 48 100% 50%; /* Yellow #FFCC00 for cards */
+    --secondary-foreground: 0 0% 9%; /* Black text on yellow */
 
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
@@ -32,8 +32,6 @@
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
-
-    --radius: 0.5rem;
   }
 
   .dark {
