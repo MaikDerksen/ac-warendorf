@@ -72,7 +72,7 @@ export default async function SponsorenPage() {
             Möchten Sie den lokalen Motorsport fördern und Ihr Unternehmen in einem dynamischen Umfeld präsentieren? 
             Wir bieten verschiedene Sponsoring-Möglichkeiten und freuen uns über Ihr Interesse.
           </p>
-          <Button asChild variant="outline">
+          <Button asChild>
             <Link href="/kontakt">Jetzt Kontakt aufnehmen</Link>
           </Button>
         </CardContent>
