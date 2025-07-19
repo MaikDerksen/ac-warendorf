@@ -3,12 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* AC Warendorf Custom Styles */
-
-body {
-  font-family: var(--font-pt-sans), sans-serif;
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%; /* Pure White */
@@ -20,11 +14,11 @@ body {
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
 
-    --primary: 0 0% 9%; /* Black for general primary elements in light mode */
-    --primary-foreground: 0 0% 98%; /* White text on primary */
+    --primary: 48 100% 50%; /* Yellow #FFCC00 */
+    --primary-foreground: 0 0% 9%; /* Black text on yellow */
     
-    --secondary: 48 100% 50%; /* Yellow #FFCC00 */
-    --secondary-foreground: 0 0% 9%; /* Black text on yellow */
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
 
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
@@ -40,11 +34,6 @@ body {
     --ring: 0 0% 3.9%;
 
     --radius: 0.5rem;
-
-    /* Custom Navbar Theme for Light Mode */
-    --navbar-background: 0 0% 9%; /* Black */
-    --navbar-foreground: 0 0% 98%; /* White */
-    --navbar-logo-foreground: 48 100% 50%; /* Yellow */
   }
 
   .dark {
@@ -57,9 +46,9 @@ body {
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    
+    --primary: 48 100% 50%; /* Yellow #FFCC00 */
+    --primary-foreground: 0 0% 9%;
+
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
 
@@ -75,11 +64,6 @@ body {
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 0 0% 98%;
-    
-    /* Custom Navbar Theme for Dark Mode - As per image */
-    --navbar-background: 240 3.7% 15.9%; /* #27272A */
-    --navbar-foreground: 0 0% 98%; /* White */
-    --navbar-logo-foreground: 48 100% 50%; /* Yellow */
   }
 }
 
@@ -89,14 +73,5 @@ body {
   }
   body {
     @apply bg-background text-foreground;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-headline text-foreground;
-  }
-  .text-primary-foreground-alt {
-      @apply text-primary-foreground;
-      .dark & {
-          @apply text-foreground;
-      }
   }
 }

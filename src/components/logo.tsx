@@ -1,4 +1,5 @@
 
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -14,7 +15,7 @@ const PLACEHOLDER_LOGO_SMALL = "https://placehold.co/80x80.png";
 export function Logo({ 
   logoUrl, 
   primaryTextColor, 
-  secondaryTextColor
+  secondaryTextColor = "text-gray-300"
 }: LogoProps) {
   const displayLogoUrl = logoUrl || PLACEHOLDER_LOGO_SMALL;
 
@@ -33,13 +34,13 @@ export function Logo({
       <div className="flex flex-col">
         <span className={cn(
           "font-headline text-xl sm:text-2xl font-bold leading-tight transition-colors group-hover:opacity-90",
-          primaryTextColor || "text-foreground"
+          primaryTextColor || "text-black"
         )}>
           AC Warendorf
         </span>
         <span className={cn(
-          "text-xs sm:text-sm leading-tight transition-colors",
-          secondaryTextColor || "text-muted-foreground"
+          "text-xs sm:text-sm leading-tight transition-colors text-white",
+          secondaryTextColor
         )}>
           Automobilclub e.V.
         </span>

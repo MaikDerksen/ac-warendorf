@@ -36,7 +36,7 @@ export default async function HomePage() {
           <div className="flex justify-center mb-8">
             <Logo 
               logoUrl={siteSettings.logoUrl} 
-              primaryTextColor="text-white" 
+              primaryTextColor="text-primary" 
               secondaryTextColor="text-gray-300" 
             />
           </div>

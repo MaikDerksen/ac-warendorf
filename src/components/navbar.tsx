@@ -66,19 +66,18 @@ export function Navbar() {
 
 
   return (
-    <header className="sticky top-0 z-50 shadow-md bg-[hsl(var(--navbar-background))] text-[hsl(var(--navbar-foreground))]">
+    <header className="sticky top-0 z-50 shadow-md bg-black text-white">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Logo 
           logoUrl={logoUrl} 
-          primaryTextColor="text-[hsl(var(--navbar-logo-foreground))]" 
-          secondaryTextColor="text-[hsl(var(--navbar-foreground))]" 
+          primaryTextColor="text-primary" 
         />
         <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
           {navLinks.map((link) =>
             'dropdown' in link ? (
               <DropdownMenu key={link.label}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-sm lg:text-base font-medium text-[hsl(var(--navbar-foreground))] hover:bg-black/10 dark:hover:bg-white/10">
+                  <Button variant="ghost" className="text-sm lg:text-base font-medium text-white hover:bg-white/10">
                     {link.label}
                     <ChevronDown className="ml-1 h-4 w-4" />
                   </Button>
@@ -92,7 +91,7 @@ export function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button key={link.href} variant="ghost" asChild className="text-sm lg:text-base font-medium text-[hsl(var(--navbar-foreground))] hover:bg-black/10 dark:hover:bg-white/10">
+              <Button key={link.href} variant="ghost" asChild className="text-sm lg:text-base font-medium text-white hover:bg-white/10">
                 <Link href={link.href}>{link.label}</Link>
               </Button>
             )
