@@ -79,4 +79,7 @@
   body {
     @apply bg-background text-foreground;
   }
+  a {
+      @apply text-primary-foreground-alt hover:underline;
+  }
 }

@@ -58,7 +58,7 @@ export default async function KontaktPage() {
             </div>
             
             {content.dataPrivacyNoteHtml && (
-                <p className="text-sm text-muted-foreground dark:text-secondary-foreground pt-4 border-t" dangerouslySetInnerHTML={{ __html: content.dataPrivacyNoteHtml.replace('text-primary', 'text-primary-foreground-alt') }} />
+                <p className="text-sm text-muted-foreground dark:text-secondary-foreground pt-4 border-t" dangerouslySetInnerHTML={{ __html: content.dataPrivacyNoteHtml }} />
             )}
           </CardContent>
         </Card>

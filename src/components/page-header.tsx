@@ -9,7 +9,7 @@ interface PageHeaderProps {
 export function PageHeader({ title, subtitle, className }: PageHeaderProps) {
   return (
     <div className={`mb-8 pb-4 border-b border-border ${className}`}>
-      <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2" dangerouslySetInnerHTML={{ __html: title }} />
+      <h1 className="text-3xl md:text-4xl font-bold text-foreground dark:text-primary-foreground-alt mb-2" dangerouslySetInnerHTML={{ __html: title }} />
       {subtitle && (
         typeof subtitle === 'string' 
           ? <p className="text-lg text-muted-foreground">{subtitle}</p>
