@@ -115,7 +115,7 @@ export default async function HomePage() {
             <Button size="lg" asChild variant="link" className="text-black dark:text-white">
               <Link href="/aktivitaeten">Unsere Aktivitäten</Link>
             </Button>
-            <Button size="lg" asChild>
+            <Button size="lg" asChild variant="link" className="text-black dark:text-white">
               <Link href="/kontakt">Kontakt aufnehmen</Link>
             </Button>
           </div>
