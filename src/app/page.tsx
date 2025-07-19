@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card'; // Only Card, CardContent etc. removed if not used directly
+import { Card, CardContent } from '@/components/ui/card';
 import { NewsCard } from '@/components/news-card';
 import { PageHeader } from '@/components/page-header';
 import { getAllNewsArticles, getAllBoardMembers, getSiteSettings } from '@/lib/data-loader';
@@ -31,19 +31,19 @@ export default async function HomePage() {
         style={{ backgroundImage: `url(${siteSettings.homepageHeroImageUrl || '/images/general/kart_in_dry.jpg'})` }}
         data-ai-hint="karting race track"
       >
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-lg"></div>
+        <div className="absolute inset-0 bg-black/60 dark:bg-black/70 backdrop-blur-sm rounded-lg"></div>
         <div className="relative z-10 container mx-auto px-4">
           <div className="flex justify-center mb-8">
             <Logo 
               logoUrl={siteSettings.logoUrl} 
-              primaryTextColor="text-primary" 
-              secondaryTextColor="text-gray-200" 
+              primaryTextColor="text-white" 
+              secondaryTextColor="text-gray-300" 
             />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-primary mb-6 font-headline">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 font-headline">
             Herzlich willkommen beim Automobilclub Warendorf.
           </h1>
-          <p className="text-lg md:text-xl text-gray-100 max-w-3xl mx-auto mb-8">
+          <p className="text-lg md:text-xl text-gray-200 max-w-3xl mx-auto mb-8">
             Hier finden Sie alle Informationen rund um die Aktivitäten des AC Warendorf e. V. im ADAC.
             Entdecken Sie unsere Leidenschaft für den Motorsport!
           </p>
@@ -107,12 +107,12 @@ export default async function HomePage() {
 
       <section className="py-12 bg-secondary rounded-lg shadow-md">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-primary-foreground-alt mb-4 font-headline">Engagiert im Motorsport</h2>
-          <p className="text-lg text-foreground max-w-2xl mx-auto mb-6">
+          <h2 className="text-3xl font-bold text-secondary-foreground mb-4 font-headline">Engagiert im Motorsport</h2>
+          <p className="text-lg text-secondary-foreground max-w-2xl mx-auto mb-6">
             Der AC Warendorf e.V. im ADAC fördert den Motorsportnachwuchs und bietet eine Plattform für Motorsportbegeisterte jeden Alters. Erfahren Sie mehr über unsere Aktivitäten und wie Sie Teil unserer Gemeinschaft werden können.
           </p>
           <div className="space-x-4">
-            <Button size="lg" asChild>
+            <Button size="lg" asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
               <Link href="/aktivitaeten">Unsere Aktivitäten</Link>
             </Button>
             <Button size="lg" variant="outline" asChild>

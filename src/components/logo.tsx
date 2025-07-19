@@ -13,8 +13,8 @@ const PLACEHOLDER_LOGO_SMALL = "https://placehold.co/80x80.png";
 
 export function Logo({ 
   logoUrl, 
-  primaryTextColor = "text-primary dark:text-primary-foreground-alt", 
-  secondaryTextColor = "text-muted-foreground" 
+  primaryTextColor, 
+  secondaryTextColor
 }: LogoProps) {
   const displayLogoUrl = logoUrl || PLACEHOLDER_LOGO_SMALL;
 
@@ -32,15 +32,14 @@ export function Logo({
       </div>
       <div className="flex flex-col">
         <span className={cn(
-          "font-headline text-xl sm:text-2xl font-bold leading-tight transition-colors",
-          primaryTextColor,
-          "group-hover:text-primary/90 dark:group-hover:text-primary-foreground-alt/90"
+          "font-headline text-xl sm:text-2xl font-bold leading-tight transition-colors group-hover:opacity-90",
+          primaryTextColor || "text-foreground"
         )}>
           AC Warendorf
         </span>
         <span className={cn(
           "text-xs sm:text-sm leading-tight transition-colors",
-          secondaryTextColor
+          secondaryTextColor || "text-muted-foreground"
         )}>
           Automobilclub e.V.
         </span>

@@ -50,7 +50,6 @@ export function Navbar() {
   useEffect(() => {
     async function fetchSettings() {
       try {
-        // Since this is a client component, we fetch from the public API endpoint
         const settingsRes = await fetch('/api/admin/settings/homepage-images');
         if (settingsRes.ok) {
           const settingsData: Partial<SiteSettings> = await settingsRes.json();
@@ -76,7 +75,7 @@ export function Navbar() {
         />
         <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
           {navLinks.map((link) =>
-            link.dropdown ? (
+            'dropdown' in link ? (
               <DropdownMenu key={link.label}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="text-sm lg:text-base font-medium text-[hsl(var(--navbar-foreground))] hover:bg-black/10 dark:hover:bg-white/10">

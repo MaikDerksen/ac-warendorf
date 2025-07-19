@@ -32,20 +32,20 @@ export function ProfileCard({ name, imageUrl, slug, slugPrefix, details }: Profi
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <UserCircle className="h-32 w-32 text-primary-foreground-alt opacity-60" />
+            <UserCircle className="h-32 w-32 text-foreground/20" />
           </div>
         )}
       </div>
 
-      <div className="p-4 text-center flex-grow flex flex-col justify-between bg-secondary dark:bg-card">
+      <div className="p-4 text-center flex-grow flex flex-col justify-between bg-card dark:bg-card">
         <div>
-          <h3 className="font-semibold text-lg text-foreground mb-1 group-hover:text-primary-foreground-alt">
+          <h3 className="font-semibold text-lg text-foreground mb-1 group-hover:text-primary">
             {name}
           </h3>
           {details && <p className="text-sm text-muted-foreground mb-2">{details}</p>}
         </div>
         {linkHref && (
-           <p className="text-xs text-primary-foreground-alt mt-auto group-hover:underline">
+           <p className="text-xs text-primary mt-auto group-hover:underline">
              Profil ansehen
            </p>
         )}
