@@ -45,9 +45,9 @@ export function ProfileCard({ name, imageUrl, slug, slugPrefix, details }: Profi
           {details && <p className="text-sm text-muted-foreground mb-2">{details}</p>}
         </div>
         {linkHref && (
-          <Button variant="link" size="sm" asChild className="mt-auto text-xs text-primary-foreground-alt">
-            <Link href={linkHref}>Profil ansehen</Link>
-          </Button>
+           <p className="text-xs text-primary-foreground-alt mt-auto group-hover:underline">
+             Profil ansehen
+           </p>
         )}
       </div>
     </div>
