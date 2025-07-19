@@ -68,7 +68,11 @@ export function Navbar() {
   return (
     <header className="bg-primary text-primary-foreground sticky top-0 z-50 shadow-md">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <Logo logoUrl={logoUrl} secondaryTextColor="text-primary-foreground" />
+        <Logo 
+          logoUrl={logoUrl} 
+          primaryTextColor="text-primary-foreground" 
+          secondaryTextColor="text-primary-foreground" 
+        />
         <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
           {navLinks.map((link) =>
             link.dropdown ? (

@@ -34,7 +34,11 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-lg"></div>
         <div className="relative z-10 container mx-auto px-4">
           <div className="flex justify-center mb-8">
-            <Logo logoUrl={siteSettings.logoUrl} secondaryTextColor="text-gray-200" />
+            <Logo 
+              logoUrl={siteSettings.logoUrl} 
+              primaryTextColor="text-primary" 
+              secondaryTextColor="text-gray-200" 
+            />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-primary mb-6 font-headline">
             Herzlich willkommen beim Automobilclub Warendorf.

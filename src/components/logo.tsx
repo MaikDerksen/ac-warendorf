@@ -4,13 +4,18 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 interface LogoProps {
-  logoUrl?: string; // Make logoUrl optional
+  logoUrl?: string;
+  primaryTextColor?: string;
   secondaryTextColor?: string;
 }
 
 const PLACEHOLDER_LOGO_SMALL = "https://placehold.co/80x80.png";
 
-export function Logo({ logoUrl, secondaryTextColor = "text-muted-foreground" }: LogoProps) {
+export function Logo({ 
+  logoUrl, 
+  primaryTextColor = "text-primary dark:text-primary", // Default to yellow
+  secondaryTextColor = "text-muted-foreground" 
+}: LogoProps) {
   const displayLogoUrl = logoUrl || PLACEHOLDER_LOGO_SMALL;
 
   return (
@@ -19,16 +24,17 @@ export function Logo({ logoUrl, secondaryTextColor = "text-muted-foreground" }: 
         <Image 
           src={displayLogoUrl} 
           alt="AC Warendorf Logo" 
-          fill // Use fill for Next 13+ Image component
-          style={{ objectFit: 'contain' }} // Use style for objectFit
+          fill
+          style={{ objectFit: 'contain' }}
           data-ai-hint="club logo" 
-          priority // Assuming logo is important for LCP
+          priority
         />
       </div>
       <div className="flex flex-col">
         <span className={cn(
           "font-headline text-xl sm:text-2xl font-bold leading-tight transition-colors",
-          "text-yellow-400 group-hover:text-yellow-300 dark:text-primary-foreground"
+          primaryTextColor,
+          "group-hover:text-primary/90"
         )}>
           AC Warendorf
         </span>
