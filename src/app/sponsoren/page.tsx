@@ -16,15 +16,15 @@ export default async function SponsorenPage() {
     <div className="space-y-8">
       <PageHeader title="Unsere Sponsoren" subtitle="Wir danken unseren Unterstützern!" />
       
-      <Card className="shadow-lg">
+      <Card className="shadow-lg bg-secondary">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline text-black dark:text-primary-foreground">Ein herzliches Dankeschön!</CardTitle>
+          <CardTitle className="text-2xl font-headline text-secondary-foreground">Ein herzliches Dankeschön!</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-lg text-foreground">
+          <p className="text-lg text-secondary-foreground">
             Der AC Warendorf e.V. im ADAC bedankt sich herzlich bei allen Sponsoren, Partnern und Gönnern für ihre wertvolle Unterstützung. Ohne Sie wäre unsere vielfältige Vereinsarbeit, insbesondere die Förderung des Kart-Slalom-Nachwuchses, nicht in diesem Umfang möglich.
           </p>
-          <p className="text-foreground">
+          <p className="text-secondary-foreground">
             Ihre Beiträge ermöglichen es uns, Trainingsmaterial anzuschaffen, Veranstaltungen durchzuführen und unseren jungen Talenten eine Perspektive im Motorsport zu bieten.
           </p>
         </CardContent>

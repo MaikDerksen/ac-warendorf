@@ -15,12 +15,12 @@ export default async function AktivitaetenPage() {
     <div className="space-y-8">
       <PageHeader title="Aktivitäten im AC Warendorf" />
 
-      <Card className="shadow-lg overflow-hidden">
+      <Card className="shadow-lg overflow-hidden bg-secondary">
         <CardHeader>
           <CardTitle className="text-2xl font-headline" dangerouslySetInnerHTML={{ __html: content.kartSlalomSectionTitle || "Kart-Slalom: Unsere Hauptaktivität" }} />
         </CardHeader>
         <CardContent className="space-y-4">
-          {content.kartSlalomIntroParagraph && <p className="text-lg text-foreground" dangerouslySetInnerHTML={{ __html: content.kartSlalomIntroParagraph }} />}
+          {content.kartSlalomIntroParagraph && <p className="text-lg text-secondary-foreground" dangerouslySetInnerHTML={{ __html: content.kartSlalomIntroParagraph }} />}
           <div className="grid md:grid-cols-2 gap-6 items-center">
             <div>
               <Image 
@@ -33,9 +33,9 @@ export default async function AktivitaetenPage() {
               />
             </div>
             <div className="space-y-3">
-              {content.kartSlalomDetailParagraph1 && <p className="text-foreground" dangerouslySetInnerHTML={{ __html: content.kartSlalomDetailParagraph1 }} />}
-              {content.kartSlalomDetailParagraph2 && <p className="text-foreground" dangerouslySetInnerHTML={{ __html: content.kartSlalomDetailParagraph2 }} />}
-              <Button asChild variant="link" className="text-primary-foreground-alt px-0">
+              {content.kartSlalomDetailParagraph1 && <p className="text-secondary-foreground" dangerouslySetInnerHTML={{ __html: content.kartSlalomDetailParagraph1 }} />}
+              {content.kartSlalomDetailParagraph2 && <p className="text-secondary-foreground" dangerouslySetInnerHTML={{ __html: content.kartSlalomDetailParagraph2 }} />}
+              <Button asChild variant="link" className="text-black dark:text-white px-0">
                 <Link href="/kontakt/mitglied-werden">Mehr zum Kart-Slalom und Mitgliedschaft erfahren</Link>
               </Button>
             </div>
@@ -51,20 +51,20 @@ export default async function AktivitaetenPage() {
         </section>
       )}
       
-      <Card className="shadow-lg">
+      <Card className="shadow-lg bg-secondary">
         <CardHeader>
           <CardTitle className="text-2xl font-headline" dangerouslySetInnerHTML={{ __html: content.futurePossibilitiesTitle || "Zukünftige Möglichkeiten"}} />
         </CardHeader>
         <CardContent>
-          {content.futurePossibilitiesIntro && <p className="text-foreground" dangerouslySetInnerHTML={{ __html: content.futurePossibilitiesIntro }} />}
+          {content.futurePossibilitiesIntro && <p className="text-secondary-foreground" dangerouslySetInnerHTML={{ __html: content.futurePossibilitiesIntro }} />}
           {content.futurePossibilitiesItems && content.futurePossibilitiesItems.length > 0 && (
-            <ul className="list-disc list-inside text-foreground mt-2 space-y-1">
+            <ul className="list-disc list-inside text-secondary-foreground mt-2 space-y-1">
               {content.futurePossibilitiesItems.map((item, index) => (
                 <li key={index} dangerouslySetInnerHTML={{ __html: item }} />
               ))}
             </ul>
           )}
-          <p className="text-foreground mt-4">
+          <p className="text-secondary-foreground mt-4">
             Haben Sie Interesse an einer dieser oder anderer Motorsportdisziplinen? Sprechen Sie uns gerne an!
           </p>
         </CardContent>
