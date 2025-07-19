@@ -20,8 +20,8 @@ body {
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%; /* Black text */
 
-    --primary: 48 100% 50%; /* #FFCC00 */
-    --primary-foreground: 0 0% 0%; /* Black text on yellow */
+    --primary: 0 0% 0%; /* Black for navbar bg */
+    --primary-foreground: 0 0% 100%; /* White for navbar text */
     --primary-foreground-alt: 0 0% 0%; /* Black text */
 
     --secondary: 48 100% 50%; /* Yellow #FFCC00 */
@@ -55,6 +55,11 @@ body {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 48 100% 50%; /* #FFCC00 */
+
+    /* Custom Navbar Theme */
+    --navbar-background: 0 0% 0%; /* Black */
+    --navbar-foreground: 0 0% 100%; /* White */
+    --navbar-logo-foreground: 48 100% 50%; /* Yellow */
   }
 
   .dark {
@@ -67,8 +72,8 @@ body {
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 48 100% 50%; /* #FFCC00 */
-    --primary-foreground: 0 0% 0%; /* Dark Gray/Black for text on yellow */
+    --primary: 240 3.7% 15.9%; /* #27272A */
+    --primary-foreground: 0 0% 98%; /* White text */
     --primary-foreground-alt: 48 100% 50%; /* #FFCC00 for dark mode */
 
     --secondary: 240 3.7% 15.9%;
@@ -101,6 +106,11 @@ body {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 48 100% 45%; /* Adjusted #FFCC00 for dark mode focus rings */
+
+    /* Custom Navbar Theme */
+    --navbar-background: 240 3.7% 15.9%; /* #27272A */
+    --navbar-foreground: 0 0% 98%; /* White */
+    --navbar-logo-foreground: 48 100% 50%; /* Yellow */
   }
 }
 
