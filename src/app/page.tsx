@@ -112,10 +112,10 @@ export default async function HomePage() {
             Der AC Warendorf e.V. im ADAC fördert den Motorsportnachwuchs und bietet eine Plattform für Motorsportbegeisterte jeden Alters. Erfahren Sie mehr über unsere Aktivitäten und wie Sie Teil unserer Gemeinschaft werden können.
           </p>
           <div className="space-x-4">
-            <Button size="lg" asChild variant="link" className="text-black dark:text-white">
+            <Button size="lg" asChild variant="secondary" className="bg-zinc-800 text-white hover:bg-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700">
               <Link href="/aktivitaeten">Unsere Aktivitäten</Link>
             </Button>
-            <Button size="lg" asChild variant="link" className="text-black dark:text-white">
+            <Button size="lg" asChild>
               <Link href="/kontakt">Kontakt aufnehmen</Link>
             </Button>
           </div>
