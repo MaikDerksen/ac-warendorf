@@ -25,7 +25,7 @@ export function Logo({ logoUrl, secondaryTextColor = "text-muted-foreground" }: 
         />
       </div>
       <div className="flex flex-col">
-        <span className="font-headline text-xl sm:text-2xl font-bold leading-tight text-foreground dark:text-primary">AC Warendorf</span>
+        <span className="font-headline text-xl sm:text-2xl font-bold leading-tight text-primary-foreground dark:text-primary-foreground">AC Warendorf</span>
         <span className={`text-xs sm:text-sm ${secondaryTextColor} leading-tight`}>Automobilclub e.V.</span>
       </div>
     </Link>

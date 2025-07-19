@@ -17,7 +17,7 @@ export default async function AktivitaetenPage() {
 
       <Card className="shadow-lg overflow-hidden">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline text-primary-foreground-alt" dangerouslySetInnerHTML={{ __html: content.kartSlalomSectionTitle || "Kart-Slalom: Unsere Hauptaktivität" }} />
+          <CardTitle className="text-2xl font-headline" dangerouslySetInnerHTML={{ __html: content.kartSlalomSectionTitle || "Kart-Slalom: Unsere Hauptaktivität" }} />
         </CardHeader>
         <CardContent className="space-y-4">
           {content.kartSlalomIntroParagraph && <p className="text-lg text-foreground" dangerouslySetInnerHTML={{ __html: content.kartSlalomIntroParagraph }} />}
@@ -53,7 +53,7 @@ export default async function AktivitaetenPage() {
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline text-primary-foreground-alt" dangerouslySetInnerHTML={{ __html: content.futurePossibilitiesTitle || "Zukünftige Möglichkeiten"}} />
+          <CardTitle className="text-2xl font-headline" dangerouslySetInnerHTML={{ __html: content.futurePossibilitiesTitle || "Zukünftige Möglichkeiten"}} />
         </CardHeader>
         <CardContent>
           {content.futurePossibilitiesIntro && <p className="text-foreground" dangerouslySetInnerHTML={{ __html: content.futurePossibilitiesIntro }} />}

@@ -81,7 +81,7 @@ export function ContactForm({ formTitle }: ContactFormProps) {
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-lg">
       <CardHeader>
-        <CardTitle className="text-2xl font-headline text-center text-primary-foreground-alt" dangerouslySetInnerHTML={{ __html: formTitle || "Schreiben Sie uns eine Nachricht"}} />
+        <CardTitle className="text-2xl font-headline text-center" dangerouslySetInnerHTML={{ __html: formTitle || "Schreiben Sie uns eine Nachricht"}} />
       </CardHeader>
       <CardContent>
         <Form {...form}>

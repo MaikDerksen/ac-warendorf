@@ -40,7 +40,7 @@ export default async function MitgliedWerdenPage() {
         <div className="md:col-span-2 space-y-8">
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-2xl font-headline text-primary-foreground-alt" dangerouslySetInnerHTML={{ __html: content.faqSectionTitle || "Häufig gestellte Fragen (FAQ)" }} />
+              <CardTitle className="text-2xl font-headline" dangerouslySetInnerHTML={{ __html: content.faqSectionTitle || "Häufig gestellte Fragen (FAQ)" }} />
             </CardHeader>
             <CardContent>
               {faqItems.length > 0 ? (
@@ -70,7 +70,7 @@ export default async function MitgliedWerdenPage() {
 
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-2xl font-headline text-primary-foreground-alt" dangerouslySetInnerHTML={{ __html: content.whatIsKartSlalomTitle || "Was ist Kartslalom?" }} />
+              <CardTitle className="text-2xl font-headline" dangerouslySetInnerHTML={{ __html: content.whatIsKartSlalomTitle || "Was ist Kartslalom?" }} />
             </CardHeader>
             <CardContent className="space-y-4">
               {content.whatIsKartSlalomText && <p className="text-foreground" dangerouslySetInnerHTML={{ __html: content.whatIsKartSlalomText }} />}
@@ -86,7 +86,7 @@ export default async function MitgliedWerdenPage() {
         <div className="md:col-span-1 space-y-6 sticky top-24">
             <Card className="shadow-lg bg-secondary">
                 <CardHeader>
-                    <CardTitle className="text-xl font-headline text-primary-foreground-alt" dangerouslySetInnerHTML={{ __html: content.sidebarTitle || "Interesse geweckt?" }}/>
+                    <CardTitle className="text-xl font-headline" dangerouslySetInnerHTML={{ __html: content.sidebarTitle || "Interesse geweckt?" }}/>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Image 
@@ -110,4 +110,3 @@ export default async function MitgliedWerdenPage() {
     </div>
   );
 }
-

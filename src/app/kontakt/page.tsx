@@ -23,7 +23,7 @@ export default async function KontaktPage() {
 
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="text-2xl font-headline text-primary-foreground-alt" dangerouslySetInnerHTML={{ __html: content.alternativeContactTitle || "Alternative Kontaktmöglichkeiten"}} />
+            <CardTitle className="text-2xl font-headline" dangerouslySetInnerHTML={{ __html: content.alternativeContactTitle || "Alternative Kontaktmöglichkeiten"}} />
           </CardHeader>
           <CardContent className="space-y-6">
             {chairman && (
