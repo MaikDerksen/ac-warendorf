@@ -1,6 +1,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 interface LogoProps {
   logoUrl?: string; // Make logoUrl optional
@@ -13,7 +14,7 @@ export function Logo({ logoUrl, secondaryTextColor = "text-muted-foreground" }: 
   const displayLogoUrl = logoUrl || PLACEHOLDER_LOGO_SMALL;
 
   return (
-    <Link href="/" className="flex items-center space-x-2 text-primary hover:text-primary/90 transition-colors">
+    <Link href="/" className="flex items-center space-x-2 group">
       <div className="relative h-10 w-10 sm:h-12 sm:w-12">
         <Image 
           src={displayLogoUrl} 
@@ -25,8 +26,18 @@ export function Logo({ logoUrl, secondaryTextColor = "text-muted-foreground" }: 
         />
       </div>
       <div className="flex flex-col">
-        <span className="font-headline text-xl sm:text-2xl font-bold leading-tight text-primary-foreground dark:text-primary-foreground">AC Warendorf</span>
-        <span className={`text-xs sm:text-sm ${secondaryTextColor} leading-tight`}>Automobilclub e.V.</span>
+        <span className={cn(
+          "font-headline text-xl sm:text-2xl font-bold leading-tight transition-colors",
+          "text-yellow-400 group-hover:text-yellow-300 dark:text-primary-foreground"
+        )}>
+          AC Warendorf
+        </span>
+        <span className={cn(
+          "text-xs sm:text-sm leading-tight transition-colors",
+          secondaryTextColor
+        )}>
+          Automobilclub e.V.
+        </span>
       </div>
     </Link>
   );
