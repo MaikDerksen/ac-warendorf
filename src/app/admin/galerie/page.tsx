@@ -32,13 +32,16 @@ export default function AdminGaleriePage() {
   const [editingAlbumId, setEditingAlbumId] = useState<string | null>(null);
 
   const fetchAlbums = async () => {
-    if (!isAdmin) {
+    if (!user || !isAdmin) {
       setIsLoadingAlbums(false);
       return;
     }
     setIsLoadingAlbums(true);
     try {
-      const response = await fetch('/api/admin/gallery');
+      const idToken = await user.getIdToken();
+      const response = await fetch('/api/admin/gallery', {
+        headers: { 'Authorization': `Bearer ${idToken}` },
+      });
       if (!response.ok) throw new Error('Alben konnten nicht geladen werden.');
       const data = await response.json();
       setAlbums(Array.isArray(data) ? data : []);
