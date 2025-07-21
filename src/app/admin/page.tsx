@@ -14,6 +14,7 @@ export default function AdminDashboardPage() {
     { title: 'Vorstand Verwalten', icon: Users, href: '/admin/vorstand', description: 'Vorstandsmitglieder und Rollen pflegen.' },
     { title: 'Piloten Verwalten', icon: Car, href: '/admin/piloten', description: 'Fahrerprofile und Erfolge aktualisieren.' },
     { title: 'Sponsoren Verwalten', icon: Shield, href: '/admin/sponsoren', description: 'Sponsorenlogos und -informationen verwalten.' },
+    { title: 'Bildergalerie Verwalten', icon: ImageIconLucide, href: '/admin/galerie', description: 'Eigenständige Bildergalerien erstellen und verwalten.' },
     { title: 'Aktivitäten Seite', icon: ImageIconLucide, href: '/admin/aktivitaeten-settings', description: 'Inhalte der "Aktivitäten" Seite bearbeiten.' },
     { title: 'Mitglied Werden Seite', icon: FileText, href: '/admin/mitglied-werden-settings', description: 'Inhalte der "Mitglied Werden" Seite (inkl. FAQs) bearbeiten.' },
     { title: 'Kontakt Seite', icon: Contact, href: '/admin/kontakt-settings', description: 'Kontaktinformationen der "Kontakt" Seite bearbeiten.' },
