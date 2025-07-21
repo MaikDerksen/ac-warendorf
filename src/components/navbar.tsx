@@ -27,6 +27,7 @@ const navLinks = [
       { href: '/piloten', label: 'Piloten' },
       { href: '/unser-verein/oldie-cup', label: 'Oldie-Cup' },
       { href: '/unser-verein/kalender', label: 'Termine & Kalender' },
+      { href: '/unser-verein/galerie', label: 'Galerie' },
     ]
   },
   { href: '/aktivitaeten', label: 'Kart-Slalom' },

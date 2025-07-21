@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, FilePlus, Trash2, Edit, Loader2, List } from 'lucide-react';
+import { ArrowLeft, FilePlus, Trash2, Edit, Loader2, List, Images } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useForm, Controller } from "react-hook-form";
@@ -18,6 +18,7 @@ import type { NewsArticle } from '@/types';
 import Image from 'next/image';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { RichTextEditor } from '@/components/rich-text-editor';
+import { Separator } from '@/components/ui/separator';
 
 const newsFormSchema = z.object({
   title: z.string().min(5, { message: "Titel muss mindestens 5 Zeichen haben." }),
@@ -29,6 +30,7 @@ const newsFormSchema = z.object({
   heroImageFile: z.any().optional(),
   youtubeEmbed: z.string().optional(),
   dataAiHint: z.string().max(50, {message: "Maximal 50 Zeichen."}).optional(),
+  galleryImageFiles: z.any().optional(), // New field for multiple gallery images
 });
 
 type NewsFormValues = z.infer<typeof newsFormSchema>;
@@ -49,7 +51,8 @@ export default function AdminNewsPage() {
     content: "<p>Ihr Artikelinhalt hier...</p>", 
     heroImageFile: undefined, 
     youtubeEmbed: "", 
-    dataAiHint: "" 
+    dataAiHint: "",
+    galleryImageFiles: undefined,
   }), []);
 
   const form = useForm<NewsFormValues>({
@@ -89,6 +92,7 @@ export default function AdminNewsPage() {
         youtubeEmbed: editingArticle.youtubeEmbed || "",
         dataAiHint: editingArticle.dataAiHint || "",
         heroImageFile: undefined,
+        galleryImageFiles: undefined,
       });
     } else {
       form.reset(defaultFormValues);
@@ -132,7 +136,11 @@ export default function AdminNewsPage() {
     Object.entries(data).forEach(([key, value]) => {
       if (key === 'heroImageFile' && value?.[0]) {
         formData.append(key, value[0]);
-      } else if (value !== undefined && value !== null && key !== 'heroImageFile') {
+      } else if (key === 'galleryImageFiles' && value) {
+        for(let i=0; i < value.length; i++) {
+          formData.append('galleryImageFiles', value[i]);
+        }
+      } else if (value !== undefined && value !== null && key !== 'heroImageFile' && key !== 'galleryImageFiles') {
         formData.append(key, String(value));
       }
     });
@@ -197,11 +205,29 @@ export default function AdminNewsPage() {
                     </FormItem>
                   )}
                 />
+              
+              <Separator />
 
               <FormField control={form.control} name="heroImageFile" render={({ field: { onChange, onBlur, name, ref } }) => (<FormItem><FormLabel>Titelbild {editingArticle ? 'ersetzen' : 'hochladen'} (Optional)</FormLabel><FormControl><Input id="heroImageFile" type="file" accept="image/jpeg,image/png,image/gif" onBlur={onBlur} name={name} ref={ref} onChange={(e) => onChange(e.target.files)} /></FormControl><FormDescription>{editingArticle ? 'Lassen Sie das Feld frei, um das aktuelle Bild beizubehalten.' : 'Wählen Sie eine Bilddatei von Ihrem Computer.'}</FormDescription><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="dataAiHint" render={({ field }) => (<FormItem><FormLabel>Bild KI-Hinweis (Optional)</FormLabel><FormControl><Input placeholder="z.B. kart race" {...field} /></FormControl><FormDescription>1-2 Stichworte für KI-Bildgenerierung, falls kein Bild angegeben.</FormDescription><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="dataAiHint" render={({ field }) => (<FormItem><FormLabel>Titelbild KI-Hinweis (Optional)</FormLabel><FormControl><Input placeholder="z.B. kart race" {...field} /></FormControl><FormDescription>1-2 Stichworte für KI-Bildgenerierung, falls kein Bild angegeben.</FormDescription><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="youtubeEmbed" render={({ field }) => (<FormItem><FormLabel>YouTube Video ID (Optional)</FormLabel><FormControl><Input placeholder="z.B. dQw4w9WgXcQ" {...field} /></FormControl><FormDescription>Nur die ID des Videos, nicht die volle URL.</FormDescription><FormMessage /></FormItem>)} />
-              <div className="flex gap-4">
+              
+              <Separator />
+              
+              <FormField control={form.control} name="galleryImageFiles" render={({ field: { onChange, onBlur, name, ref } }) => (
+                <FormItem>
+                    <FormLabel className="flex items-center"><Images className="mr-2 h-4 w-4"/>Zusätzliche Galeriebilder (Optional)</FormLabel>
+                    <FormControl>
+                        <Input id="galleryImageFiles" type="file" accept="image/jpeg,image/png,image/gif" multiple onBlur={onBlur} name={name} ref={ref} onChange={(e) => onChange(e.target.files)} />
+                    </FormControl>
+                    <FormDescription>
+                        {editingArticle ? 'Fügt diese Bilder zur bestehenden Galerie hinzu. Um Bilder zu entfernen, muss dies manuell in Firebase Storage geschehen.' : 'Mehrere Bilder auswählen, um eine Galerie für diesen Artikel zu erstellen.'}
+                    </FormDescription>
+                    <FormMessage />
+                </FormItem>
+              )} />
+              
+              <div className="flex gap-4 pt-4">
                 <Button type="submit" disabled={isSubmitDisabled}>
                     {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (editingArticle ? <Edit className="mr-2 h-4 w-4" /> : <FilePlus className="mr-2 h-4 w-4" />)}
                     {editingArticle ? 'Artikel Aktualisieren' : 'Artikel Speichern'}
@@ -231,6 +257,9 @@ export default function AdminNewsPage() {
                      <div>
                         <p className="font-semibold">{article.title}</p>
                         <p className="text-sm text-muted-foreground">{article.slug} - {new Date(article.date).toLocaleDateString('de-DE')}</p>
+                        {article.galleryImageUrls && article.galleryImageUrls.length > 0 && (
+                            <p className="text-xs text-blue-500 flex items-center mt-1"><Images className="mr-1 h-3 w-3" />{article.galleryImageUrls.length} Galeriebilder</p>
+                        )}
                      </div>
                   </div>
                   <div className="flex gap-2">

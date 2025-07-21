@@ -5,12 +5,13 @@ import type { NewsArticle } from '@/types';
 import { PageHeader } from '@/components/page-header';
 import Image from 'next/image';
 import { YouTubeEmbed } from '@/components/youtube-embed';
-import { CalendarDays, Tag, Newspaper } from 'lucide-react';
+import { CalendarDays, Tag, Newspaper, Images } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 interface NewsDetailPageProps {
   params: {
@@ -83,6 +84,31 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
           <div dangerouslySetInnerHTML={{ __html: article.content }} />
         </CardContent>
       </Card>
+      
+      {article.galleryImageUrls && article.galleryImageUrls.length > 0 && (
+        <section>
+          <Separator className="my-8" />
+          <h2 className="text-2xl font-headline font-semibold mb-4 flex items-center">
+            <Images className="mr-3 h-6 w-6 text-primary-foreground-alt" />
+            Bildergalerie
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {article.galleryImageUrls.map((url, index) => (
+              <div key={index} className="relative aspect-square rounded-lg overflow-hidden shadow-md group">
+                <Image
+                  src={url}
+                  alt={`Galeriebild ${index + 1}`}
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  className="transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 767px) 45vw, 22vw"
+                  data-ai-hint="race day photo"
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
 
       {article.categories && article.categories.length > 0 && (

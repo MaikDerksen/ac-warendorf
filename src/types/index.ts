@@ -11,6 +11,7 @@ export interface NewsArticle {
   heroImageUrl?: string;
   dataAiHint?: string;
   youtubeEmbed?: string;
+  galleryImageUrls?: string[]; // New: For additional gallery images
   createdAt?: any; 
   authorId?: string;
   updatedAt?: any;
