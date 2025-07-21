@@ -5,7 +5,7 @@
 import fs from 'fs';
 import path from 'path';
 import Papa from 'papaparse';
-import type { NewsArticle, BoardMember, Pilot, FaqItem, Sponsor, SiteSettings, AktivitaetenPageContent, MitgliedWerdenPageContent, KontaktPageContent, CalendarEvent, BoardMemberRole } from '@/types';
+import type { NewsArticle, BoardMember, Pilot, FaqItem, Sponsor, SiteSettings, AktivitaetenPageContent, MitgliedWerdenPageContent, KontaktPageContent, CalendarEvent, BoardMemberRole, PhotoAlbum, UnifiedAlbum } from '@/types';
 import { adminApp } from '@/lib/firebaseAdminConfig'; 
 import { FieldValue } from 'firebase-admin/firestore';
 
@@ -493,4 +493,73 @@ export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
     console.error("Error fetching calendar events from Firestore (Admin SDK):", error);
     return [];
   }
+}
+
+// --- Gallery Albums (Manual) ---
+export async function getAllManualAlbums(): Promise<PhotoAlbum[]> {
+    if (!adminApp) {
+        console.error("CRITICAL: Firebase Admin App not initialized in getAllManualAlbums. Returning empty array.");
+        return [];
+    }
+    const firestoreDb = adminApp.firestore();
+    try {
+        const albumsCollectionRef = firestoreDb.collection("photoAlbums").orderBy("date", "desc");
+        const querySnapshot = await albumsCollectionRef.get();
+        return querySnapshot.docs.map(doc => doc.data() as PhotoAlbum);
+    } catch (error) {
+        console.error("Error fetching manual photo albums from Firestore (Admin SDK):", error);
+        return [];
+    }
+}
+
+export async function getManualAlbumById(albumId: string): Promise<PhotoAlbum | undefined> {
+  if (!adminApp) {
+    console.error("CRITICAL: Firebase Admin App not initialized in getManualAlbumById. Returning undefined.");
+    return undefined;
+  }
+  const firestoreDb = adminApp.firestore();
+  try {
+    const docRef = firestoreDb.collection("photoAlbums").doc(albumId);
+    const docSnap = await docRef.get();
+    if (docSnap.exists) {
+      return docSnap.data() as PhotoAlbum;
+    }
+    return undefined;
+  } catch (error) {
+    console.error(`Error fetching manual album by ID ${albumId}:`, error);
+    return undefined;
+  }
+}
+
+// --- Unified Gallery Loader ---
+export async function getCombinedGalleryAlbums(): Promise<UnifiedAlbum[]> {
+  const newsArticlesWithGalleries = (await getAllNewsArticles()).filter(
+    (article) => article.galleryImageUrls && article.galleryImageUrls.length > 0
+  );
+
+  const manualAlbums = await getAllManualAlbums();
+
+  const newsAsAlbums: UnifiedAlbum[] = newsArticlesWithGalleries.map(article => ({
+    id: article.id,
+    title: article.title,
+    date: article.date,
+    coverImageUrl: article.galleryImageUrls?.[0] || article.heroImageUrl,
+    type: 'news',
+    slug: article.slug,
+  }));
+
+  const manualAsAlbums: UnifiedAlbum[] = manualAlbums.map(album => ({
+    id: album.id,
+    title: album.name,
+    date: album.date,
+    coverImageUrl: album.coverImageUrl,
+    type: 'manual',
+  }));
+
+  const combined = [...newsAsAlbums, ...manualAsAlbums];
+  
+  // Sort by date, newest first
+  combined.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  return combined;
 }

@@ -134,3 +134,23 @@ export interface CalendarEvent {
   createdBy?: string;
   recurrenceGroupId?: string; // New: To group recurring events
 }
+
+export interface PhotoAlbum {
+  id: string;
+  name: string;
+  date: string; // YYYY-MM-DD
+  imageUrls: string[];
+  coverImageUrl: string;
+  createdAt?: any;
+  createdBy?: string;
+}
+
+// A unified type for the gallery page to display albums from different sources
+export interface UnifiedAlbum {
+  id: string;
+  title: string;
+  date: string;
+  coverImageUrl?: string;
+  type: 'news' | 'manual';
+  slug?: string; // Only for news-based albums
+}

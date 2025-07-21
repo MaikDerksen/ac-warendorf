@@ -1,7 +1,6 @@
 
 import { PageHeader } from '@/components/page-header';
-import { getAllNewsArticles } from '@/lib/data-loader';
-import type { NewsArticle } from '@/types';
+import { getCombinedGalleryAlbums } from '@/lib/data-loader';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -10,10 +9,7 @@ import { Images } from 'lucide-react';
 export const revalidate = 60; // Revalidate at most every 60 seconds
 
 export default async function GaleriePage() {
-  const allArticles = await getAllNewsArticles();
-  const galleryAlbums = allArticles.filter(
-    (article) => article.galleryImageUrls && article.galleryImageUrls.length > 0
-  );
+  const galleryAlbums = await getCombinedGalleryAlbums();
 
   return (
     <div className="space-y-8">
@@ -30,10 +26,13 @@ export default async function GaleriePage() {
               month: '2-digit',
               year: 'numeric',
             });
-            const coverImage = album.galleryImageUrls?.[0] || album.heroImageUrl || "https://placehold.co/400x400.png";
+            const coverImage = album.coverImageUrl || "https://placehold.co/400x400.png";
+            const linkHref = album.type === 'news'
+              ? `/unser-verein/galerie/${album.slug}`
+              : `/unser-verein/galerie/album/${album.id}`;
 
             return (
-              <Link href={`/unser-verein/galerie/${album.slug}`} key={album.id} className="group block">
+              <Link href={linkHref} key={album.id} className="group block">
                 <Card className="overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ease-out flex flex-col h-full">
                   <div className="relative w-full aspect-square bg-muted">
                     <Image
@@ -64,7 +63,7 @@ export default async function GaleriePage() {
           <CardContent className="p-10 text-center text-muted-foreground">
             <Images className="mx-auto h-12 w-12 mb-4" />
             <h3 className="text-xl font-semibold">Noch keine Galerien vorhanden</h3>
-            <p>Sobald News-Artikeln Bildergalerien hinzugefügt werden, erscheinen sie hier.</p>
+            <p>Sobald News-Artikeln Bildergalerien hinzugefügt oder manuelle Alben erstellt werden, erscheinen sie hier.</p>
           </CardContent>
         </Card>
       )}

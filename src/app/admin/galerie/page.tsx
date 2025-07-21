@@ -5,30 +5,75 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, UploadCloud, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, UploadCloud, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function AdminGaleriePage() {
   const { toast } = useToast();
+  const { user, isAdmin } = useAuth();
   const [albumName, setAlbumName] = useState('');
   const [albumDate, setAlbumDate] = useState('');
   const [imageFiles, setImageFiles] = useState<FileList | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleUploadClick = () => {
-    // In a real implementation, this would trigger an API call
-    console.log({
-        albumName,
-        albumDate,
-        imageFiles
-    });
-    toast({
-      title: "Funktion in Entwicklung",
-      description: `Das Erstellen von Alben wird in Kürze implementiert.`,
-      variant: "default",
-    });
+  const handleUploadClick = async () => {
+    if (!user || !isAdmin) {
+      toast({ title: 'Nicht berechtigt', variant: 'destructive' });
+      return;
+    }
+    if (!albumName || !albumDate || !imageFiles || imageFiles.length === 0) {
+      toast({ title: 'Fehlende Angaben', description: 'Bitte füllen Sie alle Felder aus und wählen Sie Bilder aus.', variant: 'destructive' });
+      return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('name', albumName);
+    formData.append('date', albumDate);
+    for (let i = 0; i < imageFiles.length; i++) {
+        formData.append('images', imageFiles[i]);
+    }
+
+    try {
+        const idToken = await user.getIdToken();
+        const response = await fetch('/api/admin/gallery', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${idToken}` },
+            body: formData,
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Fehler beim Erstellen des Albums.');
+        }
+
+        toast({
+            title: "Album erstellt!",
+            description: `Das Album "${albumName}" wurde erfolgreich mit ${imageFiles.length} Bildern erstellt.`,
+        });
+
+        // Reset form
+        setAlbumName('');
+        setAlbumDate('');
+        setImageFiles(null);
+        const fileInput = document.getElementById('imageFiles') as HTMLInputElement | null;
+        if (fileInput) fileInput.value = '';
+
+        // Here you would typically refetch the list of albums to display them
+        
+    } catch (error: any) {
+        toast({
+            title: "Fehler",
+            description: error.message,
+            variant: "destructive",
+        });
+    } finally {
+        setIsUploading(false);
+    }
   };
   
   return (
@@ -61,6 +106,7 @@ export default function AdminGaleriePage() {
                         value={albumName}
                         onChange={(e) => setAlbumName(e.target.value)}
                         className="mt-1"
+                        disabled={isUploading}
                     />
                  </div>
                  <div>
@@ -71,6 +117,7 @@ export default function AdminGaleriePage() {
                         value={albumDate}
                         onChange={(e) => setAlbumDate(e.target.value)}
                         className="mt-1"
+                        disabled={isUploading}
                     />
                  </div>
             </div>
@@ -83,12 +130,13 @@ export default function AdminGaleriePage() {
                     multiple
                     onChange={(e) => setImageFiles(e.target.files)}
                     className="mt-1"
+                    disabled={isUploading}
                 />
                 <p className="text-xs text-muted-foreground mt-1">Sie können mehrere Bilder auf einmal auswählen.</p>
             </div>
-            <Button onClick={handleUploadClick} disabled={!albumName || !albumDate || !imageFiles}>
-              <UploadCloud className="mr-2 h-4 w-4" />
-              Album erstellen & Bilder hochladen
+            <Button onClick={handleUploadClick} disabled={!albumName || !albumDate || !imageFiles || isUploading}>
+              {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
+              {isUploading ? 'Wird hochgeladen...' : 'Album erstellen & Bilder hochladen'}
             </Button>
         </CardContent>
       </Card>
