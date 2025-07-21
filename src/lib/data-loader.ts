@@ -59,6 +59,26 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   }
 }
 
+function mapDocToNewsArticle(doc: FirebaseFirestore.DocumentSnapshot): NewsArticle {
+    const data = doc.data()!;
+    return {
+        id: doc.id,
+        slug: sanitizeString(data.slug),
+        title: sanitizeString(data.title),
+        date: sanitizeString(data.date), 
+        categories: Array.isArray(data.categories) ? data.categories.map(c => sanitizeString(c as string)) : [],
+        excerpt: sanitizeString(data.excerpt),
+        content: data.content, // Keep as is, might contain HTML
+        heroImageUrl: data.heroImageUrl ? sanitizeString(data.heroImageUrl) : undefined,
+        dataAiHint: data.dataAiHint ? sanitizeString(data.dataAiHint) : undefined,
+        youtubeEmbed: data.youtubeEmbed ? sanitizeString(data.youtubeEmbed) : undefined,
+        galleryImageUrls: data.galleryImageUrls && Array.isArray(data.galleryImageUrls) ? data.galleryImageUrls : [],
+        createdAt: data.createdAt, 
+        authorId: data.authorId ? sanitizeString(data.authorId) : undefined,
+    };
+}
+
+
 // --- News Articles (from Firestore, using Admin SDK) ---
 export async function getAllNewsArticles(): Promise<NewsArticle[]> {
   if (!adminApp) {
@@ -71,25 +91,7 @@ export async function getAllNewsArticles(): Promise<NewsArticle[]> {
     const q = newsCollectionRef.orderBy("date", "desc");
     const querySnapshot = await q.get();
     
-    const articles: NewsArticle[] = [];
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      articles.push({
-        id: doc.id,
-        slug: sanitizeString(data.slug),
-        title: sanitizeString(data.title),
-        date: sanitizeString(data.date), 
-        categories: Array.isArray(data.categories) ? data.categories.map(c => sanitizeString(c as string)) : [],
-        excerpt: sanitizeString(data.excerpt),
-        content: data.content, // Keep as is, might contain HTML
-        heroImageUrl: data.heroImageUrl ? sanitizeString(data.heroImageUrl) : undefined,
-        dataAiHint: data.dataAiHint ? sanitizeString(data.dataAiHint) : undefined,
-        youtubeEmbed: data.youtubeEmbed ? sanitizeString(data.youtubeEmbed) : undefined,
-        createdAt: data.createdAt, 
-        authorId: data.authorId ? sanitizeString(data.authorId) : undefined,
-      } as NewsArticle);
-    });
-    return articles;
+    return querySnapshot.docs.map(mapDocToNewsArticle);
   } catch (error) {
     console.error("Error fetching news articles from Firestore (Admin SDK):", error);
     return [];
@@ -114,22 +116,8 @@ export async function getNewsArticleBySlug(slug: string): Promise<NewsArticle | 
     }
 
     const docSnap = querySnapshot.docs[0];
-    const data = docSnap.data();
-    
-    return {
-      id: docSnap.id,
-      slug: sanitizeString(data.slug),
-      title: sanitizeString(data.title),
-      date: sanitizeString(data.date),
-      categories: Array.isArray(data.categories) ? data.categories.map(c => sanitizeString(c as string)) : [],
-      excerpt: sanitizeString(data.excerpt),
-      content: data.content,
-      heroImageUrl: data.heroImageUrl ? sanitizeString(data.heroImageUrl) : undefined,
-      dataAiHint: data.dataAiHint ? sanitizeString(data.dataAiHint) : undefined,
-      youtubeEmbed: data.youtubeEmbed ? sanitizeString(data.youtubeEmbed) : undefined,
-      createdAt: data.createdAt,
-      authorId: data.authorId ? sanitizeString(data.authorId) : undefined,
-    } as NewsArticle;
+    return mapDocToNewsArticle(docSnap);
+
   } catch (error) {
     console.error(`Error fetching news article by slug ${sanitizedSlug} from Firestore (Admin SDK):`, error);
     return undefined;

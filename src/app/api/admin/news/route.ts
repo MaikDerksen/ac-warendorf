@@ -33,7 +33,15 @@ export async function GET(req: NextRequest) {
   try {
     const newsCollectionRef = adminApp.firestore().collection("news").orderBy("date", "desc");
     const querySnapshot = await newsCollectionRef.get();
-    const articles = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as NewsArticle[];
+    const articles = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return { 
+            id: doc.id,
+            ...data,
+            // Ensure galleryImageUrls is always an array, even if missing in DB
+            galleryImageUrls: data.galleryImageUrls && Array.isArray(data.galleryImageUrls) ? data.galleryImageUrls : []
+        };
+    }) as NewsArticle[];
     return NextResponse.json(articles, { status: 200 });
   } catch (error: any) {
     return NextResponse.json({ message: 'Error fetching articles', error: error.message }, { status: 500 });
