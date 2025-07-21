@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { adminApp } from '@/lib/firebaseAdminConfig';
 import { verifyAdmin } from '@/lib/adminAuth';
 import admin from 'firebase-admin';
+import type { PhotoAlbum, NewsArticle, UnifiedAlbum } from '@/types';
 
 export const config = { api: { bodyParser: false } };
 
@@ -25,18 +26,63 @@ async function uploadGalleryImage(file: File, albumId: string): Promise<string> 
     });
 }
 
+// GET all albums (manual and news-based)
+export async function GET(req: NextRequest) {
+    const adminCheck = await verifyAdmin(req);
+    if (!adminCheck.isAdmin) return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: 401 });
+    if (!adminApp) return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
+
+    const firestoreDb = adminApp.firestore();
+    try {
+        // Fetch manual albums
+        const manualAlbumsSnapshot = await firestoreDb.collection("photoAlbums").orderBy("date", "desc").get();
+        const manualAlbums: UnifiedAlbum[] = manualAlbumsSnapshot.docs.map(doc => {
+            const data = doc.data() as PhotoAlbum;
+            return {
+                id: data.id,
+                title: data.name,
+                date: data.date,
+                coverImageUrl: data.coverImageUrl,
+                type: 'manual'
+            };
+        });
+
+        // Fetch news articles with galleries
+        const newsWithGalleriesSnapshot = await firestoreDb.collection("news")
+            .where("galleryImageUrls", "!=", [])
+            .orderBy("galleryImageUrls") // Firestore requires this for the '!=' operator
+            .orderBy("date", "desc")
+            .get();
+        const newsAlbums: UnifiedAlbum[] = newsWithGalleriesSnapshot.docs.map(doc => {
+            const data = doc.data() as NewsArticle;
+            return {
+                id: doc.id,
+                slug: data.slug,
+                title: data.title,
+                date: data.date,
+                coverImageUrl: data.galleryImageUrls?.[0] || data.heroImageUrl,
+                type: 'news'
+            };
+        });
+        
+        const allAlbums = [...manualAlbums, ...newsAlbums].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        return NextResponse.json(allAlbums, { status: 200 });
+    } catch (error: any) {
+        console.error("Error fetching combined albums:", error);
+        return NextResponse.json({ message: 'Error fetching albums', error: error.message }, { status: 500 });
+    }
+}
+
+
 // POST a new photo album
 export async function POST(req: NextRequest) {
     const adminCheck = await verifyAdmin(req);
     if (!adminCheck.isAdmin || !adminCheck.uid) {
         return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: 401 });
     }
+    if (!adminApp) return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
 
-    if (!adminApp) {
-        return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
-    }
     const firestoreDb = adminApp.firestore();
-
     try {
         const formData = await req.formData();
         const name = formData.get('name') as string;
@@ -54,7 +100,7 @@ export async function POST(req: NextRequest) {
             images.map(image => uploadGalleryImage(image, albumId))
         );
 
-        const newAlbumData = {
+        const newAlbumData: PhotoAlbum = {
             id: albumId,
             name: name,
             date: date,
@@ -65,11 +111,67 @@ export async function POST(req: NextRequest) {
         };
 
         await albumRef.set(newAlbumData);
-
         return NextResponse.json({ message: 'Album created successfully', album: newAlbumData }, { status: 201 });
-
     } catch (error: any) {
         console.error("Error creating photo album:", error);
         return NextResponse.json({ message: 'Error creating album', error: error.message }, { status: 500 });
+    }
+}
+
+// PUT (update) an existing photo album
+export async function PUT(req: NextRequest) {
+    const adminCheck = await verifyAdmin(req);
+    if (!adminCheck.isAdmin || !adminCheck.uid) {
+        return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: 401 });
+    }
+    const albumId = req.nextUrl.searchParams.get('id');
+    if (!albumId) return NextResponse.json({ message: 'Album ID is required for update.' }, { status: 400 });
+    if (!adminApp) return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
+
+    const firestoreDb = adminApp.firestore();
+    try {
+        const formData = await req.formData();
+        const name = formData.get('name') as string;
+        const date = formData.get('date') as string;
+        const newImages = formData.getAll('images') as File[];
+
+        const albumRef = firestoreDb.collection("photoAlbums").doc(albumId);
+        const updateData: any = {
+            name,
+            date,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        };
+
+        if (newImages && newImages.length > 0) {
+            const newImageUrls = await Promise.all(newImages.map(image => uploadGalleryImage(image, albumId)));
+            updateData.imageUrls = admin.firestore.FieldValue.arrayUnion(...newImageUrls);
+        }
+
+        await albumRef.update(updateData);
+        return NextResponse.json({ message: 'Album updated successfully' }, { status: 200 });
+
+    } catch (error: any) {
+        console.error("Error updating photo album:", error);
+        return NextResponse.json({ message: 'Error updating album', error: error.message }, { status: 500 });
+    }
+}
+
+// DELETE an existing photo album
+export async function DELETE(req: NextRequest) {
+    const adminCheck = await verifyAdmin(req);
+    if (!adminCheck.isAdmin) return NextResponse.json({ message: adminCheck.error || 'Unauthorized' }, { status: 401 });
+    const albumId = req.nextUrl.searchParams.get('id');
+    if (!albumId) return NextResponse.json({ message: 'Album ID is required for deletion.' }, { status: 400 });
+    if (!adminApp) return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
+
+    try {
+        const firestoreDb = adminApp.firestore();
+        await firestoreDb.collection("photoAlbums").doc(albumId).delete();
+        // Note: This does not delete the images from Storage to prevent accidental data loss.
+        // This could be implemented as a more advanced "hard delete" feature in the future.
+        return NextResponse.json({ message: 'Album deleted successfully' }, { status: 200 });
+    } catch (error: any) {
+        console.error("Error deleting photo album:", error);
+        return NextResponse.json({ message: 'Error deleting album', error: error.message }, { status: 500 });
     }
 }
