@@ -147,7 +147,7 @@ export default function AdminGaleriePage() {
         <CardHeader>
           <CardTitle>Bestehende Alben verwalten</CardTitle>
            <CardDescription>
-            Eine Liste aller existierenden Alben (sowohl aus News als auch manuell erstellte) wird hier zur Bearbeitung und zum Löschen angezeigt. Diese Ansicht ist derzeit in Entwicklung.
+            Eine Liste aller existierenden Alben (sowohl aus News als auch manuell erstellte) wird hier zur Bearbeitung und zum Löschen angezeigt.
           </CardDescription>
         </CardHeader>
         <CardContent>
