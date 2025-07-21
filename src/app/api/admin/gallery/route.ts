@@ -47,22 +47,22 @@ export async function GET(req: NextRequest) {
             };
         });
 
-        // Fetch news articles with galleries
-        const newsWithGalleriesSnapshot = await firestoreDb.collection("news")
-            .where("galleryImageUrls", "!=", [])
-            .orderBy("galleryImageUrls") // Firestore requires this for the '!=' operator
-            .orderBy("date", "desc")
-            .get();
-        const newsAlbums: UnifiedAlbum[] = newsWithGalleriesSnapshot.docs.map(doc => {
+        // Fetch news articles and filter for those with galleries in code.
+        // This is more robust than a complex query that might require a composite index.
+        const allNewsSnapshot = await firestoreDb.collection("news").orderBy("date", "desc").get();
+        const newsAlbums: UnifiedAlbum[] = [];
+        allNewsSnapshot.forEach(doc => {
             const data = doc.data() as NewsArticle;
-            return {
-                id: doc.id,
-                slug: data.slug,
-                title: data.title,
-                date: data.date,
-                coverImageUrl: data.galleryImageUrls?.[0] || data.heroImageUrl,
-                type: 'news'
-            };
+            if (data.galleryImageUrls && Array.isArray(data.galleryImageUrls) && data.galleryImageUrls.length > 0) {
+                 newsAlbums.push({
+                    id: doc.id,
+                    slug: data.slug,
+                    title: data.title,
+                    date: data.date,
+                    coverImageUrl: data.galleryImageUrls?.[0] || data.heroImageUrl,
+                    type: 'news'
+                });
+            }
         });
         
         const allAlbums = [...manualAlbums, ...newsAlbums].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
