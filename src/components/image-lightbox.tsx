@@ -47,15 +47,18 @@ export function ImageLightbox({ images }: ImageLightboxProps) {
     };
   }, [images]);
 
-  const handleNext = React.useCallback(() => {
+  const handleNext = React.useCallback((e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent closing the lightbox
     setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
   }, [images.length]);
 
-  const handlePrev = React.useCallback(() => {
+  const handlePrev = React.useCallback((e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent closing the lightbox
     setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
   }, [images.length]);
   
-  const handleDownload = async () => {
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent closing the lightbox
     setIsDownloading(true);
     try {
       const imageUrl = images[currentIndex];
@@ -89,8 +92,8 @@ export function ImageLightbox({ images }: ImageLightboxProps) {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') handleNext();
-      else if (e.key === 'ArrowLeft') handlePrev();
+      if (e.key === 'ArrowRight') setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+      else if (e.key === 'ArrowLeft') setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
       else if (e.key === 'Escape') closeLightbox();
     };
 
@@ -98,7 +101,7 @@ export function ImageLightbox({ images }: ImageLightboxProps) {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, handleNext, handlePrev]);
+  }, [isOpen, images.length]);
   
   if (!isOpen) {
     return null;
