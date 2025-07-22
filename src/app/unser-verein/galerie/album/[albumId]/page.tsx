@@ -1,16 +1,13 @@
 
-'use client';
-
 import { getManualAlbumById } from '@/lib/data-loader';
 import { PageHeader } from '@/components/page-header';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { CalendarDays, ArrowLeft, Loader2 } from 'lucide-react';
-import * as React from 'react';
+import { CalendarDays, ArrowLeft } from 'lucide-react';
 import { ImageLightbox } from '@/components/image-lightbox';
-import type { PhotoAlbum } from '@/types';
+import { notFound } from 'next/navigation';
 
 interface AlbumDetailPageProps {
   params: {
@@ -18,52 +15,11 @@ interface AlbumDetailPageProps {
   };
 }
 
-export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
-  const [album, setAlbum] = React.useState<PhotoAlbum | null | undefined>(undefined);
-  const [lightboxOpen, setLightboxOpen] = React.useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
+export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) {
+  const album = await getManualAlbumById(params.albumId);
 
-  React.useEffect(() => {
-    async function fetchData() {
-      const fetchedAlbum = await getManualAlbumById(params.albumId);
-      setAlbum(fetchedAlbum);
-    }
-    fetchData();
-  }, [params.albumId]);
-
-  const openLightbox = (index: number) => {
-    setSelectedImageIndex(index);
-    setLightboxOpen(true);
-  };
-
-  const closeLightbox = () => {
-    setLightboxOpen(false);
-  };
-  
-  if (album === undefined) {
-    return (
-        <div className="flex items-center justify-center p-10">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2">Lade Album...</span>
-        </div>
-    );
-  }
-
-  if (album === null || !album.imageUrls || album.imageUrls.length === 0) {
-    return (
-        <div className="space-y-8">
-             <PageHeader title="Album nicht gefunden" />
-             <p className="text-center text-muted-foreground">Das angeforderte Album konnte nicht gefunden werden oder enthält keine Bilder.</p>
-              <div className="text-center">
-                <Button asChild variant="outline">
-                    <Link href="/unser-verein/galerie">
-                        <ArrowLeft className="mr-2 h-4 w-4"/>
-                        Zurück zur Galerie-Übersicht
-                    </Link>
-                </Button>
-              </div>
-        </div>
-    );
+  if (!album || !album.imageUrls || album.imageUrls.length === 0) {
+    notFound();
   }
 
   const formattedDate = new Date(album.date).toLocaleDateString('de-DE', {
@@ -74,13 +30,7 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
 
   return (
     <>
-      {lightboxOpen && (
-        <ImageLightbox
-          images={album.imageUrls}
-          startIndex={selectedImageIndex}
-          onClose={closeLightbox}
-        />
-      )}
+      <ImageLightbox images={album.imageUrls} />
 
       <div className="space-y-8">
         <PageHeader 
@@ -100,7 +50,7 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                 <div 
                   key={index} 
                   className="relative aspect-square w-full rounded-lg overflow-hidden shadow-md group cursor-pointer"
-                  onClick={() => openLightbox(index)}
+                  // The lightbox component now handles its own state
                 >
                   <Image
                     src={imageUrl}

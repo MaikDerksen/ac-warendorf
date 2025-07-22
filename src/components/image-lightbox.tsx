@@ -9,12 +9,42 @@ import { Button } from './ui/button';
 
 interface ImageLightboxProps {
   images: string[];
-  startIndex?: number;
-  onClose: () => void;
 }
 
-export function ImageLightbox({ images, startIndex = 0, onClose }: ImageLightboxProps) {
-  const [currentIndex, setCurrentIndex] = React.useState(startIndex);
+export function ImageLightbox({ images }: ImageLightboxProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+
+  const openLightbox = (index: number) => {
+    setCurrentIndex(index);
+    setIsOpen(true);
+  };
+  
+  const closeLightbox = () => {
+    setIsOpen(false);
+  };
+
+  React.useEffect(() => {
+    const handleImageClick = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        const imageContainer = target.closest('.cursor-pointer');
+        if (imageContainer) {
+            const allImages = Array.from(document.querySelectorAll('.cursor-pointer'));
+            const imageElements = allImages.map(container => container.querySelector('img'));
+            const clickedImageSrc = imageContainer.querySelector('img')?.src;
+            const index = imageElements.findIndex(img => img?.src === clickedImageSrc);
+
+            if (index !== -1) {
+                openLightbox(index);
+            }
+        }
+    };
+    
+    document.addEventListener('click', handleImageClick);
+    return () => {
+        document.removeEventListener('click', handleImageClick);
+    };
+  }, [images]);
 
   const handleNext = React.useCallback(() => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
@@ -32,7 +62,6 @@ export function ImageLightbox({ images, startIndex = 0, onClose }: ImageLightbox
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      // Extract filename from URL
       const filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
       link.setAttribute('download', filename || `ac-warendorf-bild-${currentIndex + 1}.jpg`);
       document.body.appendChild(link);
@@ -41,28 +70,28 @@ export function ImageLightbox({ images, startIndex = 0, onClose }: ImageLightbox
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Download failed:", error);
-      // You could add a user-facing error message here (e.g., using a toast)
     }
   };
 
-
   React.useEffect(() => {
+    if (!isOpen) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') {
-        handleNext();
-      } else if (e.key === 'ArrowLeft') {
-        handlePrev();
-      } else if (e.key === 'Escape') {
-        onClose();
-      }
+      if (e.key === 'ArrowRight') handleNext();
+      else if (e.key === 'ArrowLeft') handlePrev();
+      else if (e.key === 'Escape') closeLightbox();
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleNext, handlePrev, onClose]);
+  }, [isOpen, handleNext, handlePrev]);
   
+  if (!isOpen) {
+    return null;
+  }
+
   const currentImage = images[currentIndex];
 
   return (
@@ -71,7 +100,7 @@ export function ImageLightbox({ images, startIndex = 0, onClose }: ImageLightbox
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-      onClick={onClose}
+      onClick={closeLightbox}
     >
       <motion.div
         initial={{ scale: 0.95 }}
@@ -108,7 +137,7 @@ export function ImageLightbox({ images, startIndex = 0, onClose }: ImageLightbox
             <Download className="h-5 w-5" />
             <span className="sr-only">Download</span>
         </Button>
-        <Button variant="outline" size="icon" onClick={onClose} className="bg-black/50 hover:bg-black/70 border-white/20 text-white hover:text-white">
+        <Button variant="outline" size="icon" onClick={closeLightbox} className="bg-black/50 hover:bg-black/70 border-white/20 text-white hover:text-white">
           <X className="h-5 w-5" />
           <span className="sr-only">Schließen</span>
         </Button>

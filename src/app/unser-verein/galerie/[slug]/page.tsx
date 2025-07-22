@@ -1,16 +1,13 @@
 
-'use client';
-
 import { getNewsArticleBySlug } from '@/lib/data-loader';
 import { PageHeader } from '@/components/page-header';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { CalendarDays, ArrowLeft, Loader2 } from 'lucide-react';
-import * as React from 'react';
+import { CalendarDays, ArrowLeft } from 'lucide-react';
 import { ImageLightbox } from '@/components/image-lightbox';
-import type { NewsArticle } from '@/types';
+import { notFound } from 'next/navigation';
 
 interface GalleryDetailPageProps {
   params: {
@@ -18,52 +15,11 @@ interface GalleryDetailPageProps {
   };
 }
 
-export default function GalleryDetailPage({ params }: GalleryDetailPageProps) {
-  const [article, setArticle] = React.useState<NewsArticle | null | undefined>(undefined);
-  const [lightboxOpen, setLightboxOpen] = React.useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
-
-  React.useEffect(() => {
-    async function fetchData() {
-        const fetchedArticle = await getNewsArticleBySlug(params.slug);
-        setArticle(fetchedArticle);
-    }
-    fetchData();
-  }, [params.slug]);
-
-  const openLightbox = (index: number) => {
-    setSelectedImageIndex(index);
-    setLightboxOpen(true);
-  };
-
-  const closeLightbox = () => {
-    setLightboxOpen(false);
-  };
+export default async function GalleryDetailPage({ params }: GalleryDetailPageProps) {
+  const article = await getNewsArticleBySlug(params.slug);
   
-  if (article === undefined) {
-    return (
-        <div className="flex items-center justify-center p-10">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2">Lade Galerie...</span>
-        </div>
-    );
-  }
-
-  if (article === null || !article.galleryImageUrls || article.galleryImageUrls.length === 0) {
-    return (
-        <div className="space-y-8">
-             <PageHeader title="Galerie nicht gefunden" />
-             <p className="text-center text-muted-foreground">Die angeforderte Galerie konnte nicht gefunden werden oder enthält keine Bilder.</p>
-              <div className="text-center">
-                <Button asChild variant="outline">
-                    <Link href="/unser-verein/galerie">
-                        <ArrowLeft className="mr-2 h-4 w-4"/>
-                        Zurück zur Galerie-Übersicht
-                    </Link>
-                </Button>
-              </div>
-        </div>
-    );
+  if (!article || !article.galleryImageUrls || article.galleryImageUrls.length === 0) {
+    notFound();
   }
   
   const formattedDate = new Date(article.date).toLocaleDateString('de-DE', {
@@ -74,13 +30,7 @@ export default function GalleryDetailPage({ params }: GalleryDetailPageProps) {
 
   return (
     <>
-      {lightboxOpen && article.galleryImageUrls && (
-        <ImageLightbox
-          images={article.galleryImageUrls}
-          startIndex={selectedImageIndex}
-          onClose={closeLightbox}
-        />
-      )}
+      <ImageLightbox images={article.galleryImageUrls} />
       <div className="space-y-8">
         <PageHeader 
           title={article.title}
@@ -99,7 +49,7 @@ export default function GalleryDetailPage({ params }: GalleryDetailPageProps) {
                 <div 
                   key={index} 
                   className="relative aspect-square w-full rounded-lg overflow-hidden shadow-md group cursor-pointer"
-                  onClick={() => openLightbox(index)}
+                  // The lightbox component now handles its own state
                 >
                   <Image
                     src={imageUrl}
