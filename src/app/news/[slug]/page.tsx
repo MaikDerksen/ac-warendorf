@@ -1,17 +1,19 @@
 
+'use client';
 
-import { getNewsArticleBySlug, getAllNewsArticles } from '@/lib/data-loader';
+import { getNewsArticleBySlug } from '@/lib/data-loader';
 import type { NewsArticle } from '@/types';
 import { PageHeader } from '@/components/page-header';
 import Image from 'next/image';
 import { YouTubeEmbed } from '@/components/youtube-embed';
-import { CalendarDays, Tag, Newspaper, Images } from 'lucide-react';
+import { CalendarDays, Tag, Newspaper, Images, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import * as React from 'react';
+import { ImageLightbox } from '@/components/image-lightbox';
 
 interface NewsDetailPageProps {
   params: {
@@ -19,19 +21,46 @@ interface NewsDetailPageProps {
   };
 }
 
-export async function generateStaticParams() {
-  const articles = await getAllNewsArticles(); // Now fetches from Firestore
-  return articles.map((article) => ({
-    slug: article.slug,
-  }));
-}
+export default function NewsDetailPage({ params }: NewsDetailPageProps) {
+  const [article, setArticle] = React.useState<NewsArticle | null | undefined>(undefined);
+  const [lightboxOpen, setLightboxOpen] = React.useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
+  
+  React.useEffect(() => {
+    async function fetchData() {
+        const fetchedArticle = await getNewsArticleBySlug(params.slug);
+        setArticle(fetchedArticle);
+    }
+    fetchData();
+  }, [params.slug]);
 
-export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
-  const article = await getNewsArticleBySlug(params.slug); // Now fetches from Firestore
+  const openLightbox = (index: number) => {
+    setSelectedImageIndex(index);
+    setLightboxOpen(true);
+  };
 
-  if (!article) {
-    notFound();
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+  };
+
+  if (article === undefined) {
+    return (
+        <div className="flex items-center justify-center p-10">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2">Lade Artikel...</span>
+        </div>
+    );
   }
+
+  if (article === null) {
+    return (
+        <div className="space-y-8">
+             <PageHeader title="Artikel nicht gefunden" />
+             <p className="text-center text-muted-foreground">Der angeforderte Artikel konnte nicht gefunden werden.</p>
+        </div>
+    );
+  }
+
 
   const formattedDate = new Date(article.date).toLocaleDateString('de-DE', {
     year: 'numeric',
@@ -40,6 +69,14 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
   });
 
   return (
+    <>
+     {lightboxOpen && article.galleryImageUrls && (
+        <ImageLightbox
+          images={article.galleryImageUrls}
+          startIndex={selectedImageIndex}
+          onClose={closeLightbox}
+        />
+      )}
     <article className="max-w-4xl mx-auto space-y-8">
       <PageHeader title={article.title} />
 
@@ -94,7 +131,11 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {article.galleryImageUrls.map((url, index) => (
-              <div key={index} className="relative aspect-square rounded-lg overflow-hidden shadow-md group">
+              <div 
+                key={index} 
+                className="relative aspect-square rounded-lg overflow-hidden shadow-md group cursor-pointer"
+                onClick={() => openLightbox(index)}
+              >
                 <Image
                   src={url}
                   alt={`Galeriebild ${index + 1}`}
@@ -128,5 +169,6 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
         </Button>
       </div>
     </article>
+    </>
   );
 }

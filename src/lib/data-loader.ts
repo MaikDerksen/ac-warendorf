@@ -505,7 +505,18 @@ export async function getAllManualAlbums(): Promise<PhotoAlbum[]> {
     try {
         const albumsCollectionRef = firestoreDb.collection("photoAlbums").orderBy("date", "desc");
         const querySnapshot = await albumsCollectionRef.get();
-        return querySnapshot.docs.map(doc => doc.data() as PhotoAlbum);
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                name: data.name,
+                date: data.date,
+                imageUrls: data.imageUrls || [],
+                coverImageUrl: data.coverImageUrl,
+                createdAt: data.createdAt,
+                createdBy: data.createdBy
+            } as PhotoAlbum;
+        });
     } catch (error) {
         console.error("Error fetching manual photo albums from Firestore (Admin SDK):", error);
         return [];
@@ -522,7 +533,16 @@ export async function getManualAlbumById(albumId: string): Promise<PhotoAlbum | 
     const docRef = firestoreDb.collection("photoAlbums").doc(albumId);
     const docSnap = await docRef.get();
     if (docSnap.exists) {
-      return docSnap.data() as PhotoAlbum;
+        const data = docSnap.data()!;
+        return {
+            id: docSnap.id,
+            name: data.name,
+            date: data.date,
+            imageUrls: data.imageUrls || [],
+            coverImageUrl: data.coverImageUrl,
+            createdAt: data.createdAt,
+            createdBy: data.createdBy
+        } as PhotoAlbum;
     }
     return undefined;
   } catch (error) {
