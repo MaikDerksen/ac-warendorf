@@ -14,6 +14,7 @@ interface ImageLightboxProps {
 export function ImageLightbox({ images }: ImageLightboxProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [currentIndex, setCurrentIndex] = React.useState(0);
+  const [isDownloading, setIsDownloading] = React.useState(false);
 
   const openLightbox = (index: number) => {
     setCurrentIndex(index);
@@ -55,14 +56,22 @@ export function ImageLightbox({ images }: ImageLightboxProps) {
   }, [images.length]);
   
   const handleDownload = async () => {
+    setIsDownloading(true);
     try {
       const imageUrl = images[currentIndex];
-      const response = await fetch(imageUrl);
+      // Use the new API route as a proxy
+      const response = await fetch(`/api/download-image?url=${encodeURIComponent(imageUrl)}`);
+      
+      if (!response.ok) {
+        throw new Error('Server responded with an error while fetching the image.');
+      }
+      
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      const filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
+      // Extract filename from the original URL
+      const filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1).split('?')[0]; // Also remove query params
       link.setAttribute('download', filename || `ac-warendorf-bild-${currentIndex + 1}.jpg`);
       document.body.appendChild(link);
       link.click();
@@ -70,6 +79,9 @@ export function ImageLightbox({ images }: ImageLightboxProps) {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Download failed:", error);
+      // You could show a toast notification here to inform the user
+    } finally {
+        setIsDownloading(false);
     }
   };
 
@@ -133,8 +145,17 @@ export function ImageLightbox({ images }: ImageLightboxProps) {
 
       {/* Controls */}
       <div className="absolute top-4 right-4 flex items-center gap-2">
-        <Button variant="outline" size="icon" onClick={handleDownload} className="bg-black/50 hover:bg-black/70 border-white/20 text-white hover:text-white">
-            <Download className="h-5 w-5" />
+        <Button variant="outline" size="icon" onClick={handleDownload} disabled={isDownloading} className="bg-black/50 hover:bg-black/70 border-white/20 text-white hover:text-white">
+            {isDownloading ? (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              >
+                <Download className="h-5 w-5" />
+              </motion.div>
+            ) : (
+               <Download className="h-5 w-5" />
+            )}
             <span className="sr-only">Download</span>
         </Button>
         <Button variant="outline" size="icon" onClick={closeLightbox} className="bg-black/50 hover:bg-black/70 border-white/20 text-white hover:text-white">
